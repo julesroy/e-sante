@@ -40,6 +40,13 @@ source venv/bin/activate
 ```
 
 ## 2. Lancement de l'application :
+
+Windows :
+```bash
+python main.py
+```
+
+MacOS/Linux :
 ```bash
 python3 main.py
 ```
