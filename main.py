@@ -1,0 +1,39 @@
+import os
+import sys
+from PyQt6.QtWidgets import QApplication
+
+from models.MainModel import MainModel
+from views.MainView import MainView
+from controllers.MainController import MainController
+
+
+def main():
+    """
+    Point d'entrée du logiciel.
+    """
+    app = QApplication(sys.argv)
+
+    # chemin absolu vers le fichier QSS (évite les erreurs de chemin relatif)
+    style_path = os.path.join(os.path.dirname(__file__), "assets", "styles", "style.qss")
+
+    # lecture et application du style
+    if os.path.exists(style_path):
+        with open(style_path, "r", encoding="utf-8") as f:
+            app.setStyleSheet(f.read())
+    else:
+        print(f"Attention : Fichier de style introuvable à {style_path}")
+
+    # initialisation du modèle, de la vue et du contrôleur
+    model = MainModel()
+    view = MainView()
+    controller = MainController(model, view)
+
+    # affichage de la vue
+    view.show()
+
+    # boucle d'exécution de l'application
+    sys.exit(app.exec())
+
+
+if __name__ == "__main__":
+    main()

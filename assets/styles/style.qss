@@ -1,0 +1,4 @@
+/* Style de l'application */
+QLabel {
+    color: #e11;
+}
