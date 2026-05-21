@@ -89,6 +89,7 @@ class MedicalImageVisualizer(QScrollArea):
         else:
             event.ignore()
 
+
 # --- FENÊTRE PRINCIPALE ---
 class MainView(QMainWindow):
     def __init__(self):

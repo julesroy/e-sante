@@ -1,7 +1,7 @@
-import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 from FiltrageGaussien import FiltrageGaussien
+
 
 class TFD2D:
     """
@@ -10,7 +10,7 @@ class TFD2D:
     testTFD2D = TFD2D('COVID-1024.png')
     """
 
-    def __init__(self, imagePath:str):
+    def __init__(self, imagePath: str):
         """
         Initialise les paramètres pour la FFT 2D.
         :param imagePath: Chemin de l'image d'entrée.
@@ -27,12 +27,12 @@ class TFD2D:
         """
         # on applique un filtrage gaussien à l'image pour réduire le bruit avant de calculer la TFD
         matrice = FiltrageGaussien((5, 5), 0, self._imagePath)
-        matriceFiltree = matrice.filtrage() # la matrice filtrée est une matrice 2D de type numpy.ndarray, représentant l'image filtrée en niveaux de gris (hauteur x largeur)
-        
-        f = np.fft.fft2(matriceFiltree) # on applique la TFD 2D à la matrice filtrée
-        fshift = np.fft.fftshift(f) # on déplace la fréquence zéro (les basses fréquences) au centre du spectre
-        self._spectre = 20 * np.log(np.abs(fshift) + 1) # on calcule la magnitude (le spectre) et on utilise l'échelle logarithmique pour la visualisation
-        
+        matriceFiltree = matrice.filtrage()  # la matrice filtrée est une matrice 2D de type numpy.ndarray, représentant l'image filtrée en niveaux de gris (hauteur x largeur)
+
+        f = np.fft.fft2(matriceFiltree)  # on applique la TFD 2D à la matrice filtrée
+        fshift = np.fft.fftshift(f)  # on déplace la fréquence zéro (les basses fréquences) au centre du spectre
+        self._spectre = 20 * np.log(np.abs(fshift) + 1)  # on calcule la magnitude (le spectre) et on utilise l'échelle logarithmique pour la visualisation
+
         return self._spectre
 
     # pas utile directement mais je voulais voir si ça ressemblait bien à une TFD et pas autre chose ahaha
@@ -42,12 +42,13 @@ class TFD2D:
         """
         # paramètres pour l'affichage du spectre
         axes = plt.subplots(1, 1, figsize=(12, 6))
-        axes.imshow(self._spectre, cmap='gray')
+        axes.imshow(self._spectre, cmap="gray")
         axes.set_title("Spectre FFT 2D (Echelle Log)")
-        axes.axis('off')
+        axes.axis("off")
 
-        plt.tight_layout() # ajuste automatiquement la disposition
-        plt.show() # affiche
+        plt.tight_layout()  # ajuste automatiquement la disposition
+        plt.show()  # affiche
+
 
 # testTFD2D = TFD2D('COVID-1024.png')
 # matriceTFD2D = testTFD2D.calculerTFDSpectre()
