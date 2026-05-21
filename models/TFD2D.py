@@ -28,11 +28,7 @@ class TFD2D:
         La formule est : Spectre = 20 * log(|TFD| + 1) pour éviter les problèmes de log(0).
         :return: Matrice du spectre de la TFD 2D (Numpy 2D array).
         """
-        # on applique un filtrage gaussien à l'image pour réduire le bruit avant de calculer la TFD
-        matrice = FiltrageGaussien((5, 5), 0, self._imageNpArray)
-        matriceFiltree = matrice.filtrage()  # la matrice filtrée est une matrice 2D de type numpy.ndarray, représentant l'image filtrée en niveaux de gris (hauteur x largeur)
-
-        f = np.fft.fft2(matriceFiltree)  # on applique la TFD 2D à la matrice filtrée
+        f = np.fft.fft2(self._imageNpArray)  # on applique la TFD 2D à la matrice filtrée
         fshift = np.fft.fftshift(f)  # on déplace la fréquence zéro (les basses fréquences) au centre du spectre
         self._spectre = 20 * np.log(np.abs(fshift) + 1)  # on calcule la magnitude (le spectre) et on utilise l'échelle logarithmique pour la visualisation
 
@@ -55,6 +51,7 @@ class TFD2D:
 
 # tests
 # testImageConvertie = ImageConvertie("COVID-1024.png").convertirEnNumpyArray()
+# testImageConvertie = FiltrageGaussien((5, 5), 0, testImageConvertie).filtrage() # uniquement si on veut appliquer un filtre avant de calculer la TFD
 # testTFD2D = TFD2D(testImageConvertie)
 # testMatriceTFD2D = testTFD2D.calculerTFDSpectre()
 # print(type(testMatriceTFD2D))  # type de la matrice du spectre
