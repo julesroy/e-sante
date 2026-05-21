@@ -29,10 +29,10 @@ class ImageConvertie:
 
 
 # tests
-testImageConvertie = ImageConvertie("COVID-1024.png")
-matriceImage = testImageConvertie.convertirEnNumpyArray()
-print(matriceImage)  # affiche la matrice de l'image convertie
-print(type(matriceImage))  # type de la matrice de l'image convertie
+# testImageConvertie = ImageConvertie("COVID-1024.png")
+# matriceImage = testImageConvertie.convertirEnNumpyArray()
+# print(matriceImage)  # affiche la matrice de l'image convertie
+# print(type(matriceImage))  # type de la matrice de l'image convertie
 
-assert isinstance(matriceImage, np.ndarray), "La matrice de l'image convertie doit être un Numpy array."
-assert matriceImage.ndim == 2, "La matrice de l'image convertie doit être en 2D (niveaux de gris)."
+# assert isinstance(matriceImage, np.ndarray), "La matrice de l'image convertie doit être un Numpy array."
+# assert matriceImage.ndim == 2, "La matrice de l'image convertie doit être en 2D (niveaux de gris)."

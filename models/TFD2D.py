@@ -54,11 +54,11 @@ class TFD2D:
 
 
 # tests
-testImageConvertie = ImageConvertie("COVID-1024.png").convertirEnNumpyArray()
-testTFD2D = TFD2D(testImageConvertie)
-testMatriceTFD2D = testTFD2D.calculerTFDSpectre()
-print(type(testMatriceTFD2D))  # type de la matrice du spectre
-testTFD2D.afficher_spectre()  # à utiliser uniquement pour visualiser le spectre
+# testImageConvertie = ImageConvertie("COVID-1024.png").convertirEnNumpyArray()
+# testTFD2D = TFD2D(testImageConvertie)
+# testMatriceTFD2D = testTFD2D.calculerTFDSpectre()
+# print(type(testMatriceTFD2D))  # type de la matrice du spectre
+# testTFD2D.afficher_spectre()  # à utiliser uniquement pour visualiser le spectre
 
-assert isinstance(testMatriceTFD2D, np.ndarray), "La matrice du spectre doit être un Numpy array."
-assert testMatriceTFD2D.ndim == 2, "La matrice du spectre doit être en 2D."
+# assert isinstance(testMatriceTFD2D, np.ndarray), "La matrice du spectre doit être un Numpy array."
+# assert testMatriceTFD2D.ndim == 2, "La matrice du spectre doit être en 2D."

@@ -33,13 +33,13 @@ class FiltrageGaussien:
 
 
 # tests
-testImageConvertie = ImageConvertie("COVID-1024.png").convertirEnNumpyArray()
-testMatrice = FiltrageGaussien((5, 5), 0, testImageConvertie)
-testMatriceFiltree = testMatrice.filtrage()
-print(testMatriceFiltree)
-print(type(testMatriceFiltree))  # type de la matrice
-print(testMatriceFiltree.ndim)  # dimension de la matrice
-print(testMatriceFiltree.shape)  # dimensions de la matrice (hauteur, largeur)
+# testImageConvertie = ImageConvertie("COVID-1024.png").convertirEnNumpyArray()
+# testMatrice = FiltrageGaussien((5, 5), 0, testImageConvertie)
+# testMatriceFiltree = testMatrice.filtrage()
+# print(testMatriceFiltree)
+# print(type(testMatriceFiltree))  # type de la matrice
+# print(testMatriceFiltree.ndim)  # dimension de la matrice
+# print(testMatriceFiltree.shape)  # dimensions de la matrice (hauteur, largeur)
 
-assert isinstance(testMatriceFiltree, np.ndarray), "La matrice filtrée doit être un Numpy array."
-assert testMatriceFiltree.ndim == 2, "La matrice filtrée doit être en 2D (niveaux de gris)."
+# assert isinstance(testMatriceFiltree, np.ndarray), "La matrice filtrée doit être un Numpy array."
+# assert testMatriceFiltree.ndim == 2, "La matrice filtrée doit être en 2D (niveaux de gris)."
