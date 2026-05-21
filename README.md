@@ -66,11 +66,11 @@ Voici la structure des fichiers du projet :
 - `views/` : contient les classes des vues, qui gèrent l'interface utilisateur (les boutons, les labels, etc.).
 - `controllers/` : contient les classes des contrôleurs, qui font le lien entre le modèle et la vue, en répondant aux actions de l'utilisateur (clics sur les boutons) et en mettant à jour le modèle et la vue en conséquence.
 - `assets/` : dossier qui peut contenir des ressources supplémentaires pour l'application (images, fichiers de style, etc...).
-- `documentation/` : contient la documentation du projet
+- `docs/` : contient la documentation du projet
 
 ## 4. Documentation :
 
-La documentation est générée par `pdoc`, et se trouve dans le dossier `documentation/`. Elle peut être consultée en ouvrant le fichier `index.html` dans un navigateur web.  
+La documentation est générée par `pdoc`, et se trouve dans le dossier `docs/`. Elle peut être consultée en ouvrant le fichier `index.html` dans un navigateur web.  
 
 Pour écrire de la documentation, il suffit d'ajouter des docstrings dans les classes et les fonctions du projet.  
 Exemple :
