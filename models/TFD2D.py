@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from FiltrageGaussien import FiltrageGaussien
+from models.FiltrageGaussien import FiltrageGaussien
 
 
 class TFD2D:
