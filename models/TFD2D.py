@@ -1,21 +1,24 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from models.FiltrageGaussien import FiltrageGaussien
+from FiltrageGaussien import FiltrageGaussien
+from ImageConvertie import ImageConvertie
 
 
 class TFD2D:
     """
     Classe pour calculer la TFD 2D d'une image et visualiser le spectre.
+    L'image d'entrée doit être une matrice Numpy 2D normalisée entre 0 et 1 (niveaux de gris).
     Exemple d'instanciation :
-    testTFD2D = TFD2D('COVID-1024.png')
+    imageConvertie = ImageConvertie('COVID-1024.png').convertirEnNumpyArray()
+    testTFD2D = TFD2D(imageConvertie)
     """
 
-    def __init__(self, imagePath: str):
+    def __init__(self, imageNpArray: np.ndarray):
         """
         Initialise les paramètres pour la FFT 2D.
-        :param imagePath: Chemin de l'image d'entrée.
+        :param imageNpArray: Matrice Numpy de l'image.
         """
-        self._imagePath = imagePath
+        self._imageNpArray = imageNpArray
         self._spectre = None
 
     def calculerTFDSpectre(self):
@@ -26,7 +29,7 @@ class TFD2D:
         :return: Matrice du spectre de la TFD 2D (Numpy 2D array).
         """
         # on applique un filtrage gaussien à l'image pour réduire le bruit avant de calculer la TFD
-        matrice = FiltrageGaussien((5, 5), 0, self._imagePath)
+        matrice = FiltrageGaussien((5, 5), 0, self._imageNpArray)
         matriceFiltree = matrice.filtrage()  # la matrice filtrée est une matrice 2D de type numpy.ndarray, représentant l'image filtrée en niveaux de gris (hauteur x largeur)
 
         f = np.fft.fft2(matriceFiltree)  # on applique la TFD 2D à la matrice filtrée
@@ -41,16 +44,21 @@ class TFD2D:
         Affiche le spectre calculé.
         """
         # paramètres pour l'affichage du spectre
-        axes = plt.subplots(1, 1, figsize=(12, 6))
+        fig, axes = plt.subplots(1, 1, figsize=(12, 6))
         axes.imshow(self._spectre, cmap="gray")
-        axes.set_title("Spectre FFT 2D (Echelle Log)")
+        axes.set_title("Spectre TFD2D (Echelle Log)")
         axes.axis("off")
 
         plt.tight_layout()  # ajuste automatiquement la disposition
         plt.show()  # affiche
 
 
-# testTFD2D = TFD2D('COVID-1024.png')
-# matriceTFD2D = testTFD2D.calculerTFDSpectre()
-# print(type(matriceTFD2D)) # type de la matrice du spectre
-# testTFD2D.afficher_spectre() # à utiliser uniquement pour visualiser le spectre
+# tests
+testImageConvertie = ImageConvertie("COVID-1024.png").convertirEnNumpyArray()
+testTFD2D = TFD2D(testImageConvertie)
+testMatriceTFD2D = testTFD2D.calculerTFDSpectre()
+print(type(testMatriceTFD2D))  # type de la matrice du spectre
+testTFD2D.afficher_spectre()  # à utiliser uniquement pour visualiser le spectre
+
+assert isinstance(testMatriceTFD2D, np.ndarray), "La matrice du spectre doit être un Numpy array."
+assert testMatriceTFD2D.ndim == 2, "La matrice du spectre doit être en 2D."
