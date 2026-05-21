@@ -11,6 +11,7 @@ from FiltrageGaussien import FiltrageGaussien
 
 
 class MainController:
+    # --------------------- Initialisation ------------------------
     def __init__(self, model, view):
         self.model = model
         self.view = view
@@ -24,7 +25,11 @@ class MainController:
     def _connect_signals(self):
         # bouton d'upload
         self.view.btn_upload.clicked.connect(self.handle_upload)
+        self.view.btn_gaussian.clicked.connect(self.handle_gaussian)
 
+    # -------------------------------------------------------------
+
+    # ------------------------- Handlers --------------------------
     def handle_upload(self):
         """
         Ouvre l'explorateur de fichiers, affiche l'image dans la View
@@ -45,6 +50,30 @@ class MainController:
 
             self._current_array = ImageConvertie(file_path).convertirEnNumpyArray()
 
+    def handle_gaussian(self):
+        """
+        Applique le filtre gaussien sur l'image courante
+        et affiche le résultat dans la View.
+        Nécessite qu'une image soit chargée (_current_array != None).
+        """
+
+        # on ne fait rien si aucune image n'est chargee
+        if self._current_array is None:
+            return
+
+        # Kernel 9×9 (noyau de convolution) — sigma=0 = auto calculé par OpenCV
+        kernel_size = 9
+        filtre = FiltrageGaussien((kernel_size, kernel_size), 0, self._current_array)
+
+        # Application du filtre -> retourne un np.ndarray
+        result_array = filtre.filtrage()
+
+        # Affichage du resultat via notre methode centrale
+        self._display_numpy_array(result_array)
+
+    # -------------------------------------------------------------
+
+    # ----------------------- Affichage ---------------------------
     def _display_numpy_array(self, array: np.ndarray):
         """
         Convertit un np.ndarray float32 2D [0,1] en QPixmap
@@ -73,23 +102,4 @@ class MainController:
         # Recalcul du rendu avec zoom si necessaire
         self.view.update_image_render()
 
-    def handle_gaussian(self):
-        """
-        Applique le filtre gaussien sur l'image courante
-        et affiche le résultat dans la View.
-        Nécessite qu'une image soit chargée (_current_array != None).
-        """
-
-        # on ne fait rien si aucune image n'est chargee
-        if self._current_array is None:
-            return
-
-        # Kernel 9×9 (noyau de convolution) — sigma=0 = auto calculé par OpenCV
-        kernel_size = 9
-        filtre = FiltrageGaussien((kernel_size, kernel_size), 0, self._current_array)
-
-        # Application du filtre -> retourne un np.ndarray
-        result_array = filtre.filtrage()
-
-        # Affichage du resultat via notre methode centrale
-        self._display_numpy_array(result_array)
+    # -------------------------------------------------------------
