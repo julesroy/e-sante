@@ -47,3 +47,7 @@ class UploadController:
 
             # Conversion en numpy array normalisé [0,1] pour les traitements ultérieurs
             self._current_array = ImageConvertie(file_path).convertirEnNumpyArray()
+
+            # Mémoriser le pixmap d'origine chargé depuis le fichier
+            if getattr(self.view, "current_pixmap", None) is not None:
+                self._original_pixmap = self.view.current_pixmap.copy()
