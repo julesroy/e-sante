@@ -25,7 +25,7 @@ class MainController:
     def _connect_signals(self):
         # bouton d'upload
         self.view.btn_upload.clicked.connect(self.handle_upload)
-        self.view.btn_gaussian.clicked.connect(self.handle_gaussian)
+       #self.view.btn_gaussian.clicked.connect(self.handle_gaussian)
 
     # -------------------------------------------------------------
 
