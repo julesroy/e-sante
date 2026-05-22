@@ -8,6 +8,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", "models"))
 
 from ImageConvertie import ImageConvertie
 from FiltrageGaussien import FiltrageGaussien
+from TFD2D import TFD2D
+
 
 
 class MainController:
@@ -18,14 +20,14 @@ class MainController:
 
         # Stockage de l'image courante sous forme numpy (float32 [0,1])
         # None tant qu'aucune image n'est chargee
-        self._current_array: np.array | None = None
+        self._current_array: np.ndarray | None = None
 
         self._connect_signals()
 
     def _connect_signals(self):
         # bouton d'upload
         self.view.btn_upload.clicked.connect(self.handle_upload)
-       #self.view.btn_gaussian.clicked.connect(self.handle_gaussian)
+        #self.view.btn_gaussian.clicked.connect(self.handle_gaussian)
 
     # -------------------------------------------------------------
 
@@ -88,7 +90,7 @@ class MainController:
 
         # QImage attend : data, largeur, hauteur, bytes_per_line, format
         # Format_Grayscale8 = 1 octet par pixel ce qui est parfait pour les images medicales
-        qimage = QImage(img_uint8.data, w, h, w, QImage.Format.Format_Grayscale8)
+        qimage = QImage(bytes(img_uint8.data), w, h, w, QImage.Format.Format_Grayscale8)
 
         # Conversion QImage -> QPixmap pour l'affichage dans un QLabel
         pixmap = QPixmap.fromImage(qimage)
