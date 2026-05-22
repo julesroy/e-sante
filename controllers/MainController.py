@@ -73,6 +73,20 @@ class MainController:
         # Affichage du resultat via notre methode centrale
         self._display_numpy_array(result_array)
 
+    def handle_tfd2d(self):
+        """
+        Applique la Transformée de Fourier Discrète 2D sur l'image courante
+        et affiche le spectre fréquentiel dans la View.
+        Le spectre est normalisé entre 0 et 1 avant affichage.
+        Nécessite qu'une image soit chargée (_current_array != None).
+        """
+        if self._current_array is None:
+            return
+        tfd2d = TFD2D(self._current_array)
+        spectre = tfd2d.calculerTFDSpectre()
+        self._display_numpy_array(spectre / spectre.max()) #normalise [0,1]
+
+
     # -------------------------------------------------------------
 
     # ----------------------- Affichage ---------------------------
