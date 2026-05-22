@@ -50,16 +50,16 @@ class CLAHE:
     
 
 # tests
-testCLAHEImage = ImageConvertie("COVID-1024.png").convertirEnNumpyArray()
+# testCLAHEImage = ImageConvertie("COVID-1024.png").convertirEnNumpyArray()
 
 # on applique le CLAHE à l'image d'origine pour améliorer le contraste avant de faire la TFD
-outil_clahe = CLAHE(5.0, (16, 16))
-imgContrastee = outil_clahe.appliquer(testCLAHEImage)
+# outil_clahe = CLAHE(5.0, (16, 16))
+# imgContrastee = outil_clahe.appliquer(testCLAHEImage)
 
 # passage à la TFD
-analyseur_tfd = TFD2D(imgContrastee)
-spectre = analyseur_tfd.calculerTFDSpectre()
+# analyseur_tfd = TFD2D(imgContrastee)
+# spectre = analyseur_tfd.calculerTFDSpectre()
 # analyseur_tfd.afficher_spectre()
 # analyseur_tfd.filtragePasseBas(90)  # appliquer un filtre passe-bas avec un rayon de coupure de 90 pixels
-image_reconstruite = analyseur_tfd.calculerTFDInverse()
-analyseur_tfd.afficher_image_reconstruite(image_reconstruite)
+# image_reconstruite = analyseur_tfd.calculerTFDInverse()
+# analyseur_tfd.afficher_image_reconstruite(image_reconstruite)
