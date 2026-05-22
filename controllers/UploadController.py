@@ -1,0 +1,47 @@
+# ===== IMPORTS PYTHON STANDARD =====
+from __future__ import annotations  # permet d'utiliser les annotations de type avant leur définition
+import sys, os
+
+# ===== IMPORTS UNIQUEMENT POUR PYLANCE (jamais exécutés) =====
+# Ces imports permettent à Pylance de connaître les types sans créer de dépendances circulaires
+from typing import TYPE_CHECKING
+from collections.abc import Callable
+if TYPE_CHECKING:
+    import numpy as np
+    from views.MainView import MainView
+
+# ===== IMPORTS PYQT6 =====
+from PyQt6.QtWidgets import QFileDialog
+
+# ===== IMPORTS DES MODÈLES =====
+# On ajoute le dossier models au path car ce fichier est dans controllers/
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "models"))
+from ImageConvertie import ImageConvertie
+
+
+class UploadController:
+    # Ces attributs appartiennent à MainController.
+    # On les déclare ici pour que Pylance sache qu'ils existent quand on y accède via self.
+    view: MainView
+    _current_array: np.ndarray | None
+
+    def handle_upload(self):
+        """
+        Ouvre l'explorateur de fichiers, affiche l'image dans la View
+        et stocke sa matrice numpy normalisée pour les traitements ultérieurs.
+        """
+        # Ouverture de l'explorateur de fichiers natif
+        file_path, _ = QFileDialog.getOpenFileName(
+            self.view,
+            "Sélectionner une radiographie",
+            "",
+            "Images (*.png *.jpg *.jpeg)",
+        )
+
+        # Si l'utilisateur a bien sélectionné un fichier
+        if file_path:
+            # Affichage brut de l'image dans la View
+            self.view.display_medical_image(file_path)
+
+            # Conversion en numpy array normalisé [0,1] pour les traitements ultérieurs
+            self._current_array = ImageConvertie(file_path).convertirEnNumpyArray()
