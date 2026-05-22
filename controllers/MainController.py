@@ -29,6 +29,8 @@ class MainController:
         self.view.top_toolbar.upload_clicked.connect(self.handle_upload)
         # bouton du filtre gaussien connecté via le bloc latéral gauche
         self.view.left_toolbar.gaussian_clicked.connect(self.handle_gaussian)
+        # bouton de la tfd2d
+        
 
     # -------------------------------------------------------------
 
@@ -85,7 +87,8 @@ class MainController:
             return
         tfd2d = TFD2D(self._current_array)
         spectre = tfd2d.calculerTFDSpectre()
-        self._display_numpy_array(spectre / spectre.max()) #normalise [0,1]
+        max_val = spectre.max()
+        self._display_numpy_array(spectre / max_val if max_val > 0 else spectre)
 
 
     # -------------------------------------------------------------
