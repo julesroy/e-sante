@@ -12,6 +12,7 @@ if TYPE_CHECKING:
 # ===== IMPORTS DES MODÈLES =====
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "models"))
 from TFD2D import TFD2D
+from CLAHE import CLAHE
 
 
 class AnalysisController:
@@ -39,3 +40,20 @@ class AnalysisController:
         # Normalisation [0,1] — on évite la division par zéro si le spectre est vide
         max_val = spectre.max()
         self._display_numpy_array(spectre / max_val if max_val > 0 else spectre)
+
+    def handle_clahe(self):
+        """
+        Applique le CLAHE (Contrast Limited Adaptive Histogram Equalization)
+        sur l'image courante et affiche le résultat dans la View.
+        Nécessite qu'une image soit chargée (_current_array != None).
+        """
+        # On ne fait rien si aucune image n'est chargée
+        if self._current_array is None:
+            return
+
+        # Application du CLAHE
+        clahe = CLAHE(5.0, (16, 16), self._current_array)
+        result = clahe.appliquer()
+
+        # Affichage du résultat
+        self._display_numpy_array(result)

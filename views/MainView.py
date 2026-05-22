@@ -95,7 +95,7 @@ class MedicalImageVisualizer(QScrollArea):
 class MainView(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Notre super projet e-santé")
+        self.setWindowTitle("PixelMed")
         self.resize(900, 650)
 
         # Variables pour stocker l'image active + zoom

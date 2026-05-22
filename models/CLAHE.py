@@ -9,34 +9,36 @@ class CLAHE:
     L'image d'entrée doit être une matrice Numpy 2D (niveaux de gris).
     """
 
-    def __init__(self, limitationContraste: float, tailleGrilleLocale: tuple):
+    def __init__(self, limitationContraste: float, tailleGrilleLocale: tuple, imageNpArray: np.ndarray):
         """
         Initialise les paramètres du CLAHE.
         :param limitationContraste: Seuil de limitation du contraste pour éviter d'amplifier le bruit.
         :param tailleGrilleLocale: Taille de la grille locale (nb_tuiles_hauteur, nb_tuiles_largeur).
+        :param imageNpArray: Matrice Numpy 2D de l'image d'origine.
         """
         self._limitationContraste = limitationContraste
         self._tailleGrilleLocale = tailleGrilleLocale
+        self._imageNpArray = imageNpArray
 
-    def appliquer(self, imageNpArray: np.ndarray) -> np.ndarray:
+    def appliquer(self):
         """
         Applique le traitement CLAHE sur la matrice passée en paramètre.
         :param imageNpArray: Matrice Numpy 2D de l'image d'origine.
         :return: Matrice Numpy 2D après égalisation locale du contraste.
         """
-        if imageNpArray is None:
+        if self._imageNpArray is None:
             raise ValueError("La matrice d'image fournie est vide.")
 
         # openCV a besoin d'une matrice en 8-bit (0-255) de type uint8 pour le CLAHE
-        if imageNpArray.dtype != np.uint8:
+        if self._imageNpArray.dtype != np.uint8:
             # si elle est entre 0 et 1, on multiplie par 255
-            if imageNpArray.max() <= 1.0:
-                img_8bit = (imageNpArray * 255).astype(np.uint8)
+            if self._imageNpArray.max() <= 1.0:
+                img_8bit = (self._imageNpArray * 255).astype(np.uint8)
             # sinon on convertit simplement en uint8
             else:
-                img_8bit = imageNpArray.astype(np.uint8)
+                img_8bit = self._imageNpArray.astype(np.uint8)
         else:
-            img_8bit = imageNpArray
+            img_8bit = self._imageNpArray
 
         # on crée l'objet CLAHE avec les paramètres spécifiés
         clahe_obj = cv2.createCLAHE(
@@ -46,15 +48,15 @@ class CLAHE:
 
         matrice_clahe = clahe_obj.apply(img_8bit) # on applique le CLAHE à l'image en niveaux de gris
 
-        return matrice_clahe
+        return matrice_clahe.astype(np.float32) / 255.0
     
 
 # tests
 # testCLAHEImage = ImageConvertie("COVID-1024.png").convertirEnNumpyArray()
 
 # on applique le CLAHE à l'image d'origine pour améliorer le contraste avant de faire la TFD
-# outil_clahe = CLAHE(5.0, (16, 16))
-# imgContrastee = outil_clahe.appliquer(testCLAHEImage)
+# outil_clahe = CLAHE(5.0, (16, 16), testCLAHEImage)
+# imgContrastee = outil_clahe.appliquer()
 
 # passage à la TFD
 # analyseur_tfd = TFD2D(imgContrastee)
