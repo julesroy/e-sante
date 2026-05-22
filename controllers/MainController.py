@@ -1,95 +1,42 @@
-from PyQt6.QtWidgets import QFileDialog
-from PyQt6.QtGui import QImage, QPixmap
+# ===== IMPORTS PYTHON STANDARD =====
+from __future__ import annotations
 import numpy as np
-import sys, os
 
-# j'ajoute le dossier model au path pour pouvoir importer depuis controllers/
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", "models"))
+# ===== IMPORTS UNIQUEMENT POUR PYLANCE (jamais exécutés) =====
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from views.MainView import MainView
 
-from ImageConvertie import ImageConvertie
-from FiltrageGaussien import FiltrageGaussien
-from TFD2D import TFD2D
+# ===== IMPORTS PYQT6 =====
+from PyQt6.QtGui import QImage, QPixmap
+
+# ===== IMPORTS DES SOUS-CONTROLLERS =====
+# MainController hérite de ces 3 classes — il récupère automatiquement tous leurs handlers
+from controllers.UploadController import UploadController
+from controllers.FilterController import FilterController
+from controllers.AnalysisController import AnalysisController
 
 
+class MainController(UploadController, FilterController, AnalysisController):
 
-class MainController:
     # --------------------- Initialisation ------------------------
-    def __init__(self, model, view):
+    def __init__(self, model, view: MainView):
         self.model = model
-        self.view = view
+        self.view: MainView = view
 
         # Stockage de l'image courante sous forme numpy (float32 [0,1])
-        # None tant qu'aucune image n'est chargee
+        # None tant qu'aucune image n'est chargée
         self._current_array: np.ndarray | None = None
 
         self._connect_signals()
 
     def _connect_signals(self):
-        # bouton d'upload connecté via le bloc supérieur
+        # Bouton d'upload connecté via le bloc toolbar supérieur
         self.view.top_toolbar.upload_clicked.connect(self.handle_upload)
-        # bouton du filtre gaussien connecté via le bloc latéral gauche
+        # Bouton du filtre gaussien connecté via le bloc toolbar latéral gauche
         self.view.left_toolbar.gaussian_clicked.connect(self.handle_gaussian)
-        # bouton de la tfd2d
-        
-
-    # -------------------------------------------------------------
-
-    # ------------------------- Handlers --------------------------
-    def handle_upload(self):
-        """
-        Ouvre l'explorateur de fichiers, affiche l'image dans la View
-        et stocke sa matrice numpy normalisée pour les traitements ultérieurs.
-        """
-        # explorateur de fichiers
-        file_path, _ = QFileDialog.getOpenFileName(
-            self.view,
-            "Sélectionner une radiographie",
-            "",
-            "Images (*.png *.jpg *.jpeg)",
-        )
-
-        # Si image on l'affiche
-        if file_path:
-            # affichage brut de l'image
-            self.view.display_medical_image(file_path)
-
-            self._current_array = ImageConvertie(file_path).convertirEnNumpyArray()
-
-    def handle_gaussian(self):
-        """
-        Applique le filtre gaussien sur l'image courante
-        et affiche le résultat dans la View.
-        Nécessite qu'une image soit chargée (_current_array != None).
-        """
-
-        # on ne fait rien si aucune image n'est chargee
-        if self._current_array is None:
-            return
-
-        # Kernel 9×9 (noyau de convolution) — sigma=0 = auto calculé par OpenCV
-        kernel_size = 9
-        filtre = FiltrageGaussien((kernel_size, kernel_size), 0, self._current_array)
-
-        # Application du filtre -> retourne un np.ndarray
-        result_array = filtre.filtrage()
-
-        # Affichage du resultat via notre methode centrale
-        self._display_numpy_array(result_array)
-
-    def handle_tfd2d(self):
-        """
-        Applique la Transformée de Fourier Discrète 2D sur l'image courante
-        et affiche le spectre fréquentiel dans la View.
-        Le spectre est normalisé entre 0 et 1 avant affichage.
-        Nécessite qu'une image soit chargée (_current_array != None).
-        """
-        if self._current_array is None:
-            return
-        tfd2d = TFD2D(self._current_array)
-        spectre = tfd2d.calculerTFDSpectre()
-        max_val = spectre.max()
-        self._display_numpy_array(spectre / max_val if max_val > 0 else spectre)
-
+        # Bouton TFD2D — à décommenter quand Simon push le signal tfd_clicked
+        # self.view.left_toolbar.tfd_clicked.connect(self.handle_tfd2d)
 
     # -------------------------------------------------------------
 
@@ -101,27 +48,31 @@ class MainController:
 
         :param array: Matrice 2D numpy float32, valeurs entre 0 et 1.
         """
-        # on denormalise : on repasse de [0,1] a [0,255] pour QImage
+        # On dénormalise : on repasse de [0,1] à [0,255] pour QImage
         img_uint8 = (array * 255).astype(np.uint8)
 
         h, w = img_uint8.shape  # hauteur et largeur de l'image
 
         # QImage attend : data, largeur, hauteur, bytes_per_line, format
-        # Format_Grayscale8 = 1 octet par pixel ce qui est parfait pour les images medicales
+        # Format_Grayscale8 = 1 octet par pixel, parfait pour les images médicales
+        # bytes() évite le warning Pylance sur memoryview
         qimage = QImage(bytes(img_uint8.data), w, h, w, QImage.Format.Format_Grayscale8)
-        
-        # que l'image ne disparaisse lorsque la fonction se termine.
+
+        # .copy() force Qt à copier les données en mémoire
+        # sans ça, l'image disparaît dès que la fonction se termine
         qimage = qimage.copy()
+
         # Conversion QImage -> QPixmap pour l'affichage dans un QLabel
         pixmap = QPixmap.fromImage(qimage)
 
-        # Activation du zoom (current_file_path doit etre non-None)
+        # "from_controller" signale à la View que le pixmap vient d'un traitement
+        # et non d'un fichier disque — active le zoom sans recharger le fichier
         self.view.current_file_path = "from_controller"
 
-        # Envoie a la View : on set le pixmap directement sur le QLabel
+        # Stockage du pixmap dans la View pour que le resize fonctionne correctement
         self.view.current_pixmap = pixmap
 
-        # Recalcul du rendu avec zoom si necessaire
+        # Recalcul du rendu avec zoom si nécessaire
         self.view.update_image_render()
 
     # -------------------------------------------------------------
