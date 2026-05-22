@@ -2,6 +2,8 @@ from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QGri
 from PyQt6.QtCore import Qt, QPoint, pyqtSignal
 from PyQt6.QtGui import QPixmap, QGuiApplication
 
+from views.LeftToolBar import LeftToolbar
+from views.TopToolbar import TopToolbar
 
 # --- Zoom et déplacement ---
 class MedicalImageVisualizer(QScrollArea):
@@ -15,6 +17,7 @@ class MedicalImageVisualizer(QScrollArea):
 
     def wheelEvent(self, event):
         """scroll molette = zoom fluide et surle curseur"""
+        # MODIFICATION STRICTE : On autorise le zoom si un Pixmap est chargé, même sans fichier disque
         if not self.main_view or self.main_view.current_pixmap is None:
             event.ignore()
             return
@@ -88,46 +91,6 @@ class MedicalImageVisualizer(QScrollArea):
         else:
             event.ignore()
 
-
-# --- BLOC TOOLBAR SUPÉRIEURE ---
-class TopToolbar(QWidget):
-    upload_clicked = pyqtSignal()
-    reset_clicked = pyqtSignal()
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.layout = QHBoxLayout(self)
-        self.layout.setContentsMargins(10, 5, 10, 5)
-        
-        self.btn_upload = QPushButton("Ouvrir une radiographie")
-        self.btn_zoom_reset = QPushButton("Ajuster")
-        
-        self.layout.addWidget(self.btn_upload)
-        self.layout.addWidget(self.btn_zoom_reset)
-        self.layout.addStretch()
-        
-        self.btn_upload.clicked.connect(self.upload_clicked.emit)
-        self.btn_zoom_reset.clicked.connect(self.reset_clicked.emit)
-
-
-# --- BLOC TOOLBAR LATÉRALE GAUCHE ---
-class LeftToolbar(QWidget):
-    gaussian_clicked = pyqtSignal()
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.layout = QVBoxLayout(self)
-        self.layout.setContentsMargins(10, 15, 10, 15)
-        self.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        
-        self.btn_gaussian = QPushButton("Filtre Gaussien")
-        self.btn_gaussian.setFixedWidth(120)
-        
-        self.layout.addWidget(self.btn_gaussian)
-        
-        self.btn_gaussian.clicked.connect(self.gaussian_clicked.emit)
-
-
 # --- FENÊTRE PRINCIPALE ---
 class MainView(QMainWindow):
     def __init__(self):
@@ -137,7 +100,7 @@ class MainView(QMainWindow):
 
         # Variables pour stocker l'image active + zoom
         self.current_file_path = None
-        self.current_pixmap = None  # Référence stable vers les pixels affichés
+        self.current_pixmap = None  # NOUVEAU : Référence stable vers les pixels affichés
         self.zoom_factor = 1.0
 
         # Centrage automatique au milieu de l'écran
@@ -182,27 +145,19 @@ class MainView(QMainWindow):
     def display_medical_image(self, file_path: str):
         """Enregistre le fichier et force le premier rendu."""
         self.current_file_path = file_path
-        self.current_pixmap = None  # On remet à zéro pour forcer la lecture propre au premier rendu
+        self.current_pixmap = QPixmap(file_path)  # On mémorise les pixels d'origine
         self.zoom_factor = 1.0
         self.update_image_render()
 
     def update_image_render(self):
         """Calcule la taille idéale de l'image en tenant compte du zoom et de la fenêtre."""
-        if not self.current_file_path:
-            return
-
-        # CORRECTION DU SÉCURITÉ : Si on est sur une image classique (disque), on ne charge le pixmap 
-        # que s'il n'est pas déjà en mémoire. Cela évite le crash et permet le zoom fluide.
-        if self.current_pixmap is None and self.current_file_path != "from_controller":
-            self.current_pixmap = QPixmap(self.current_file_path)
-
         if self.current_pixmap is None:
             return
 
         available_width = self.scroll_area.width() - 5
         available_height = self.scroll_area.height() - 5
 
-        # Rendu basé sur le Pixmap mémorisé
+        # MODIFICATION STRICTE : On fait le redimensionnement sur le Pixmap actif au lieu de relire le disque
         scaled_pixmap = self.current_pixmap.scaled(
             available_width,
             available_height,
@@ -226,8 +181,9 @@ class MainView(QMainWindow):
     def resizeEvent(self, event):
         """Fonction native PyQt déclenchée AUTOMATIQUEMENT au redimensionnement."""
         super().resizeEvent(event)
-        if self.current_file_path:
-            self.update_image_render()
+        if self.current_pixmap is None:
+            return
+        self.update_image_render()
 
     def center_on_screen(self):
         """Calcule le centre de l'écran de l'utilisateur et y place la fenêtre."""

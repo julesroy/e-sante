@@ -25,8 +25,10 @@ class MainController(UploadController, FilterController, AnalysisController):
         self.view: MainView = view
 
         # Stockage de l'image courante sous forme numpy (float32 [0,1])
-        # None tant qu'aucune image n'est chargée
         self._current_array: np.ndarray | None = None
+        
+        # AJOUT : Stockage du QPixmap d'origine brute (en mémoire RAM)
+        self._original_pixmap: QPixmap | None = None
 
         self._connect_signals()
 
@@ -35,8 +37,10 @@ class MainController(UploadController, FilterController, AnalysisController):
         self.view.top_toolbar.upload_clicked.connect(self.handle_upload)
         # Bouton du filtre gaussien connecté via le bloc toolbar latéral gauche
         self.view.left_toolbar.gaussian_clicked.connect(self.handle_gaussian)
-        # Bouton TFD2D — à décommenter quand Simon push le signal tfd_clicked
-        # self.view.left_toolbar.tfd_clicked.connect(self.handle_tfd2d)
+        # Bouton TFD2D
+        self.view.left_toolbar.tfd2d_clicked.connect(self.handle_tfd2d)
+        # Bouton "Origine"
+        self.view.left_toolbar.reset_image_clicked.connect(self.handle_reset_image)
 
     # -------------------------------------------------------------
 
@@ -65,6 +69,9 @@ class MainController(UploadController, FilterController, AnalysisController):
         # Conversion QImage -> QPixmap pour l'affichage dans un QLabel
         pixmap = QPixmap.fromImage(qimage)
 
+        if self._original_pixmap is None:
+            self._original_pixmap = pixmap.copy()  # On mémorise le pixmap d'origine pour les restaurations futures
+
         # "from_controller" signale à la View que le pixmap vient d'un traitement
         # et non d'un fichier disque — active le zoom sans recharger le fichier
         self.view.current_file_path = "from_controller"
@@ -75,4 +82,22 @@ class MainController(UploadController, FilterController, AnalysisController):
         # Recalcul du rendu avec zoom si nécessaire
         self.view.update_image_render()
 
-    # -------------------------------------------------------------
+    def handle_reset_image(self):
+        """
+        Réaffiche instantanément la radiographie d'origine 
+        en écrasant l'image courante par le Pixmap d'origine gardé en cache RAM.
+        """
+        if self._original_pixmap is None:
+            return  # Rien à réinitialiser si rien n'est chargé
+            
+        print("Réaffichage instantané de l'image d'origine depuis la RAM...")
+        
+        # On remet le facteur de zoom de la vue à 1.0 pour un reset visuel propre
+        self.view.zoom_factor = 1.0
+        
+        # On donne à la vue une copie propre du Pixmap brut de départ
+        self.view.current_pixmap = self._original_pixmap.copy()
+        
+        # On demande à la vue de mettre à jour le QLabel à l'écran
+        self.view.update_image_render()
+        # -------------------------------------------------------------

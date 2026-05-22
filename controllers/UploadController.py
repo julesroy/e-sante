@@ -40,8 +40,10 @@ class UploadController:
 
         # Si l'utilisateur a bien sélectionné un fichier
         if file_path:
+            self._original_pixmap = None
             # Affichage brut de l'image dans la View
             self.view.display_medical_image(file_path)
+            self._last_file_path = file_path
 
             # Conversion en numpy array normalisé [0,1] pour les traitements ultérieurs
             self._current_array = ImageConvertie(file_path).convertirEnNumpyArray()
