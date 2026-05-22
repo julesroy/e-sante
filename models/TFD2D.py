@@ -59,34 +59,71 @@ class TFD2D:
         Permet de calculer la TFD inverse à partir de la TFD complexe stockée précédemment.
         :return: Matrice de l'image reconstruite à partir de la TFD inverse (Numpy 2D array).
         """
-        f_ishift = np.fft.ifftshift(self._fshift_complexe) # on inverse le décalage pour remettre les basses fréquences à leur position d'origine
-        img_complexe = np.fft.ifft2(f_ishift) # on applique la TFD inverse pour reconstruire l'image à partir de la TFD complexe
-        img_reconstruite = np.abs(img_complexe) # on prend la partie réelle de l'image reconstruite
+        f_ishift = np.fft.ifftshift(self._fshift_complexe)  # on inverse le décalage pour remettre les basses fréquences à leur position d'origine
+        img_complexe = np.fft.ifft2(f_ishift)  # on applique la TFD inverse pour reconstruire l'image à partir de la TFD complexe
+        img_reconstruite = np.abs(img_complexe)  # on prend la partie réelle de l'image reconstruite
 
         return img_reconstruite
-    
+
     # pareil pas utile directement mais je voulais voir si l'image reconstruite ressemblait bien à l'image d'origine
     def afficher_image_reconstruite(self, image_reconstruite: np.ndarray):
         """
         Affiche l'image reconstruite après la TFD Inverse.
         :param image_reconstruite: Matrice Numpy 2D retournée par calculerTFDInverse().
         """
-        fig, axes = plt.subplots(1, 1, figsize=(6, 6))
-        
-        axes.imshow(image_reconstruite, cmap="gray")
-        axes.set_title("Image Reconstruite (TFDI)")
-        axes.axis("off")
+        fig, axes = plt.subplots(1, 2, figsize=(12, 6))
+
+        axes[0].imshow(self._imageNpArray, cmap="gray")
+        axes[0].set_title("Image d'Origine")
+        axes[0].axis("off")
+
+        axes[1].imshow(image_reconstruite, cmap="gray")
+        axes[1].set_title("Image Reconstruite (TFDI)")
+        axes[1].axis("off")
 
         plt.tight_layout()
         plt.show()
 
+    def filtragePasseBas(self, rayon_coupure: int):
+        """
+        Applique un filtre passe-bas dit 'idéal' en ne gardant que les fréquences
+        situées dans un cercle central de rayon 'rayon_coupure'.
+        :param rayon_coupure: Rayon du cercle en pixels (plus il est petit, plus le flou est fort).
+        :return: Matrice de l'image filtrée.
+        """
+        if self._fshift_complexe is None:
+            raise ValueError("Le spectre doit être calculé avec calculerTFDSpectre().")
+
+        hauteur, largeur = self._fshift_complexe.shape  # on récupère les dimensions de la TFD pour créer le masque
+        centre_y, centre_x = (
+            hauteur // 2,
+            largeur // 2,
+        )  # on calcule les coordonnées du centre du spectre (où se trouvent les basses fréquences) pour centrer notre cercle de filtrage autour de ce point
+
+        y, x = np.ogrid[
+            :hauteur, :largeur
+        ]  # on crée des grilles de coordonnées pour chaque pixel du spectre, ce qui nous permettra de calculer la distance de chaque pixel au centre du spectre et de déterminer s'il est à l'intérieur ou à l'extérieur du cercle de filtrage
+
+        # équation d'un cercle : (x - x0)^2 + (y - y0)^2 <= R^2
+        masque_circulaire = ((x - centre_x) ** 2 + (y - centre_y) ** 2 <= rayon_coupure**2).astype(
+            float
+        )  # on crée un masque binaire où les pixels à l'intérieur du cercle de rayon 'rayon_coupure' sont égaux à 1 (conservés) et les pixels à l'extérieur sont égaux à 0 (filtrés)
+
+        self._fshift_complexe = (
+            self._fshift_complexe * masque_circulaire
+        )  # on applique le masque de filtrage à la TFD complexe en multipliant élément par élément, ce qui conserve les fréquences à l'intérieur du cercle et supprime les fréquences à l'extérieur
+
+        return self._fshift_complexe
+
+
 # tests
 # testImageConvertie = ImageConvertie("COVID-1024.png").convertirEnNumpyArray()
-# testImageConvertie = FiltrageGaussien((5, 5), 0, testImageConvertie).filtrage() # uniquement si on veut appliquer un filtre avant de calculer la TFD
+# testImageConvertie = FiltrageGaussien((5, 5), 0, testImageConvertie).filtrage() # uniquement si on veut appliquer un filtre Gaussien avant de calculer la TFD
 # testTFD2D = TFD2D(testImageConvertie)
 # testMatriceTFD2D = testTFD2D.calculerTFDSpectre()
 # print(type(testMatriceTFD2D))  # type de la matrice du spectre
 # testTFD2D.afficher_spectre()  # à utiliser uniquement pour visualiser le spectre
+# testTFD2D.filtragePasseBas(90)  # appliquer un filtre passe-bas avec un rayon de coupure de 50 pixels
 # testImageReconstruite = testTFD2D.calculerTFDInverse()
 # testTFD2D.afficher_image_reconstruite(testImageReconstruite)
 
