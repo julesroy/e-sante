@@ -1,5 +1,5 @@
-from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QScrollArea
-from PyQt6.QtCore import Qt, QPoint
+from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QPushButton, QLabel, QScrollArea
+from PyQt6.QtCore import Qt, QPoint, pyqtSignal
 from PyQt6.QtGui import QPixmap, QGuiApplication
 
 
@@ -9,14 +9,13 @@ class MedicalImageVisualizer(QScrollArea):
         super().__init__(parent)
         self.setWidgetResizable(True)
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.setStyleSheet("background-color: #111111; border: 2px dashed #333333;")
 
         # Référence vers la vue principale pour accéder au zoom_factor
         self.main_view = parent
 
     def wheelEvent(self, event):
         """scroll molette = zoom fluide et surle curseur"""
-        if not self.main_view or not self.main_view.current_file_path:
+        if not self.main_view or self.main_view.current_pixmap is None:
             event.ignore()
             return
 
@@ -26,7 +25,7 @@ class MedicalImageVisualizer(QScrollArea):
         delta_y = event.angleDelta().y()
         delta_x = event.angleDelta().x()
 
-        # On utilise le delta vertical s'il existe, sinon le horizontal (pour certaines molettes)
+        # On utilise le delta vertical s'il existe, sinon le horizontal
         delta = delta_y if delta_y != 0 else delta_x
         pas_deplacement = 15
 
@@ -90,15 +89,55 @@ class MedicalImageVisualizer(QScrollArea):
             event.ignore()
 
 
+# --- BLOC TOOLBAR SUPÉRIEURE ---
+class TopToolbar(QWidget):
+    upload_clicked = pyqtSignal()
+    reset_clicked = pyqtSignal()
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.layout = QHBoxLayout(self)
+        self.layout.setContentsMargins(10, 5, 10, 5)
+        
+        self.btn_upload = QPushButton("Ouvrir une radiographie")
+        self.btn_zoom_reset = QPushButton("Ajuster")
+        
+        self.layout.addWidget(self.btn_upload)
+        self.layout.addWidget(self.btn_zoom_reset)
+        self.layout.addStretch()
+        
+        self.btn_upload.clicked.connect(self.upload_clicked.emit)
+        self.btn_zoom_reset.clicked.connect(self.reset_clicked.emit)
+
+
+# --- BLOC TOOLBAR LATÉRALE GAUCHE ---
+class LeftToolbar(QWidget):
+    gaussian_clicked = pyqtSignal()
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.layout = QVBoxLayout(self)
+        self.layout.setContentsMargins(10, 15, 10, 15)
+        self.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        
+        self.btn_gaussian = QPushButton("Filtre Gaussien")
+        self.btn_gaussian.setFixedWidth(120)
+        
+        self.layout.addWidget(self.btn_gaussian)
+        
+        self.btn_gaussian.clicked.connect(self.gaussian_clicked.emit)
+
+
 # --- FENÊTRE PRINCIPALE ---
 class MainView(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Notre super projet e-santé")
-        self.resize(600, 500)
+        self.resize(900, 650)
 
         # Variables pour stocker l'image active + zoom
         self.current_file_path = None
+        self.current_pixmap = None  # Référence stable vers les pixels affichés
         self.zoom_factor = 1.0
 
         # Centrage automatique au milieu de l'écran
@@ -108,32 +147,42 @@ class MainView(QMainWindow):
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
         self.layout = QVBoxLayout(self.central_widget)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setSpacing(0)
 
-        # widgets
-        self.toolbar_layout = QHBoxLayout()
-        self.btn_upload = QPushButton("Ouvrir une radiographie")
-        self.btn_zoom_reset = QPushButton("Ajuster")
-        self.toolbar_layout.addWidget(self.btn_upload)
-        self.toolbar_layout.addWidget(self.btn_zoom_reset)
-        self.layout.addLayout(self.toolbar_layout)
+        # Intégration du bloc toolbar du haut
+        self.top_toolbar = TopToolbar(self)
+        self.layout.addWidget(self.top_toolbar)
 
-        # visualisation img via notre classe spécialisée
+        # Grille pour la superposition
+        self.viewer_container = QWidget()
+        self.grid_layout = QGridLayout(self.viewer_container)
+        self.grid_layout.setContentsMargins(0, 0, 0, 0)
+
+        # Couche N°1 : Le visualiseur d'images
         self.scroll_area = MedicalImageVisualizer(self)
-
         self.image_display = QLabel("Aucune radiographie chargée.")
+        self.image_display.setObjectName("PlaceholderLabel")
         self.image_display.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.image_display.setStyleSheet("color: #888888; font-size: 16px; background-color: transparent;")
-
-        # zone scrollable
         self.scroll_area.setWidget(self.image_display)
-        self.layout.addWidget(self.scroll_area)
+        self.grid_layout.addWidget(self.scroll_area, 0, 0)
 
-        # connexion bouton d'ajustement
+        # Couche N°2 : La barre latérale translucide
+        self.left_toolbar = LeftToolbar(self)
+        self.grid_layout.addWidget(self.left_toolbar, 0, 0, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+
+        self.grid_layout.setContentsMargins(15, 15, 15, 15)
+
+        self.layout.addWidget(self.viewer_container)
+
+        # Passerelles locales pour préserver la logique interne de la vue
+        self.btn_zoom_reset = self.top_toolbar.btn_zoom_reset
         self.btn_zoom_reset.clicked.connect(self.zoom_reset)
 
     def display_medical_image(self, file_path: str):
         """Enregistre le fichier et force le premier rendu."""
         self.current_file_path = file_path
+        self.current_pixmap = None  # On remet à zéro pour forcer la lecture propre au premier rendu
         self.zoom_factor = 1.0
         self.update_image_render()
 
@@ -142,13 +191,19 @@ class MainView(QMainWindow):
         if not self.current_file_path:
             return
 
-        pixmap = QPixmap(self.current_file_path)
+        # CORRECTION DU SÉCURITÉ : Si on est sur une image classique (disque), on ne charge le pixmap 
+        # que s'il n'est pas déjà en mémoire. Cela évite le crash et permet le zoom fluide.
+        if self.current_pixmap is None and self.current_file_path != "from_controller":
+            self.current_pixmap = QPixmap(self.current_file_path)
 
-        available_width = self.scroll_area.width() - 25
-        available_height = self.scroll_area.height() - 25
+        if self.current_pixmap is None:
+            return
 
-        # base scale
-        scaled_pixmap = pixmap.scaled(
+        available_width = self.scroll_area.width() - 5
+        available_height = self.scroll_area.height() - 5
+
+        # Rendu basé sur le Pixmap mémorisé
+        scaled_pixmap = self.current_pixmap.scaled(
             available_width,
             available_height,
             Qt.AspectRatioMode.KeepAspectRatio,
@@ -185,6 +240,6 @@ class MainView(QMainWindow):
 
     # --- LOUPE ---
     def zoom_reset(self):
-        if self.current_file_path:
+        if self.current_pixmap is not None:
             self.zoom_factor = 1.0
             self.update_image_render()

@@ -25,9 +25,10 @@ class MainController:
         self._connect_signals()
 
     def _connect_signals(self):
-        # bouton d'upload
-        self.view.btn_upload.clicked.connect(self.handle_upload)
-        #self.view.btn_gaussian.clicked.connect(self.handle_gaussian)
+        # bouton d'upload connecté via le bloc supérieur
+        self.view.top_toolbar.upload_clicked.connect(self.handle_upload)
+        # bouton du filtre gaussien connecté via le bloc latéral gauche
+        self.view.left_toolbar.gaussian_clicked.connect(self.handle_gaussian)
 
     # -------------------------------------------------------------
 
@@ -91,7 +92,9 @@ class MainController:
         # QImage attend : data, largeur, hauteur, bytes_per_line, format
         # Format_Grayscale8 = 1 octet par pixel ce qui est parfait pour les images medicales
         qimage = QImage(bytes(img_uint8.data), w, h, w, QImage.Format.Format_Grayscale8)
-
+        
+        # que l'image ne disparaisse lorsque la fonction se termine.
+        qimage = qimage.copy()
         # Conversion QImage -> QPixmap pour l'affichage dans un QLabel
         pixmap = QPixmap.fromImage(qimage)
 
@@ -99,7 +102,7 @@ class MainController:
         self.view.current_file_path = "from_controller"
 
         # Envoie a la View : on set le pixmap directement sur le QLabel
-        self.view.image_display.setPixmap(pixmap)
+        self.view.current_pixmap = pixmap
 
         # Recalcul du rendu avec zoom si necessaire
         self.view.update_image_render()
