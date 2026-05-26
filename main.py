@@ -1,6 +1,7 @@
 import os
 import sys
 from PyQt6.QtWidgets import QApplication
+from PyQt6.QtGui import QFontDatabase 
 
 from models.MainModel import MainModel
 from views.MainView import MainView
@@ -12,7 +13,12 @@ def main():
     Point d'entrée du logiciel.
     """
     app = QApplication(sys.argv)
-
+    font_path = os.path.join(os.path.dirname(__file__), "assets", "styles", "fonts", "fontawesome-webfont.ttf")
+    if os.path.exists(font_path):
+        # On enregistre la police dans le système de PyQt
+        QFontDatabase.addApplicationFont(font_path)
+    else:
+        print(f"Attention : Police FontAwesome introuvable à {font_path}")
     # chemin absolu vers le fichier QSS (évite les erreurs de chemin relatif)
     style_path = os.path.join(os.path.dirname(__file__), "assets", "styles", "style.qss")
 
