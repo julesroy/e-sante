@@ -6,6 +6,8 @@ class LeftToolbar(QWidget):
     reset_image_clicked = pyqtSignal()
     gaussian_clicked = pyqtSignal()
     tfd2d_clicked = pyqtSignal()
+    low_pass_clicked = pyqtSignal()
+    high_pass_clicked = pyqtSignal()
     clahe_clicked = pyqtSignal()
 
     def __init__(self, parent=None):
@@ -40,7 +42,21 @@ class LeftToolbar(QWidget):
         self.btn_tfd2d.setToolTip("Calculer la Transformée de Fourier (TFD 2D)")
         toolbar_layout.addWidget(self.btn_tfd2d)
         
-        # 4. Btn CLAHE 
+        # 4 .Btn fréq PASSE-BAS
+        self.btn_low_pass = QPushButton("\uf103")
+        self.btn_low_pass.setFont(icon_font)
+        self.btn_low_pass.setFixedSize(button_size, button_size)
+        self.btn_low_pass.setToolTip("Appliquer un Filtre Passe-Bas (Fréquentiel)")
+        toolbar_layout.addWidget(self.btn_low_pass)
+
+        # 5. Btn fréq PASSE-HAUT
+        self.btn_high_pass = QPushButton("\uf102")
+        self.btn_high_pass.setFont(icon_font)
+        self.btn_high_pass.setFixedSize(button_size, button_size)
+        self.btn_high_pass.setToolTip("Appliquer un Filtre Passe-Haut (Fréquentiel)")
+        toolbar_layout.addWidget(self.btn_high_pass)
+
+        # 6. Btn CLAHE 
         self.btn_clahe = QPushButton("\uf042")
         self.btn_clahe.setFont(icon_font)
         self.btn_clahe.setFixedSize(button_size, button_size)
@@ -51,4 +67,6 @@ class LeftToolbar(QWidget):
         self.btn_origin.clicked.connect(self.reset_image_clicked.emit)
         self.btn_gaussian.clicked.connect(self.gaussian_clicked.emit)
         self.btn_tfd2d.clicked.connect(self.tfd2d_clicked.emit)
+        self.btn_low_pass.clicked.connect(self.low_pass_clicked.emit)
+        self.btn_high_pass.clicked.connect(self.high_pass_clicked.emit)
         self.btn_clahe.clicked.connect(self.clahe_clicked.emit)

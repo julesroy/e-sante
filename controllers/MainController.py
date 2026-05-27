@@ -43,9 +43,9 @@ class MainController(UploadController, FilterController, AnalysisController):
         # Bouton CLAHE
         self.view.left_toolbar.clahe_clicked.connect(self.handle_clahe)
         # Bouton Filtre Passe-Bas
-        self.view.top_toolbar.low_pass_clicked.connect(self.handle_passe_bas)
+        self.view.left_toolbar.low_pass_clicked.connect(self.handle_passe_bas)
         # Bouton Filtre Passe-Haut
-        self.view.top_toolbar.high_pass_clicked.connect(self.handle_passe_haut)
+        self.view.left_toolbar.high_pass_clicked.connect(self.handle_passe_haut)
 
         
     # -------------------------------------------------------------
@@ -106,4 +106,3 @@ class MainController(UploadController, FilterController, AnalysisController):
         
         # On demande à la vue de mettre à jour le QLabel à l'écran
         self.view.update_image_render()
-        # -------------------------------------------------------------
