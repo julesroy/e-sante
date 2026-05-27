@@ -43,7 +43,10 @@ class MainController(UploadController, FilterController, AnalysisController):
         self.view.left_toolbar.reset_image_clicked.connect(self.handle_reset_image)
         # Bouton CLAHE
         self.view.left_toolbar.clahe_clicked.connect(self.handle_clahe)
-
+        # Bouton Filtre Passe-Bas
+        self.view.top_toolbar.low_pass_clicked.connect(self.handle_passe_bas)
+        # Bouton Filtre Passe-Haut
+        #self.view.top_toolbar.high_pass_clicked.connect(self.handle_passe_haut)
     # -------------------------------------------------------------
 
     # ----------------------- Affichage ---------------------------

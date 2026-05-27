@@ -1,6 +1,7 @@
 # ===== IMPORTS PYTHON STANDARD =====
 from __future__ import annotations
 import sys, os
+from PyQt6.QtWidgets import QDialog
 
 # ===== IMPORTS UNIQUEMENT POUR PYLANCE (jamais exécutés) =====
 from typing import TYPE_CHECKING
@@ -12,6 +13,7 @@ if TYPE_CHECKING:
 # ===== IMPORTS DES MODÈLES =====
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "models"))
 from FiltrageGaussien import FiltrageGaussien
+from views.PopupFFT import FilterDialog
 
 
 class FilterController:
@@ -40,3 +42,25 @@ class FilterController:
 
         # Affichage du résultat via la méthode centrale de rendu
         self._display_numpy_array(result_array)
+
+    def handle_passe_bas(self):
+        """
+        Ouvre simplement la popup et permet de choisir une fréquence
+        via le slider, sans modifier la radiographie en arrière-plan.
+        """
+        # Sécurité : on n'ouvre pas la popup si aucune radiographie n'est chargée
+        if self._current_array is None:
+            return
+
+        # 1. On crée la popup (importée depuis views.PopupFFT)
+        dialog = FilterDialog(self.view)
+
+        # 2. On l'affiche à l'écran de manière modale.
+        # L'application attend ici tant que l'utilisateur n'a pas validé ou fermé.
+        if dialog.exec():
+            # Récupération de la valeur finale choisie sur le slider au moment du clic sur "Appliquer"
+            valeur_choisie = dialog.slider.value()
+            print(f"Popup fermée. Fréquence sélectionnée par l'utilisateur : {valeur_choisie}")
+            
+            # C'est ici que votre collègue ajoutera plus tard la ligne pour appliquer le vrai filtre :
+            # ex: self.appliquer_vrai_filtre_frequentiel(valeur_choisie)
