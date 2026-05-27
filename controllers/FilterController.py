@@ -46,21 +46,30 @@ class FilterController:
     def handle_passe_bas(self):
         """
         Ouvre simplement la popup et permet de choisir une fréquence
-        via le slider, sans modifier la radiographie en arrière-plan.
+        via le slider
         """
-        # Sécurité : on n'ouvre pas la popup si aucune radiographie n'est chargée
         if self._current_array is None:
             return
 
-        # 1. On crée la popup (importée depuis views.PopupFFT)
         dialog = FilterDialog(self.view)
+        dialog.setWindowTitle("Filtre Passe-Bas")
 
-        # 2. On l'affiche à l'écran de manière modale.
-        # L'application attend ici tant que l'utilisateur n'a pas validé ou fermé.
         if dialog.exec():
-            # Récupération de la valeur finale choisie sur le slider au moment du clic sur "Appliquer"
             valeur_choisie = dialog.slider.value()
-            print(f"Popup fermée. Fréquence sélectionnée par l'utilisateur : {valeur_choisie}")
-            
-            # C'est ici que votre collègue ajoutera plus tard la ligne pour appliquer le vrai filtre :
-            # ex: self.appliquer_vrai_filtre_frequentiel(valeur_choisie)
+            print(f"Popup Passe-Bas fermée. Fréquence sélectionnée : {valeur_choisie}")
+
+    def handle_passe_haut(self):
+        """
+        Ouvre la popup pour le filtre Passe-Haut et permet de choisir 
+        une fréquence via le slider
+        """
+        # Sécurité : image chargée obligatoire
+        if self._current_array is None:
+            return
+
+        dialog = FilterDialog(self.view)
+        dialog.setWindowTitle("Filtre Passe-Haut")
+
+        if dialog.exec():
+            valeur_choisie = dialog.slider.value()
+            print(f"Popup Passe-Haut fermée. Fréquence sélectionnée : {valeur_choisie}")
