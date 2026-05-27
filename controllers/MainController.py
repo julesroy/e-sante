@@ -14,6 +14,7 @@ from PyQt6.QtGui import QImage, QPixmap
 from controllers.UploadController import UploadController
 from controllers.FilterController import FilterController
 from controllers.AnalysisController import AnalysisController
+from controllers.ErrorController import ErrorController
 
 
 class MainController(UploadController, FilterController, AnalysisController):
@@ -22,6 +23,7 @@ class MainController(UploadController, FilterController, AnalysisController):
     def __init__(self, model, view: MainView):
         self.model = model
         self.view: MainView = view
+        self.error_handler = ErrorController(parent_window=self.view)
 
         # Stockage de l'image courante sous forme numpy (float32 [0,1])
         self._current_array: np.ndarray | None = None

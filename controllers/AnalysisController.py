@@ -8,6 +8,7 @@ from collections.abc import Callable
 if TYPE_CHECKING:
     import numpy as np
     from views.MainView import MainView
+    from controllers.ErrorController import ErrorController
 
 # ===== IMPORTS DES MODÈLES =====
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "models"))
@@ -21,7 +22,7 @@ class AnalysisController:
     view: MainView
     _current_array: np.ndarray | None
     _display_numpy_array: Callable
-
+    error_handler: ErrorController
     def handle_tfd2d(self):
         """
         Applique la Transformée de Fourier Discrète 2D sur l'image courante
@@ -30,16 +31,25 @@ class AnalysisController:
         Nécessite qu'une image soit chargée (_current_array != None).
         """
         # On ne fait rien si aucune image n'est chargée
-        if self._current_array is None:
+        try:
+            if self._current_array is None:
+                self.error_handler.show_error(
+                    "Erreur",
+                    "Aucune image chargée"
+                )
+                return
+
+            # Calcul du spectre fréquentiel via la TFD2D
+            tfd2d = TFD2D(self._current_array)
+            spectre = tfd2d.calculerTFDSpectre()
+
+            # Normalisation [0,1] — on évite la division par zéro si le spectre est vide
+            max_val = spectre.max()
+            self._display_numpy_array(spectre / max_val if max_val > 0 else spectre)
+
+        except Exception as e:
+            self.error_handler.handle_exception(e)
             return
-
-        # Calcul du spectre fréquentiel via la TFD2D
-        tfd2d = TFD2D(self._current_array)
-        spectre = tfd2d.calculerTFDSpectre()
-
-        # Normalisation [0,1] — on évite la division par zéro si le spectre est vide
-        max_val = spectre.max()
-        self._display_numpy_array(spectre / max_val if max_val > 0 else spectre)
 
     def handle_clahe(self):
         """
@@ -48,12 +58,21 @@ class AnalysisController:
         Nécessite qu'une image soit chargée (_current_array != None).
         """
         # On ne fait rien si aucune image n'est chargée
-        if self._current_array is None:
+        try:
+            if self._current_array is None:
+                self.error_handler.show_error(
+                    "Erreur",
+                    "Aucune image chargée"
+                )
+                return
+
+            # Application du CLAHE
+            clahe = CLAHE(5.0, (16, 16), self._current_array)
+            result = clahe.appliquer()
+
+            # Affichage du résultat
+            self._display_numpy_array(result)
+            
+        except Exception as e:
+            self.error_handler.handle_exception(e)
             return
-
-        # Application du CLAHE
-        clahe = CLAHE(5.0, (16, 16), self._current_array)
-        result = clahe.appliquer()
-
-        # Affichage du résultat
-        self._display_numpy_array(result)
