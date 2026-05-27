@@ -11,7 +11,6 @@ if TYPE_CHECKING:
 from PyQt6.QtGui import QImage, QPixmap
 
 # ===== IMPORTS DES SOUS-CONTROLLERS =====
-# MainController hérite de ces 3 classes — il récupère automatiquement tous leurs handlers
 from controllers.UploadController import UploadController
 from controllers.FilterController import FilterController
 from controllers.AnalysisController import AnalysisController
@@ -46,7 +45,9 @@ class MainController(UploadController, FilterController, AnalysisController):
         # Bouton Filtre Passe-Bas
         self.view.top_toolbar.low_pass_clicked.connect(self.handle_passe_bas)
         # Bouton Filtre Passe-Haut
-        #self.view.top_toolbar.high_pass_clicked.connect(self.handle_passe_haut)
+        self.view.top_toolbar.high_pass_clicked.connect(self.handle_passe_haut)
+
+        
     # -------------------------------------------------------------
 
     # ----------------------- Affichage ---------------------------
