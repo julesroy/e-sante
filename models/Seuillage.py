@@ -10,7 +10,7 @@ class Seuillage:
     L'image d'entrée doit être une matrice Numpy 2D (uint8, 0-255).
     """
 
-    def __init__(self, seuil_manuel: int = None):
+    def __init__(self, seuil_manuel: int | None = None):
         """
         :param seuil_manuel: Valeur fixe entre 0 et 255. Si None, Otsu est utilisé.
         """
