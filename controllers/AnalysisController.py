@@ -1,20 +1,21 @@
 # ===== IMPORTS PYTHON STANDARD =====
 from __future__ import annotations
 import sys, os
+import numpy as np
 
 # ===== IMPORTS UNIQUEMENT POUR PYLANCE (jamais exécutés) =====
 from typing import TYPE_CHECKING
 from collections.abc import Callable
 if TYPE_CHECKING:
-    import numpy as np
     from views.MainView import MainView
     from controllers.ErrorController import ErrorController
 
 # ===== IMPORTS DES MODÈLES =====
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "models"))
+from views.PopupFFT import FilterDialog
 from TFD2D import TFD2D
 from CLAHE import CLAHE
-
+from Seuillage import Seuillage
 
 class AnalysisController:
     # Ces attributs appartiennent à MainController.
@@ -76,3 +77,41 @@ class AnalysisController:
         except Exception as e:
             self.error_handler.handle_exception(e)
             return
+        
+    def handle_seuillage(self):
+        """
+        Ouvre la popup pour le seuillage et applique le masque
+        Slider a 0 -> Otsu automatique, sinon seuil manuel [1-255]
+        """
+        try:
+            if self._current_array is None:
+                self.error_handler.show_error(
+                    "Erreur", "Aucune image chargee"
+                )
+                return
+            
+            dialog = FilterDialog(self.view)
+            dialog.setWindowTitle("Seuillage (0 = Otsu auto)")
+            dialog.slider.setMinimum(0)
+            dialog.slider.setMaximum(255)
+            dialog.slider.setValue(0) #Otsu par defaut
+
+            if dialog.exec():
+                valeur = dialog.slider.value()
+
+                # 0 -> Otsu automatique, sinon seuil automatique
+                seuil_manuel = None if valeur == 0 else valeur
+                outil = Seuillage(seuil_manuel=seuil_manuel)
+                masque, seuil_calcule = outil.appliquer(self._current_array)
+
+                # masque est uint8 [0,255], on normalise en [0,1] pour l'affichage
+                result = (masque / 255.0).astype(np.float32)
+                self._display_numpy_array(result)
+
+                mode = f"Otsu (seuil calculé: {int(seuil_calcule)})" if seuil_manuel is None else f"Manuel: {seuil_manuel}"
+                print(f"Seuillage appliqué - {mode}")
+
+        except Exception as e:
+            self.error_handler.handle_exception(e)
+            return
+        
