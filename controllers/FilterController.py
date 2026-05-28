@@ -2,12 +2,12 @@
 from __future__ import annotations
 import sys, os
 from PyQt6.QtWidgets import QDialog
+import numpy as np
 
 # ===== IMPORTS UNIQUEMENT POUR PYLANCE (jamais exécutés) =====
 from typing import TYPE_CHECKING
 from collections.abc import Callable
 if TYPE_CHECKING:
-    import numpy as np
     from views.MainView import MainView
     from controllers.ErrorController import ErrorController
 
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "models"))
 from FiltrageGaussien import FiltrageGaussien
 from views.PopupFFT import FilterDialog
-
+from TFD2D import TFD2D
 
 class FilterController:
     # Ces attributs appartiennent à MainController.
@@ -71,8 +71,23 @@ class FilterController:
             dialog.setWindowTitle("Filtre Passe-Bas")
 
             if dialog.exec():
-                valeur_choisie = dialog.slider.value()
-                print(f"Popup Passe-Bas fermée. Fréquence sélectionnée : {valeur_choisie}")
+                rayon = dialog.slider.value()
+
+                # Calcul TFD + application du masque passe-bas
+                tfd = TFD2D(self._current_array)
+                tfd.calculerTFDSpectre()
+                tfd.filtragePasseBas(rayon)
+
+                # Reconstruction de l'image depuis la TFD filtree
+                image_reconstruite = tfd.calculerTFDInverse()
+
+                # Normalisation [0,1] avant affichage
+                max_val = image_reconstruite.max()
+                result = (image_reconstruite / max_val).astype(np.float32) if max_val > 0 else image_reconstruite
+                self._display_numpy_array(result)
+
+                print(f"Popup Passe-Bas fermée. Fréquence sélectionnée : {rayon}")
+
 
         except Exception as e:
             self.error_handler.handle_exception(e)
@@ -96,8 +111,22 @@ class FilterController:
             dialog.setWindowTitle("Filtre Passe-Haut")
 
             if dialog.exec():
-                valeur_choisie = dialog.slider.value()
-                print(f"Popup Passe-Haut fermée. Fréquence sélectionnée : {valeur_choisie}")
+                rayon = dialog.slider.value()
+
+                # Calcul TFD + application du masque passe-haut
+                tfd = TFD2D(self._current_array)
+                tfd.calculerTFDSpectre()
+                tfd.filtragePasseHaut(rayon)
+
+                # Reconstruction de l'image depuis la TFD filtrée
+                image_reconstruite = tfd.calculerTFDInverse()
+
+                # Normalisation [0,1] avant affichage
+                max_val = image_reconstruite.max()
+                result = (image_reconstruite / max_val).astype(np.float32) if max_val > 0 else image_reconstruite
+                self._display_numpy_array(result)
+
+                print(f"Popup Passe-Haut fermée. Fréquence sélectionnée : {rayon}")
 
         except Exception as e:
             self.error_handler.handle_exception(e)
