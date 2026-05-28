@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QPushButton, QLabel, QScrollArea
 from PyQt6.QtCore import Qt, QPoint, pyqtSignal
-from PyQt6.QtGui import QPixmap, QGuiApplication
+from PyQt6.QtGui import QPixmap, QGuiApplication, QIcon
+import os
 
 from views.LeftToolBar import LeftToolbar
 from views.TopToolbar import TopToolbar
@@ -97,6 +98,14 @@ class MainView(QMainWindow):
         super().__init__()
         self.setWindowTitle("PixelMed")
         self.resize(900, 650)
+
+        # gestion de l'icône
+        base_dir = os.path.dirname(os.path.dirname(__file__)) # Remonte à la racine du projet
+        icon_path = os.path.join(base_dir, "assets", "icons", "app_icon.png")
+        if os.path.exists(icon_path):
+            self.setWindowIcon(QIcon(icon_path))
+        else:
+            print(f"Avertissement : Icône introuvable à {icon_path}")
 
         # Variables pour stocker l'image active + zoom
         self.current_file_path = None

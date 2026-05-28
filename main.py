@@ -1,5 +1,6 @@
 import os
 import sys
+import ctypes
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtGui import QFontDatabase 
 
@@ -7,6 +8,9 @@ from models.MainModel import MainModel
 from views.MainView import MainView
 from controllers.MainController import MainController
 
+if sys.platform == "win32":
+    appId = "pixelmed.version_1"
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(appId)
 
 def main():
     """
