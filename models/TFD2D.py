@@ -115,6 +115,28 @@ class TFD2D:
 
         return self._fshift_complexe
 
+    def filtragePasseHaut(self, rayon_coupure: int):
+        """
+        Applique un filtre passe-haut en ne gardant que les fréquences situées à l'extérieur d'un cercle de rayon 'rayon_coupure'.
+        :param rayon_coupure: Rayon du cercle en pixels (plus il est grand, plus le filtrage est fort).
+        :return: Matrice de l'image filtrée.
+        """
+        if self._fshift_complexe is None:
+            raise ValueError("Le spectre doit être calculé avec calculerTFDSpectre().")
+
+        hauteur, largeur = self._fshift_complexe.shape
+        centre_y, centre_x = hauteur // 2, largeur // 2
+
+        y, x = np.ogrid[:hauteur, :largeur]
+
+        masque_circulaire = ((x - centre_x) ** 2 + (y - centre_y) ** 2 >= rayon_coupure**2).astype(
+            float
+        )  # on inverse la condition pour créer un masque qui conserve les fréquences à l'extérieur du cercle et supprime les fréquences à l'intérieur
+
+        self._fshift_complexe = self._fshift_complexe * masque_circulaire
+
+        return self._fshift_complexe
+
 
 # tests
 # testImageConvertie = ImageConvertie("COVID-1024.png").convertirEnNumpyArray()
@@ -123,7 +145,8 @@ class TFD2D:
 # testMatriceTFD2D = testTFD2D.calculerTFDSpectre()
 # print(type(testMatriceTFD2D))  # type de la matrice du spectre
 # testTFD2D.afficher_spectre()  # à utiliser uniquement pour visualiser le spectre
-# testTFD2D.filtragePasseBas(90)  # appliquer un filtre passe-bas avec un rayon de coupure de 50 pixels
+# testTFD2D.filtragePasseBas(90)  # appliquer un filtre passe-bas avec un rayon de coupure de 90 pixels
+# testTFD2D.filtragePasseHaut(10)  # appliquer un filtre passe-haut avec un rayon de coupure de 10 pixels
 # testImageReconstruite = testTFD2D.calculerTFDInverse()
 # testTFD2D.afficher_image_reconstruite(testImageReconstruite)
 
