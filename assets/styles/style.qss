@@ -1,66 +1,84 @@
-/* Style de l'application */
+/* --- GLOBALE --- */
+QMainWindow {
+    background-color: #2b2b2b;
+}
+
 QLabel {
-    color: #e11;
-}
-/* --- LE FOND DE LA FENÊTRE PRINCIPALE --- */
-/* --- LA BARRE OUTILS DU HAUT --- */
-TopToolbar {
-    background-color: #1a1a1a;
-    border-bottom: 1px solid #333333;
-}
-
-TopToolbar QPushButton {
-    background-color: #252525;
     color: #E0E0E0;
-    border: 1px solid #3A3A3A;
-    border-radius: 4px;
-    padding: 6px 12px;
-    font-size: 13px;
-    font-weight: bold;
 }
 
-TopToolbar QPushButton:hover {
-    background-color: #353535;
-    border: 1px solid #505050;
-}
-
-TopToolbar QPushButton:pressed {
-    background-color: #1A1A1A;
-}
-
-/* --- LA BARRE LATÉRALE TRANSLUCIDE (PHOTOSHOP STYLE) --- */
-LeftToolbar {
-    background-color: rgba(20, 20, 20, 180);
-    border: 1px solid rgba(255, 255, 255, 30);
-    border-radius: 8px;
-}
-
-LeftToolbar QPushButton {
-    background-color: rgba(255, 255, 255, 15);
-    color: #FFFFFF;
-    border: 1px solid rgba(255, 255, 255, 25);
-    border-radius: 5px;
-    padding: 8px;
-    font-size: 12px;
-}
-
-LeftToolbar QPushButton:hover {
-    background-color: rgba(255, 255, 255, 30);
-    border: 1px solid rgba(255, 255, 255, 50);
-}
-
-LeftToolbar QPushButton:pressed {
-    background-color: rgba(0, 0, 0, 50);
-}
-
-/* --- LE VIEWER D'IMAGE --- */
+/* --- IMAGE --- */
 MedicalImageVisualizer {
-    background-color: #111111;
-    border: none;
+    background-color: #1a1a1a;
+    border: 1px solid #3c3c3c;
+    border-radius: 4px;
 }
 
 #PlaceholderLabel {
-    color: #666666;
-    font-size: 16px;
+    color: #888888;
+    font-size: 15px;
     background-color: transparent;
+}
+
+/* --- TOP BAR --- */
+TopToolbar {
+    background-color: #202020;
+    border-bottom: 1px solid #3c3c3c;
+}
+
+TopToolbar QPushButton {
+    background-color: #3c3c3c;
+    color: #E0E0E0;
+    border: 1px solid #555555;
+    border-radius: 4px;
+}
+
+TopToolbar QPushButton:hover {
+    background-color: #4f4f4f;
+    border: 1px solid #666666;
+}
+
+/* --- LEFT BAR --- */
+LeftToolbar {
+    background-color: #202020;
+    border: 1px solid #3c3c3c;
+    border-radius: 4px;
+}
+
+/* --- ONGLETS --- */
+LeftToolbar QPushButton#SectionHeader {
+    background-color: #4e4e4e;
+    color: #FFFFFF;
+    border: 1px solid #4e4e4e; /* Écrase le style Windows natif */
+    border-radius: 0px;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: bold;
+    text-align: left;
+}
+
+LeftToolbar QPushButton#SectionHeader:checked {
+    background-color: #00a2ed; 
+    border: 1px solid #00a2ed;
+}
+
+LeftToolbar QWidget QGridLayout QPushButton {
+    background-color: #3c3c3c;
+    color: #000000;
+    border: 1px solid #3c3c3c;
+    border-radius: 0px;
+}
+
+LeftToolbar QWidget QGridLayout QPushButton:toggle,
+LeftToolbar QWidget QGridLayout QPushButton:checked,
+LeftToolbar QWidget QGridLayout QPushButton:checked:hover,
+LeftToolbar QWidget QGridLayout QPushButton:pressed {
+    background-color: #00a2ed; 
+    color: #FFFFFF;
+    border: 1px solid #00a2ed;
+}
+#MagnifierLens {
+    background-color: #000000;
+    border: 2px solid #ffffff;
+    border-radius: 0px; /* Carré parfait */
 }
