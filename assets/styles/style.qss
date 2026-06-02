@@ -77,3 +77,8 @@ LeftToolbar QWidget QGridLayout QPushButton:pressed {
     color: #FFFFFF;
     border: 1px solid #00a2ed;
 }
+#MagnifierLens {
+    background-color: #000000;
+    border: 2px solid #ffffff;
+    border-radius: 0px; /* Carré parfait */
+}

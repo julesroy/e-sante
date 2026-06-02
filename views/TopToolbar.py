@@ -22,10 +22,10 @@ class TopToolbar(QWidget):
         self.btn_upload.setFixedSize(42, 42)
         self.btn_upload.setToolTip("Ouvrir une nouvelle radiographie")
         
-        self.btn_zoom_reset = QPushButton("\uf065")
+        self.btn_zoom_reset = QPushButton("\uf002")
         self.btn_zoom_reset.setFont(icon_font)
         self.btn_zoom_reset.setFixedSize(42, 42)
-        self.btn_zoom_reset.setToolTip("Ajuster l'image à la taille de l'écran")
+        self.btn_zoom_reset.setToolTip("Activer la loupe de précision")
         
         toolbar_layout.addWidget(self.btn_upload)
         toolbar_layout.addWidget(self.btn_zoom_reset)
