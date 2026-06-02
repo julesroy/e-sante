@@ -241,7 +241,7 @@ class MainView(QMainWindow):
         self.layout.addWidget(self.viewer_container)
 
         # On transforme le bouton d'agrandissement du haut en Interrupteur Loupe
-        self.btn_magnifier = self.top_toolbar.btn_zoom_reset
+        self.btn_magnifier = self.top_toolbar.btn_loupe
         self.btn_magnifier.setCheckable(True)
         
         # Déconnexion des anciens signaux pour lier le nouveau mode

@@ -58,16 +58,11 @@ class LeftToolbar(QWidget):
         self.btn_high_pass.setFont(icon_font)
         self.btn_high_pass.setFixedSize(button_size, button_size)
 
-        self.btn_clahe = QPushButton("\uf042")
-        self.btn_clahe.setFont(icon_font)
-        self.btn_clahe.setFixedSize(button_size, button_size)
-
         self.grid_layout.addWidget(self.btn_origin, 0, 0)
         self.grid_layout.addWidget(self.btn_gaussian, 0, 1)
         self.grid_layout.addWidget(self.btn_tfd2d, 0, 2)
         self.grid_layout.addWidget(self.btn_low_pass, 1, 0)
         self.grid_layout.addWidget(self.btn_high_pass, 1, 1)
-        self.grid_layout.addWidget(self.btn_clahe, 1, 2)
         
         self.main_layout.addWidget(self.filters_container)
         
@@ -78,7 +73,17 @@ class LeftToolbar(QWidget):
         self.main_layout.addWidget(self.section_contrast)
         
         self.contrast_container = QWidget()
-        self.contrast_container.setVisible(False) 
+        self.contrast_container.setVisible(False)
+        self.grid_layout_contrast = QGridLayout(self.contrast_container)
+        self.grid_layout_contrast.setContentsMargins(8, 5, 8, 10)
+        self.grid_layout_contrast.setSpacing(6)
+
+        self.btn_clahe = QPushButton("\uf042")
+        self.btn_clahe.setFont(icon_font)
+        self.btn_clahe.setFixedSize(button_size, button_size)
+
+        self.grid_layout_contrast.addWidget(self.btn_clahe, 0, 0)
+
         self.main_layout.addWidget(self.contrast_container)
 
         # === MESURES ===
