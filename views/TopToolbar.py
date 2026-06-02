@@ -4,7 +4,7 @@ from PyQt6.QtGui import QFont
 
 class TopToolbar(QWidget):
     upload_clicked = pyqtSignal()
-    reset_clicked = pyqtSignal()
+    loupe_clicked = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -22,14 +22,14 @@ class TopToolbar(QWidget):
         self.btn_upload.setFixedSize(42, 42)
         self.btn_upload.setToolTip("Ouvrir une nouvelle radiographie")
         
-        self.btn_zoom_reset = QPushButton("\uf002")
-        self.btn_zoom_reset.setFont(icon_font)
-        self.btn_zoom_reset.setFixedSize(42, 42)
-        self.btn_zoom_reset.setToolTip("Activer la loupe de précision")
+        self.btn_loupe = QPushButton("\uf002")
+        self.btn_loupe.setFont(icon_font)
+        self.btn_loupe.setFixedSize(42, 42)
+        self.btn_loupe.setToolTip("Activer la loupe de précision")
         
         toolbar_layout.addWidget(self.btn_upload)
-        toolbar_layout.addWidget(self.btn_zoom_reset)
+        toolbar_layout.addWidget(self.btn_loupe)
         toolbar_layout.addStretch()
         
         self.btn_upload.clicked.connect(self.upload_clicked.emit)
-        self.btn_zoom_reset.clicked.connect(self.reset_clicked.emit)
+        self.btn_loupe.clicked.connect(self.loupe_clicked.emit)
