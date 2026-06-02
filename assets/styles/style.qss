@@ -37,6 +37,11 @@ TopToolbar QPushButton:hover {
     background-color: #4f4f4f;
     border: 1px solid #666666;
 }
+TopToolbar QPushButton:checked {
+    background-color: #00a2ed;
+    color: #FFFFFF;
+    border: 1px solid #00a2ed;
+}
 
 /* --- LEFT BAR --- */
 LeftToolbar {

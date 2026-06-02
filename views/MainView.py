@@ -1,10 +1,66 @@
 from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QScrollArea, QInputDialog
 from PyQt6.QtCore import Qt, QPoint, QRect
-from PyQt6.QtGui import QPixmap, QGuiApplication, QIcon, QPainter, QCursor
+from PyQt6.QtGui import QPixmap, QGuiApplication, QIcon, QPainter, QCursor, QPen, QColor
 import os
-
 from views.LeftToolBar import LeftToolbar
 from views.TopToolbar import TopToolbar
+class MedicalImageLabel(QLabel):
+    def __init__(self, text, parent=None):
+        super().__init__(text, parent)
+        self.visualizer = parent  # Référence vers la ScrollArea
+
+    def paintEvent(self, event):
+        """Dessine l'image et force la ligne du slider au premier plan absolu"""
+        super().paintEvent(event)
+        if not self.visualizer or not self.visualizer.main_view or not self.visualizer.main_view.slider_compare_active or not self.visualizer.main_view.current_pixmap:
+            return
+
+        pixmap_displayed = self.pixmap()
+        if not pixmap_displayed:
+            return
+
+        painter = QPainter(self)
+        
+        # Calcul des marges
+        margin_x = (self.width() - pixmap_displayed.width()) // 2
+        margin_y = (self.height() - pixmap_displayed.height()) // 2
+        img_rect = QRect(margin_x, margin_y, pixmap_displayed.width(), pixmap_displayed.height())
+
+        # Récupération de l'image d'origine
+        controller = getattr(self.visualizer.main_view, 'controller', None)
+        if controller and hasattr(controller, '_original_pixmap') and controller._original_pixmap:
+            image_a = controller._original_pixmap.scaled(
+                pixmap_displayed.width(), pixmap_displayed.height(),
+                Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation
+            )
+        else:
+            image_a = pixmap_displayed
+
+        image_b = pixmap_displayed
+        
+        # Conversion pos slider
+        local_slider_x = self.mapFrom(self.visualizer.viewport(), QPoint(self.visualizer.slider_pos_x, 0)).x()
+        split_x = local_slider_x - img_rect.left()
+
+        # Dessin image origine
+        if split_x > 0:
+            rect_left = QRect(img_rect.left(), img_rect.top(), split_x, img_rect.height())
+            painter.setClipRect(rect_left)
+            painter.drawPixmap(img_rect.left(), img_rect.top(), image_a)
+
+        # Dessin image modifiée
+        if split_x < img_rect.width():
+            rect_right = QRect(img_rect.left() + split_x, img_rect.top(), img_rect.width() - split_x, img_rect.height())
+            painter.setClipRect(rect_right)
+            painter.drawPixmap(img_rect.left(), img_rect.top(), image_b)
+
+        # Dessin slider compa
+        painter.setClipping(False)
+        pen = QPen(QColor("#00a2ed"), 2, Qt.PenStyle.SolidLine)
+        painter.setPen(pen)
+        painter.drawLine(local_slider_x, img_rect.top(), local_slider_x, img_rect.bottom())
+        painter.end()
+
 
 # === Image et Loupe ===
 class MedicalImageVisualizer(QScrollArea):
@@ -22,9 +78,56 @@ class MedicalImageVisualizer(QScrollArea):
         
         self.magnifier.hide()
 
+        # Var slider compa
+        self.slider_pos_x = 300  
+        self.is_dragging_slider = False  
+
+        self.controller = None
+
+    def mousePressEvent(self, event):
+        super().mousePressEvent(event)
+        if not self.main_view or not self.main_view.slider_compare_active or self.main_view.current_pixmap is None:
+            return
+
+        content_widget = self.widget()
+        if not content_widget or not content_widget.pixmap():
+            return
+
+        pos_viewport = event.position().toPoint()
+        
+        if abs(pos_viewport.x() - self.slider_pos_x) < 10:
+            self.is_dragging_slider = True
+            self.setCursor(Qt.CursorShape.SplitHCursor)
+
+    def mouseReleaseEvent(self, event):
+        super().mouseReleaseEvent(event)
+        self.is_dragging_slider = False
+        self.setCursor(Qt.CursorShape.ArrowCursor)
+
     def mouseMoveEvent(self, event):
         """Gère la découpe et le déplacement de la bulle loupe avec correction d'offset"""
         super().mouseMoveEvent(event)
+        
+        # Logique glissement slider
+        if self.main_view and self.main_view.slider_compare_active and self.main_view.current_pixmap is not None:
+            pos_viewport = event.position().toPoint()
+            content_widget = self.widget()
+            
+            if content_widget and content_widget.pixmap():
+                pixmap_displayed = content_widget.pixmap()
+                margin_x = (content_widget.width() - pixmap_displayed.width()) // 2
+                
+                if self.is_dragging_slider:
+                    min_x = margin_x
+                    max_x = margin_x + pixmap_displayed.width()
+                    self.slider_pos_x = max(min_x, min(pos_viewport.x(), max_x))
+                    content_widget.update()  # Rafraîchit le label directement
+                    return
+                
+                if abs(pos_viewport.x() - self.slider_pos_x) < 10:
+                    self.setCursor(Qt.CursorShape.SplitHCursor)
+                else:
+                    self.setCursor(Qt.CursorShape.ArrowCursor)
         
         if not self.main_view or self.main_view.current_pixmap is None or not self.main_view.magnifier_active:
             self.magnifier.hide()
@@ -100,6 +203,7 @@ class MainView(QMainWindow):
         # --- ETATS DE LA LOUPE ---
         self.magnifier_active = False
         self.magnifier_power = 2.0
+        self.slider_compare_active = False
         
         self.center_on_screen()
 
@@ -122,7 +226,8 @@ class MainView(QMainWindow):
         content_layout.addWidget(self.left_toolbar)
 
         self.scroll_area = MedicalImageVisualizer(self)
-        self.image_display = QLabel("Aucune radiographie chargée.")
+    
+        self.image_display = MedicalImageLabel("Aucune radiographie chargée.", self.scroll_area)
         self.image_display.setObjectName("PlaceholderLabel")
         self.image_display.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
@@ -145,6 +250,11 @@ class MainView(QMainWindow):
         except:
             pass
         self.btn_magnifier.clicked.connect(self.toggle_magnifier_mode)
+
+        # Btn Slider compa
+        self.btn_slider_compare = self.top_toolbar.btn_slider_compare
+        self.btn_slider_compare.setCheckable(True)
+        self.btn_slider_compare.clicked.connect(self.toggle_slider_mode)
 
     def display_medical_image(self, file_path: str):
         self.current_file_path = file_path
@@ -189,6 +299,21 @@ class MainView(QMainWindow):
         else:
             self.btn_magnifier.setToolTip("Activer la loupe de précision")
             self.scroll_area.magnifier.hide()
+
+    def toggle_slider_mode(self, checked):
+        """Active ou désactive l'état du slider de comparaison"""
+        if self.current_pixmap is None:
+            self.btn_slider_compare.setChecked(False)
+            return
+
+        self.slider_compare_active = checked
+        if checked:
+            print("Mode Slider de comparaison activé.")
+            self.scroll_area.slider_pos_x = self.scroll_area.width() // 2
+            self.image_display.update()
+        else:
+            print("Mode Slider de comparaison désactivé.")
+            self.image_display.update()
 
     def resizeEvent(self, event):
         super().resizeEvent(event)

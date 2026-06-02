@@ -17,19 +17,27 @@ class TopToolbar(QWidget):
     
         icon_font = QFont("FontAwesome", 14)
         
+        # Btn Upload
         self.btn_upload = QPushButton("\uf115")
         self.btn_upload.setFont(icon_font)
         self.btn_upload.setFixedSize(42, 42)
         self.btn_upload.setToolTip("Ouvrir une nouvelle radiographie")
         
+        # Btn Loupe
         self.btn_zoom_reset = QPushButton("\uf002")
         self.btn_zoom_reset.setFont(icon_font)
         self.btn_zoom_reset.setFixedSize(42, 42)
         self.btn_zoom_reset.setToolTip("Activer la loupe de précision")
         
+        # Btn slider de compa
+        self.btn_slider_compare = QPushButton("\uf0db")
+        self.btn_slider_compare.setFont(icon_font)
+        self.btn_slider_compare.setFixedSize(42, 42)
+        self.btn_slider_compare.setToolTip("Activer le slider de comparaison Avant/Après")
+        
         toolbar_layout.addWidget(self.btn_upload)
         toolbar_layout.addWidget(self.btn_zoom_reset)
+        toolbar_layout.addWidget(self.btn_slider_compare)
         toolbar_layout.addStretch()
         
         self.btn_upload.clicked.connect(self.upload_clicked.emit)
-        self.btn_zoom_reset.clicked.connect(self.reset_clicked.emit)
