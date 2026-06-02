@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 from ImageConvertie import ImageConvertie
+from FiltrageGaussien import FiltrageGaussien
 from TFD2D import TFD2D
 
 class Seuillage:
@@ -41,10 +42,17 @@ class Seuillage:
                     img_8bit, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU
                 )
 
+            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5)) # noyau elliptique pour les opérations morphologiques
+
+            masque_binaire = cv2.morphologyEx(masque_binaire, cv2.MORPH_OPEN, kernel) # on élimine les petits objets parasites
+            masque_binaire = cv2.morphologyEx(masque_binaire, cv2.MORPH_CLOSE, kernel) # on comble les petits trous à l'intérieur des objets détectés
+
             return masque_binaire, seuil_calcule
 
 # tests
 # testImageConvertie = ImageConvertie("COVID-1024.png").convertirEnNumpyArray()
+# testMatrice = FiltrageGaussien((7, 7), 0, testImageConvertie)
+# testMatriceFiltree = testMatrice.filtrage()
 # testTFD2D = TFD2D(testImageConvertie)
 # testMatriceTFD2D = testTFD2D.calculerTFDSpectre()
 # testTFD2D.filtragePasseBas(90)  # appliquer un filtre passe-bas avec un rayon de coupure de 90 pixels
@@ -54,7 +62,7 @@ class Seuillage:
 
 # instancier le seuillage automatique d'Otsu (Fortement recommandé en médical)
 # outil_seuillage = Seuillage(seuil_manuel=None)
-# masque, seuil_choisi = outil_seuillage.appliquer(testImageReconstruite)
+# masque, seuil_choisi = outil_seuillage.appliquer(testMatriceFiltree)
 
 # print(f"Le seuil optimal calculé par Otsu est : {seuil_choisi}")
 # fig, ax = plt.subplots(1, 1, figsize=(6, 6))

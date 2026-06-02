@@ -44,6 +44,8 @@ def main():
     view = MainView()
     controller = MainController(model, view)
 
+    view.controller = controller
+    
     # affichage de la vue
     view.show()
 

@@ -7,7 +7,7 @@ class FiltrageGaussien:
     """
     Classe pour appliquer un filtrage gaussien à une image.
     Exemple d'instanciation :
-    test = FiltrageGaussien((9, 9), 0, 'COVID-1024.png', 'FiltrageGaussien.png')
+    FiltrageGaussien((5, 5), 0, testImageConvertie)
     """
 
     def __init__(self, kernel: tuple, sigma: int, imageNpArray: np.ndarray):

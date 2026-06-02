@@ -1,201 +1,326 @@
-from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QPushButton, QLabel, QScrollArea
-from PyQt6.QtCore import Qt, QPoint, pyqtSignal
-from PyQt6.QtGui import QPixmap, QGuiApplication, QIcon
+from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QScrollArea, QInputDialog
+from PyQt6.QtCore import Qt, QPoint, QRect
+from PyQt6.QtGui import QPixmap, QGuiApplication, QIcon, QPainter, QCursor, QPen, QColor
 import os
-
 from views.LeftToolBar import LeftToolbar
 from views.TopToolbar import TopToolbar
+class MedicalImageLabel(QLabel):
+    def __init__(self, text, parent=None):
+        super().__init__(text, parent)
+        self.visualizer = parent  # Référence vers la ScrollArea
 
-# --- Zoom et déplacement ---
+    def paintEvent(self, event):
+        """Dessine l'image et force la ligne du slider au premier plan absolu"""
+        super().paintEvent(event)
+        if not self.visualizer or not self.visualizer.main_view or not self.visualizer.main_view.slider_compare_active or not self.visualizer.main_view.current_pixmap:
+            return
+
+        pixmap_displayed = self.pixmap()
+        if not pixmap_displayed:
+            return
+
+        painter = QPainter(self)
+        
+        # Calcul des marges
+        margin_x = (self.width() - pixmap_displayed.width()) // 2
+        margin_y = (self.height() - pixmap_displayed.height()) // 2
+        img_rect = QRect(margin_x, margin_y, pixmap_displayed.width(), pixmap_displayed.height())
+
+        # Récupération de l'image d'origine
+        controller = getattr(self.visualizer.main_view, 'controller', None)
+        if controller and hasattr(controller, '_original_pixmap') and controller._original_pixmap:
+            image_a = controller._original_pixmap.scaled(
+                pixmap_displayed.width(), pixmap_displayed.height(),
+                Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation
+            )
+        else:
+            image_a = pixmap_displayed
+
+        image_b = pixmap_displayed
+        
+        # Conversion pos slider
+        local_slider_x = self.mapFrom(self.visualizer.viewport(), QPoint(self.visualizer.slider_pos_x, 0)).x()
+        split_x = local_slider_x - img_rect.left()
+
+        # Dessin image origine
+        if split_x > 0:
+            rect_left = QRect(img_rect.left(), img_rect.top(), split_x, img_rect.height())
+            painter.setClipRect(rect_left)
+            painter.drawPixmap(img_rect.left(), img_rect.top(), image_a)
+
+        # Dessin image modifiée
+        if split_x < img_rect.width():
+            rect_right = QRect(img_rect.left() + split_x, img_rect.top(), img_rect.width() - split_x, img_rect.height())
+            painter.setClipRect(rect_right)
+            painter.drawPixmap(img_rect.left(), img_rect.top(), image_b)
+
+        # Dessin slider compa
+        painter.setClipping(False)
+        pen = QPen(QColor("#00a2ed"), 2, Qt.PenStyle.SolidLine)
+        painter.setPen(pen)
+        painter.drawLine(local_slider_x, img_rect.top(), local_slider_x, img_rect.bottom())
+        painter.end()
+
+
+# === Image et Loupe ===
 class MedicalImageVisualizer(QScrollArea):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWidgetResizable(True)
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        # Référence vers la vue principale pour accéder au zoom_factor
         self.main_view = parent
+        
+        # Tracking souris
+        self.setMouseTracking(True)
+        self.magnifier = QLabel(self)
+        self.magnifier.setFixedSize(160, 160)
+        self.magnifier.setObjectName("MagnifierLens")
+        
+        self.magnifier.hide()
 
-    def wheelEvent(self, event):
-        """scroll molette = zoom fluide et surle curseur"""
-        # MODIFICATION STRICTE : On autorise le zoom si un Pixmap est chargé, même sans fichier disque
-        if not self.main_view or self.main_view.current_pixmap is None:
-            event.ignore()
+        # Var slider compa
+        self.slider_pos_x = 300  
+        self.is_dragging_slider = False  
+
+        self.controller = None
+
+    def mousePressEvent(self, event):
+        super().mousePressEvent(event)
+        if not self.main_view or not self.main_view.slider_compare_active or self.main_view.current_pixmap is None:
             return
 
-        modifiers = event.modifiers()
-
-        # Récupération des deux axes de la molette pour être compatible avec toutes les souris/touchpads
-        delta_y = event.angleDelta().y()
-        delta_x = event.angleDelta().x()
-
-        # On utilise le delta vertical s'il existe, sinon le horizontal
-        delta = delta_y if delta_y != 0 else delta_x
-        pas_deplacement = 15
-
-        # 1. SHIFT + MOLETTE -> Déplacement vertical(Haut / Bas)
-        if modifiers == Qt.KeyboardModifier.ShiftModifier:
-            v_bar = self.verticalScrollBar()
-            if delta > 0:
-                v_bar.setValue(v_bar.value() - pas_deplacement)  # Monte
-            else:
-                v_bar.setValue(v_bar.value() + pas_deplacement)  # Descend
-            event.accept()
+        content_widget = self.widget()
+        if not content_widget or not content_widget.pixmap():
             return
 
-        # 2. ALT + MOLETTE -> Déplacement horizontal (Gauche / Droite)
-        elif modifiers == Qt.KeyboardModifier.AltModifier:
-            h_bar = self.horizontalScrollBar()
-            if delta > 0:
-                h_bar.setValue(h_bar.value() - pas_deplacement)  # Gauche
-            else:
-                h_bar.setValue(h_bar.value() + pas_deplacement)  # Droite
-            event.accept()
-            return
+        pos_viewport = event.position().toPoint()
+        
+        if abs(pos_viewport.x() - self.slider_pos_x) < 10:
+            self.is_dragging_slider = True
+            self.setCursor(Qt.CursorShape.SplitHCursor)
 
-        # 3. MOLETTE -> Zoom centré sur le curseur
-        elif modifiers == Qt.KeyboardModifier.NoModifier:
-            h_bar = self.horizontalScrollBar()
-            v_bar = self.verticalScrollBar()
-            mouse_pos_viewport = event.position().toPoint()
+    def mouseReleaseEvent(self, event):
+        super().mouseReleaseEvent(event)
+        self.is_dragging_slider = False
+        self.setCursor(Qt.CursorShape.ArrowCursor)
+
+    def mouseMoveEvent(self, event):
+        """Gère la découpe et le déplacement de la bulle loupe avec correction d'offset"""
+        super().mouseMoveEvent(event)
+        
+        # Logique glissement slider
+        if self.main_view and self.main_view.slider_compare_active and self.main_view.current_pixmap is not None:
+            pos_viewport = event.position().toPoint()
             content_widget = self.widget()
-            if not content_widget:
-                event.ignore()
-                return
-            mouse_pos_in_label = content_widget.mapFrom(self.viewport(), mouse_pos_viewport)
-            old_zoom = self.main_view.zoom_factor
-            if delta > 0:
-                self.main_view.zoom_factor *= 1.06  # Zoom avant
-            else:
-                self.main_view.zoom_factor /= 1.06  # Dézoom arrière
-            self.main_view.zoom_factor = max(0.5, min(self.main_view.zoom_factor, 8.0))
-            if old_zoom != self.main_view.zoom_factor:
-                # Blocage des scrollbars pour empêcher PyQt de faire n'imp
-                h_bar.blockSignals(True)
-                v_bar.blockSignals(True)
-                self.main_view.update_image_render()
-                zoom_ratio = self.main_view.zoom_factor / old_zoom
-                new_x_in_label = mouse_pos_in_label.x() * zoom_ratio
-                new_y_in_label = mouse_pos_in_label.y() * zoom_ratio
+            
+            if content_widget and content_widget.pixmap():
+                pixmap_displayed = content_widget.pixmap()
+                margin_x = (content_widget.width() - pixmap_displayed.width()) // 2
+                
+                if self.is_dragging_slider:
+                    min_x = margin_x
+                    max_x = margin_x + pixmap_displayed.width()
+                    self.slider_pos_x = max(min_x, min(pos_viewport.x(), max_x))
+                    content_widget.update()  # Rafraîchit le label directement
+                    return
+                
+                if abs(pos_viewport.x() - self.slider_pos_x) < 10:
+                    self.setCursor(Qt.CursorShape.SplitHCursor)
+                else:
+                    self.setCursor(Qt.CursorShape.ArrowCursor)
+        
+        if not self.main_view or self.main_view.current_pixmap is None or not self.main_view.magnifier_active:
+            self.magnifier.hide()
+            return
 
-                # On replace les scrollbars pour réaligner le pixel ciblé sur le curseur physique de l'écran
-                new_scroll_x = int(new_x_in_label - mouse_pos_viewport.x())
-                new_scroll_y = int(new_y_in_label - mouse_pos_viewport.y())
+        content_widget = self.widget() # Le QLabel affichant la radio
+        if not content_widget or not content_widget.pixmap():
+            return
 
-                h_bar.setValue(new_scroll_x)
-                v_bar.setValue(new_scroll_y)
+        pixmap_displayed = content_widget.pixmap()
 
-                h_bar.blockSignals(False)
-                v_bar.blockSignals(False)
+        #Position souris repère global
+        pos_viewport = event.position().toPoint()
+        pos_in_label = content_widget.mapFrom(self.viewport(), pos_viewport)
 
-            event.accept()
+        # Centrage
+        margin_x = (content_widget.width() - pixmap_displayed.width()) // 2
+        margin_y = (content_widget.height() - pixmap_displayed.height()) // 2
+
+        #Position souris relative image
+        img_x = pos_in_label.x() - margin_x
+        img_y = pos_in_label.y() - margin_y
+
+        # Vérifier curseur dans l'image ou pas
+        if 0 <= img_x < pixmap_displayed.width() and 0 <= img_y < pixmap_displayed.height():
+            self.magnifier.show()
+            
+            # loupe suivre curseur
+            self.magnifier.move(pos_viewport.x() + 15, pos_viewport.y() + 15)
+            self.magnifier.raise_()
+
+            # 4. Projection image origine
+            scale_x = self.main_view.current_pixmap.width() / pixmap_displayed.width()
+            scale_y = self.main_view.current_pixmap.height() / pixmap_displayed.height()
+            
+            orig_x = int(img_x * scale_x)
+            orig_y = int(img_y * scale_y)
+
+            # Taille zone source
+            size_src = int(160 / self.main_view.magnifier_power)
+            
+            rect_src = QRect(
+                orig_x - size_src // 2,
+                orig_y - size_src // 2,
+                size_src,
+                size_src
+            )
+
+            #Découpe / redim le zoom via image affiché
+            cropped = self.main_view.current_pixmap.copy(rect_src)
+            zoom_pixmap = cropped.scaled(160, 160, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+            
+            self.magnifier.setPixmap(zoom_pixmap)
         else:
-            event.ignore()
+            self.magnifier.hide()
 
-# --- FENÊTRE PRINCIPALE ---
+
+# === FENÊTRE PRINCIPALE ===
 class MainView(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("PixelMed")
-        self.resize(900, 650)
+        self.resize(1024, 680)
 
-        # gestion de l'icône
-        base_dir = os.path.dirname(os.path.dirname(__file__)) # Remonte à la racine du projet
+        base_dir = os.path.dirname(os.path.dirname(__file__))
         icon_path = os.path.join(base_dir, "assets", "icons", "app_icon.png")
         if os.path.exists(icon_path):
             self.setWindowIcon(QIcon(icon_path))
-        else:
-            print(f"Avertissement : Icône introuvable à {icon_path}")
 
-        # Variables pour stocker l'image active + zoom
         self.current_file_path = None
-        self.current_pixmap = None  # NOUVEAU : Référence stable vers les pixels affichés
-        self.zoom_factor = 1.0
-
-        # Centrage automatique au milieu de l'écran
+        self.current_pixmap = None  
+        
+        # --- ETATS DE LA LOUPE ---
+        self.magnifier_active = False
+        self.magnifier_power = 2.0
+        self.slider_compare_active = False
+        
         self.center_on_screen()
 
-        # composants
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
+        
         self.layout = QVBoxLayout(self.central_widget)
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
 
-        # Intégration du bloc toolbar du haut
         self.top_toolbar = TopToolbar(self)
         self.layout.addWidget(self.top_toolbar)
 
-        # Grille pour la superposition
         self.viewer_container = QWidget()
-        self.grid_layout = QGridLayout(self.viewer_container)
-        self.grid_layout.setContentsMargins(0, 0, 0, 0)
+        content_layout = QHBoxLayout(self.viewer_container)
+        content_layout.setContentsMargins(15, 15, 15, 15)
+        content_layout.setSpacing(15)
 
-        # Couche N°1 : Le visualiseur d'images
+        self.left_toolbar = LeftToolbar(self)
+        content_layout.addWidget(self.left_toolbar)
+
         self.scroll_area = MedicalImageVisualizer(self)
-        self.image_display = QLabel("Aucune radiographie chargée.")
+    
+        self.image_display = MedicalImageLabel("Aucune radiographie chargée.", self.scroll_area)
         self.image_display.setObjectName("PlaceholderLabel")
         self.image_display.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        # Activer le suivi souris sur le label d'affichage
+        self.image_display.setMouseTracking(True)
         self.scroll_area.setWidget(self.image_display)
-        self.grid_layout.addWidget(self.scroll_area, 0, 0)
+        content_layout.addWidget(self.scroll_area)
 
-        # Couche N°2 : La barre latérale translucide
-        self.left_toolbar = LeftToolbar(self)
-        self.grid_layout.addWidget(self.left_toolbar, 0, 0, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-
-        self.grid_layout.setContentsMargins(15, 15, 15, 15)
-
+        content_layout.setStretchFactor(self.left_toolbar, 0)
+        content_layout.setStretchFactor(self.scroll_area, 1)
         self.layout.addWidget(self.viewer_container)
 
-        # Passerelles locales pour préserver la logique interne de la vue
-        self.btn_zoom_reset = self.top_toolbar.btn_zoom_reset
-        self.btn_zoom_reset.clicked.connect(self.zoom_reset)
+        # On transforme le bouton d'agrandissement du haut en Interrupteur Loupe
+        self.btn_magnifier = self.top_toolbar.btn_loupe
+        self.btn_magnifier.setCheckable(True)
+        
+        # Déconnexion des anciens signaux pour lier le nouveau mode
+        try:
+            self.btn_magnifier.clicked.disconnect()
+        except:
+            pass
+        self.btn_magnifier.clicked.connect(self.toggle_magnifier_mode)
+
+        # Btn Slider compa
+        self.btn_slider_compare = self.top_toolbar.btn_slider_compare
+        self.btn_slider_compare.setCheckable(True)
+        self.btn_slider_compare.clicked.connect(self.toggle_slider_mode)
 
     def display_medical_image(self, file_path: str):
-        """Enregistre le fichier et force le premier rendu."""
         self.current_file_path = file_path
-        self.current_pixmap = QPixmap(file_path)  # On mémorise les pixels d'origine
-        self.zoom_factor = 1.0
+        self.current_pixmap = QPixmap(file_path)
         self.update_image_render()
 
     def update_image_render(self):
-        """Calcule la taille idéale de l'image en tenant compte du zoom et de la fenêtre."""
         if self.current_pixmap is None:
             return
+        available_width = self.scroll_area.width() - 15
+        available_height = self.scroll_area.height() - 15
 
-        available_width = self.scroll_area.width() - 5
-        available_height = self.scroll_area.height() - 5
-
-        # MODIFICATION STRICTE : On fait le redimensionnement sur le Pixmap actif au lieu de relire le disque
         scaled_pixmap = self.current_pixmap.scaled(
             available_width,
             available_height,
             Qt.AspectRatioMode.KeepAspectRatio,
             Qt.TransformationMode.SmoothTransformation,
         )
-
-        # zoom loupe
-        if self.zoom_factor != 1.0:
-            new_width = int(scaled_pixmap.width() * self.zoom_factor)
-            new_height = int(scaled_pixmap.height() * self.zoom_factor)
-            scaled_pixmap = scaled_pixmap.scaled(
-                new_width,
-                new_height,
-                Qt.AspectRatioMode.KeepAspectRatio,
-                Qt.TransformationMode.SmoothTransformation,
-            )
-
         self.image_display.setPixmap(scaled_pixmap)
 
-    def resizeEvent(self, event):
-        """Fonction native PyQt déclenchée AUTOMATIQUEMENT au redimensionnement."""
-        super().resizeEvent(event)
+    def toggle_magnifier_mode(self, checked):
+        """Ouvre la popup de réglage et active l'effet au survol"""
         if self.current_pixmap is None:
+            self.btn_magnifier.setChecked(False)
             return
-        self.update_image_render()
+            
+        self.magnifier_active = checked
+        
+        if checked:
+            # Affichage de la boîte de dialogue (Popup)
+            power, ok = QInputDialog.getDouble(
+                self, "Configuration Loupe", 
+                "Facteur de zoom de la lentille (x2.0 à x8.0) :", 
+                value=3.0, min=2.0, max=8.0, decimals=1
+            )
+            if ok:
+                self.magnifier_power = power
+                self.btn_magnifier.setToolTip(f"Désactiver la loupe (Active: x{power})")
+            else:
+                self.magnifier_active = False
+                self.btn_magnifier.setChecked(False)
+        else:
+            self.btn_magnifier.setToolTip("Activer la loupe de précision")
+            self.scroll_area.magnifier.hide()
+
+    def toggle_slider_mode(self, checked):
+        """Active ou désactive l'état du slider de comparaison"""
+        if self.current_pixmap is None:
+            self.btn_slider_compare.setChecked(False)
+            return
+
+        self.slider_compare_active = checked
+        if checked:
+            print("Mode Slider de comparaison activé.")
+            self.scroll_area.slider_pos_x = self.scroll_area.width() // 2
+            self.image_display.update()
+        else:
+            print("Mode Slider de comparaison désactivé.")
+            self.image_display.update()
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        if self.current_pixmap is not None:
+            self.update_image_render()
 
     def center_on_screen(self):
-        """Calcule le centre de l'écran de l'utilisateur et y place la fenêtre."""
         screen = QGuiApplication.primaryScreen()
         if screen:
             screen_geometry = screen.geometry()
@@ -203,8 +328,6 @@ class MainView(QMainWindow):
             y = (screen_geometry.height() - self.height()) // 2
             self.move(x, y)
 
-    # --- LOUPE ---
     def zoom_reset(self):
-        if self.current_pixmap is not None:
-            self.zoom_factor = 1.0
-            self.update_image_render()
+        # Conservé au cas où pour l'architecture, mais non lié
+        pass
