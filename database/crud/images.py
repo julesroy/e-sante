@@ -55,8 +55,7 @@ def get_images_patient(patient_id: int) -> list:
     # Pas de commit nécessaire : un SELECT ne modifie pas la BDD
     cursor.close()
     conn.close()
-
-    return images
+    return images or []
 
 
 def supprimer_image(image_id: int) -> None:

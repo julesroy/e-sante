@@ -46,8 +46,7 @@ def rechercher_patient(query: str) -> list | None:
     patients = cursor.fetchall()
     cursor.close()
     conn.close()
-
-    return patients
+    return patients or []
 
 
 def get_tous_les_patients() -> list | None:
@@ -66,8 +65,7 @@ def get_tous_les_patients() -> list | None:
     patients = cursor.fetchall()
     cursor.close()
     conn.close()
-
-    return patients
+    return patients or []
 
 
 def supprimer_patient(patient_id: int) -> None:
