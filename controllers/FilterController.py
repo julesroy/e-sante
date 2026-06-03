@@ -16,6 +16,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", "models"))
 from FiltrageGaussien import FiltrageGaussien
 from views.PopupFFT import FilterDialog
 from TFD2D import TFD2D
+from FiltrageSobel import FiltrageSobel
 
 class FilterController:
     # Ces attributs appartiennent à MainController.
@@ -49,6 +50,34 @@ class FilterController:
 
             # Affichage du résultat via la méthode centrale de rendu
             self._display_numpy_array(result_array)
+
+        except Exception as e:
+            self.error_handler.handle_exception(e)
+            return
+
+    def handle_sobel(self):
+        """
+        Applique le filtre de Sobel sur l'image courante
+        et affiche le résultat dans la View.
+        Nécessite qu'une image soit chargée (_current_array != None).
+        """
+        # On ne fait rien si aucune image n'est chargée
+        try:
+            if self._current_array is None:
+                self.error_handler.show_error(
+                    "Erreur",
+                    "Aucune image chargée"
+                )
+                return
+
+            # on applique le filtre
+            kernel_size = 3
+            filtre = FiltrageSobel(kernel_size, self._current_array)
+            result_array = filtre.filtrage()
+
+            # Affichage du résultat via la méthode centrale de rendu
+            result = (result_array / 255.0).astype(np.float32)
+            self._display_numpy_array(result)
 
         except Exception as e:
             self.error_handler.handle_exception(e)

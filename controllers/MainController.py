@@ -48,6 +48,8 @@ class MainController(UploadController, FilterController, AnalysisController):
         self.view.left_toolbar.low_pass_clicked.connect(self.handle_passe_bas)
         # Bouton Filtre Passe-Haut
         self.view.left_toolbar.high_pass_clicked.connect(self.handle_passe_haut)
+        # bouton filtre de Sobel
+        self.view.left_toolbar.sobel_clicked.connect(self.handle_sobel)
 
         
     # -------------------------------------------------------------
