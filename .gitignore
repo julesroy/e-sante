@@ -3,3 +3,4 @@ __pycache__/
 merge.sh
 **/.DS_Store
 error.log
+.env
