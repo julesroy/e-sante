@@ -15,9 +15,11 @@ from controllers.UploadController import UploadController
 from controllers.FilterController import FilterController
 from controllers.AnalysisController import AnalysisController
 from controllers.ErrorController import ErrorController
+from controllers.PatientController import PatientController
+from controllers.ImageController import ImageController
 
 
-class MainController(UploadController, FilterController, AnalysisController):
+class MainController(UploadController, FilterController, AnalysisController, PatientController, ImageController):
 
     # --------------------- Initialisation ------------------------
     def __init__(self, model, view: MainView):
