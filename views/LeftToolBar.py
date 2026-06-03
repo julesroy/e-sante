@@ -10,6 +10,7 @@ class LeftToolbar(QWidget):
     low_pass_clicked = pyqtSignal()
     high_pass_clicked = pyqtSignal()
     clahe_clicked = pyqtSignal()
+    ruler_clicked = pyqtSignal(bool)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -64,7 +65,7 @@ class LeftToolbar(QWidget):
         self.btn_high_pass.setFixedSize(button_size, button_size)
         self.btn_high_pass.setToolTip("Appliquer un filtre passe-haut pour ne conserver que les hautes fréquences (détails)")
 
-        self.btn_sobel = QPushButton("\uf7ce")
+        self.btn_sobel = QPushButton("\uf096")
         self.btn_sobel.setFont(icon_font)
         self.btn_sobel.setFixedSize(button_size, button_size)
         self.btn_sobel.setToolTip("Appliquer un filtre de Sobel pour détecter les contours")
@@ -107,12 +108,23 @@ class LeftToolbar(QWidget):
         
         self.measures_container = QWidget()
         self.measures_container.setVisible(False) 
+        
+        measures_layout = QVBoxLayout(self.measures_container)
+        measures_layout.setContentsMargins(8, 5, 8, 10)
+        
+        self.btn_ruler = QPushButton("\uf5a2")
+        self.btn_ruler.setFont(icon_font)
+        self.btn_ruler.setFixedSize(button_size, button_size)
+        self.btn_ruler.setToolTip("Mesurer la distance entre deux points en cm")
+        self.btn_ruler.setCheckable(True) # Devient bleu quand cliqué
+        measures_layout.addWidget(self.btn_ruler)
+        
         self.main_layout.addWidget(self.measures_container)
         
         # === ANNOTER ===
         self.section_annotate = QPushButton("Annoter  ▶")
         self.section_annotate.setObjectName("SectionHeader")
-        self.section_annotate.setCheckable(True)   # Rendu mémorisable pour le QSS
+        self.section_annotate.setCheckable(True) 
         self.main_layout.addWidget(self.section_annotate)
         
         self.annotate_container = QWidget()
@@ -149,6 +161,7 @@ class LeftToolbar(QWidget):
         self.btn_high_pass.clicked.connect(self.high_pass_clicked.emit)
         self.btn_sobel.clicked.connect(self.sobel_clicked.emit)
         self.btn_clahe.clicked.connect(self.clahe_clicked.emit)
+        self.btn_ruler.clicked.connect(self.ruler_clicked.emit)
 
     def toggle_section(self, button, container, title_text):
         """Masque ou affiche le conteneur et force l'état Checked pour le QSS."""
