@@ -1,5 +1,6 @@
 import numpy as np
 from PIL import Image
+import pydicom
 
 
 class ImageConvertie:
@@ -21,9 +22,24 @@ class ImageConvertie:
         La matrice résultante est normalisée entre 0 et 1 pour faciliter les traitements ultérieurs.
         :return: Matrice 2D de l'image convertie (Numpy 2D array).
         """
-        # on utilise la bibliothèque PIL pour ouvrir l'image et la convertir en niveaux de gris
-        image = Image.open(self._imageChemin).convert("L")  # 'L' pour convertir en niveaux de gris
-        matrice = np.array(image).astype(np.float32) / 255.0  # on convertit l'image en un Numpy array 2D et on normalise les valeurs entre 0 et 1
+        matrice = None
+
+        if self._imageChemin.lower().endswith('.dcm'): # images DICOM
+            # on utilise la bibliothèque pydicom pour ouvrir le fichier DICOM et extraire les données d'image
+            dicom_image = pydicom.dcmread(self._imageChemin)
+            pixel_array = dicom_image.pixel_array.astype(np.float32)
+
+            # Normalisation des valeurs de pixel entre 0 et 1
+            min_val = np.min(pixel_array)
+            max_val = np.max(pixel_array)
+            if max_val > min_val:  # éviter la division par zéro
+                matrice = (pixel_array - min_val) / (max_val - min_val)
+            else:
+                matrice = np.zeros_like(pixel_array, dtype=np.float32)  # image uniforme si max == min
+        else : # images classiques (png, jpg)
+            # on utilise la bibliothèque PIL pour ouvrir l'image et la convertir en niveaux de gris
+            image = Image.open(self._imageChemin).convert("L")  # 'L' pour convertir en niveaux de gris
+            matrice = np.array(image).astype(np.float32) / 255.0  # on convertit l'image en un Numpy array 2D et on normalise les valeurs entre 0 et 1
 
         return matrice
 
