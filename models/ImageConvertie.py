@@ -46,7 +46,9 @@ class ImageConvertie:
 
 # tests
 # testImageConvertie = ImageConvertie("COVID-1024.png")
+# testImageConvertie = ImageConvertie("dcm1.dcm")
 # matriceImage = testImageConvertie.convertirEnNumpyArray()
+# print(f"[DEBUG] Type de matrice: {matriceImage.dtype}")
 # print(matriceImage)  # affiche la matrice de l'image convertie
 # print(type(matriceImage))  # type de la matrice de l'image convertie
 

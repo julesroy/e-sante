@@ -26,16 +26,34 @@ class FiltrageGaussien:
         Applique le filtrage gaussien à l'image spécifiée et sauvegarde le résultat.
         :return: Matrice de l'image filtrée en niveaux de gris (Numpy 2D array).
         """
-        image = self._imageNpArray  # utilise la matrice Numpy de l'image
-        imageFloueMatrice = cv2.GaussianBlur(image, self._kernel, self._sigma)  # applique le filtrage gaussien
+        # on convertit en uint8 si nécessaire (important pour DICOM)
+        if self._imageNpArray.dtype != np.uint8:
+            if self._imageNpArray.max() <= 1.0:
+                img_8bit = (self._imageNpArray * 255).astype(np.uint8)
+            else:
+                img_8bit = self._imageNpArray.astype(np.uint8)
+        else:
+            img_8bit = self._imageNpArray
 
-        return imageFloueMatrice
+        imageFloueMatrice = cv2.GaussianBlur(img_8bit, self._kernel, self._sigma)
+        return imageFloueMatrice  # Retourne maintenant uint8 [0,255]
+    
+    def afficher(self, imageFiltreeMatrice):
+        """
+        Affiche l'image filtrée.
+        :param imageFiltreeMatrice: Matrice de l'image filtrée en niveaux de gris (Numpy 2D array).
+        """
+        cv2.imshow('Image Filtrée Gaussienne', imageFiltreeMatrice)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
 
 
 # tests
+# testImageConvertie = ImageConvertie("dcm1.dcm").convertirEnNumpyArray()
 # testImageConvertie = ImageConvertie("COVID-1024.png").convertirEnNumpyArray()
 # testMatrice = FiltrageGaussien((5, 5), 0, testImageConvertie)
 # testMatriceFiltree = testMatrice.filtrage()
+# testMatrice.afficher(testMatriceFiltree)
 # print(testMatriceFiltree)
 # print(type(testMatriceFiltree))  # type de la matrice
 # print(testMatriceFiltree.ndim)  # dimension de la matrice

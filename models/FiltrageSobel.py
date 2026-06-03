@@ -59,6 +59,7 @@ class FiltrageSobel:
 
 # tests
 # testImageConvertie = ImageConvertie("COVID-1024.png").convertirEnNumpyArray()
+# testImageConvertie = ImageConvertie("dcm1.dcm").convertirEnNumpyArray()
 # testMatrice = FiltrageSobel(3, testImageConvertie)
 # testMatriceFiltree = testMatrice.filtrage()
 # print(testMatriceFiltree)
