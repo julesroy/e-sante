@@ -5,6 +5,7 @@ from PyQt6.QtGui import QFont
 class LeftToolbar(QWidget):
     reset_image_clicked = pyqtSignal()
     gaussian_clicked = pyqtSignal()
+    sobel_clicked = pyqtSignal()
     tfd2d_clicked = pyqtSignal()
     low_pass_clicked = pyqtSignal()
     high_pass_clicked = pyqtSignal()
@@ -41,28 +42,39 @@ class LeftToolbar(QWidget):
         self.btn_origin = QPushButton("\uf0e2")
         self.btn_origin.setFont(icon_font)
         self.btn_origin.setFixedSize(button_size, button_size)
+        self.btn_origin.setToolTip("Afficher l'image d'origine")
         
         self.btn_gaussian = QPushButton("\uf0d0")
         self.btn_gaussian.setFont(icon_font)
         self.btn_gaussian.setFixedSize(button_size, button_size)
+        self.btn_gaussian.setToolTip("Appliquer un filtre gaussien pour lisser l'image")
         
         self.btn_tfd2d = QPushButton("\uf1fe")
         self.btn_tfd2d.setFont(icon_font)
         self.btn_tfd2d.setFixedSize(button_size, button_size)
+        self.btn_tfd2d.setToolTip("Afficher la Transformée de Fourier 2D de l'image")
         
         self.btn_low_pass = QPushButton("\uf103")
         self.btn_low_pass.setFont(icon_font)
         self.btn_low_pass.setFixedSize(button_size, button_size)
+        self.btn_low_pass.setToolTip("Appliquer un filtre passe-bas pour ne conserver que les basses fréquences (lissage)")
 
         self.btn_high_pass = QPushButton("\uf102")
         self.btn_high_pass.setFont(icon_font)
         self.btn_high_pass.setFixedSize(button_size, button_size)
+        self.btn_high_pass.setToolTip("Appliquer un filtre passe-haut pour ne conserver que les hautes fréquences (détails)")
+
+        self.btn_sobel = QPushButton("\uf7ce")
+        self.btn_sobel.setFont(icon_font)
+        self.btn_sobel.setFixedSize(button_size, button_size)
+        self.btn_sobel.setToolTip("Appliquer un filtre de Sobel pour détecter les contours")
 
         self.grid_layout.addWidget(self.btn_origin, 0, 0)
         self.grid_layout.addWidget(self.btn_gaussian, 0, 1)
         self.grid_layout.addWidget(self.btn_tfd2d, 0, 2)
         self.grid_layout.addWidget(self.btn_low_pass, 1, 0)
         self.grid_layout.addWidget(self.btn_high_pass, 1, 1)
+        self.grid_layout.addWidget(self.btn_sobel, 1, 2)
         
         self.main_layout.addWidget(self.filters_container)
         
@@ -81,7 +93,8 @@ class LeftToolbar(QWidget):
         self.btn_clahe = QPushButton("\uf042")
         self.btn_clahe.setFont(icon_font)
         self.btn_clahe.setFixedSize(button_size, button_size)
-
+        self.btn_clahe.setToolTip("Appliquer un filtre CLAHE pour améliorer le contraste")
+       
         self.grid_layout_contrast.addWidget(self.btn_clahe, 0, 0)
 
         self.main_layout.addWidget(self.contrast_container)
@@ -109,9 +122,16 @@ class LeftToolbar(QWidget):
         # === CONFIG BTN GRILLE ===
         self.filter_buttons = [
             self.btn_origin, self.btn_gaussian, self.btn_tfd2d,
-            self.btn_low_pass, self.btn_high_pass, self.btn_clahe
+            self.btn_low_pass, self.btn_high_pass, self.btn_sobel, self.btn_clahe
         ]
         for btn in self.filter_buttons:
+            btn.setCheckable(True)
+            btn.setAutoExclusive(True)
+
+        self.contrast_buttons = [
+            self.btn_clahe
+        ]
+        for btn in self.contrast_buttons:
             btn.setCheckable(True)
             btn.setAutoExclusive(True)
 
@@ -127,6 +147,7 @@ class LeftToolbar(QWidget):
         self.btn_tfd2d.clicked.connect(self.tfd2d_clicked.emit)
         self.btn_low_pass.clicked.connect(self.low_pass_clicked.emit)
         self.btn_high_pass.clicked.connect(self.high_pass_clicked.emit)
+        self.btn_sobel.clicked.connect(self.sobel_clicked.emit)
         self.btn_clahe.clicked.connect(self.clahe_clicked.emit)
 
     def toggle_section(self, button, container, title_text):

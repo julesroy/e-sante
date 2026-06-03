@@ -87,3 +87,12 @@ LeftToolbar QWidget QGridLayout QPushButton:pressed {
     border: 2px solid #ffffff;
     border-radius: 0px; /* Carré parfait */
 }
+
+/* affiche le texte de description pour les boutons */
+QToolTip {
+    background-color: #3c3c3c;
+    color: #E0E0E0;
+    border: 1px solid #555555;
+    border-radius: 2px;
+    padding: 2px 4px;
+}
