@@ -64,7 +64,7 @@ class LeftToolbar(QWidget):
         self.btn_high_pass.setFixedSize(button_size, button_size)
         self.btn_high_pass.setToolTip("Appliquer un filtre passe-haut pour ne conserver que les hautes fréquences (détails)")
 
-        self.btn_sobel = QPushButton("\uf7ce")
+        self.btn_sobel = QPushButton("\uf096")
         self.btn_sobel.setFont(icon_font)
         self.btn_sobel.setFixedSize(button_size, button_size)
         self.btn_sobel.setToolTip("Appliquer un filtre de Sobel pour détecter les contours")
