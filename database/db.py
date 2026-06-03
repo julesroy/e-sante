@@ -3,6 +3,28 @@ import psycopg2
 from dotenv import load_dotenv
 import os
 
+# ==============================================================
+# CRUD
+# FONCTIONNEMENT GÉNÉRAL D'UNE REQUÊTE PSYCOPG2 :
+#
+#   1. get_connection()  -> ouvre une connexion au serveur PostgreSQL
+#   2. conn.cursor()     -> crée un "curseur", c'est l'objet qui
+#                           permet d'envoyer des requêtes SQL et de
+#                           lire les résultats. Une connexion peut
+#                           avoir plusieurs curseurs en parallèle.
+#   3. cursor.execute()  -> envoie la requête SQL au serveur.
+#                           Les %s sont des paramètres sécurisés
+#                           (protection injection SQL), psycopg2
+#                           les remplace proprement côté serveur.
+#   4. cursor.fetchone() -> récupère UNE seule ligne de résultat
+#      cursor.fetchall() -> récupère TOUTES les lignes de résultat
+#   5. conn.commit()     -> valide la transaction (INSERT/UPDATE/
+#                           DELETE). Sans commit, rien n'est sauvé.
+#                           Pas besoin de commit pour un SELECT.
+#   6. cursor.close()    -> libère le curseur
+#      conn.close()      -> ferme la connexion à la BDD
+# ==============================================================
+
 #Charge les variables du fichier .env
 load_dotenv()
 
