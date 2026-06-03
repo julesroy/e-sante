@@ -30,23 +30,26 @@ class UploadController:
         Ouvre l'explorateur de fichiers, affiche l'image dans la View
         et stocke sa matrice numpy normalisée pour les traitements ultérieurs.
         """
-        # Ouverture de l'explorateur de fichiers natif
         file_path, _ = QFileDialog.getOpenFileName(
             self.view,
             "Sélectionner une radiographie",
             "",
-            "Images (*.png *.jpg *.jpeg)",
+            "Images (*.png *.jpg *.jpeg *.dcm)",
         )
 
-        # Si l'utilisateur a bien sélectionné un fichier
         if file_path:
             self._original_pixmap = None
-            # Affichage brut de l'image dans la View
-            self.view.display_medical_image(file_path)
             self._last_file_path = file_path
 
             # Conversion en numpy array normalisé [0,1] pour les traitements ultérieurs
             self._current_array = ImageConvertie(file_path).convertirEnNumpyArray()
+
+            # Pour les DICOM, afficher via numpy array plutôt que QPixmap directement
+            if file_path.lower().endswith('.dcm'):
+                self._display_numpy_array(self._current_array)
+            else:
+                # Pour PNG/JPG, afficher directement et mémoriser
+                self.view.display_medical_image(file_path)
 
             # Mémoriser le pixmap d'origine chargé depuis le fichier
             if getattr(self.view, "current_pixmap", None) is not None:

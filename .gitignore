@@ -4,3 +4,5 @@ merge.sh
 **/.DS_Store
 .env
 error.log
+dldicom.py
+donnees_covid/
