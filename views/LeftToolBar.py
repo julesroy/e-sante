@@ -112,7 +112,7 @@ class LeftToolbar(QWidget):
         measures_layout = QVBoxLayout(self.measures_container)
         measures_layout.setContentsMargins(8, 5, 8, 10)
         
-        self.btn_ruler = QPushButton("\uf5a2")
+        self.btn_ruler = QPushButton("\uf545")
         self.btn_ruler.setFont(icon_font)
         self.btn_ruler.setFixedSize(button_size, button_size)
         self.btn_ruler.setToolTip("Mesurer la distance entre deux points en cm")

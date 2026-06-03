@@ -17,19 +17,14 @@ class MedicalImageLabel(QLabel):
         super().mousePressEvent(event)
         if self.visualizer and self.visualizer.main_view and self.visualizer.main_view.ruler_active:
             pixmap_displayed = self.pixmap()
-            if pixmap_displayed and self.visualizer.main_view.current_pixmap:
+            if pixmap_displayed:
                 margin_x = (self.width() - pixmap_displayed.width()) // 2
                 margin_y = (self.height() - pixmap_displayed.height()) // 2
                 img_rect = QRect(margin_x, margin_y, pixmap_displayed.width(), pixmap_displayed.height())
                 
-                # Calcul de l'échelle entre l'image haute définition originale et l'affichage écran
-                scale_x = self.visualizer.main_view.current_pixmap.width() / pixmap_displayed.width()
-                scale_y = self.visualizer.main_view.current_pixmap.height() / pixmap_displayed.height()
-                
-                # Transmission de la position et des facteurs d'échelle à l'overlay
-                if self.ruler_overlay.handle_mouse_press(event.position().toPoint(), img_rect, scale_x, scale_y):
+                # Plus besoin de passer scale_x et scale_y ici, l'overlay gère tout seul avec le pixmap d'origine !
+                if self.ruler_overlay.handle_mouse_press(event.position().toPoint(), img_rect):
                     self.update()
-
     def paintEvent(self, event):
         """Dessine l'image et force la ligne du slider au premier plan absolu"""
         super().paintEvent(event)
@@ -100,7 +95,7 @@ class MedicalImageVisualizer(QScrollArea):
         # Tracking souris
         self.setMouseTracking(True)
         self.magnifier = QLabel(self)
-        self.magnifier.setFixedSize(160, 160)
+        self.magnifier.setFixedSize(230, 230)
         self.magnifier.setObjectName("MagnifierLens")
         
         self.magnifier.hide()
@@ -194,7 +189,7 @@ class MedicalImageVisualizer(QScrollArea):
             orig_y = int(img_y * scale_y)
 
             # Taille zone source
-            size_src = int(160 / self.main_view.magnifier_power)
+            size_src = int(230 / self.main_view.magnifier_power)
             
             rect_src = QRect(
                 orig_x - size_src // 2,
@@ -205,7 +200,7 @@ class MedicalImageVisualizer(QScrollArea):
 
             #Découpe / redim le zoom via image affiché
             cropped = self.main_view.current_pixmap.copy(rect_src)
-            zoom_pixmap = cropped.scaled(160, 160, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+            zoom_pixmap = cropped.scaled(230, 230, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
             
             self.magnifier.setPixmap(zoom_pixmap)
         else:
