@@ -62,10 +62,10 @@ def get_tous_les_patients() -> list | None:
         ORDER BY nom, prenom
     """)
 
-    patients = cursor.fetchall()
+    patients: list = cursor.fetchall() or []
     cursor.close()
     conn.close()
-    return patients or []
+    return patients
 
 
 def supprimer_patient(patient_id: int) -> None:
