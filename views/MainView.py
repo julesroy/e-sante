@@ -17,14 +17,18 @@ class MedicalImageLabel(QLabel):
         super().mousePressEvent(event)
         if self.visualizer and self.visualizer.main_view and self.visualizer.main_view.ruler_active:
             pixmap_displayed = self.pixmap()
-            if pixmap_displayed:
+            if pixmap_displayed and self.visualizer.main_view.current_pixmap:
                 margin_x = (self.width() - pixmap_displayed.width()) // 2
                 margin_y = (self.height() - pixmap_displayed.height()) // 2
                 img_rect = QRect(margin_x, margin_y, pixmap_displayed.width(), pixmap_displayed.height())
                 
-                # Transmission de la position locale du clic à l'overlay
-                if self.ruler_overlay.handle_mouse_press(event.position().toPoint(), img_rect):
-                    self.update() # Redessine le label pour afficher la ligne
+                # Calcul de l'échelle entre l'image haute définition originale et l'affichage écran
+                scale_x = self.visualizer.main_view.current_pixmap.width() / pixmap_displayed.width()
+                scale_y = self.visualizer.main_view.current_pixmap.height() / pixmap_displayed.height()
+                
+                # Transmission de la position et des facteurs d'échelle à l'overlay
+                if self.ruler_overlay.handle_mouse_press(event.position().toPoint(), img_rect, scale_x, scale_y):
+                    self.update()
 
     def paintEvent(self, event):
         """Dessine l'image et force la ligne du slider au premier plan absolu"""
