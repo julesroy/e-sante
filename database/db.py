@@ -9,7 +9,7 @@ load_dotenv()
 def get_connection():
     """
     Crée et retourne une connexion PostgreSQL
-    Les cradentials sont lus depuis le fichier .env à la racine du projet.
+    Les credentials sont lus depuis le fichier .env à la racine du projet.
     À appeler à chaque fois qu'on a besoin d'interagir avec la BDD.
     """
     return psycopg2.connect(
