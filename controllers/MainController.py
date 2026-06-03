@@ -15,9 +15,10 @@ from controllers.UploadController import UploadController
 from controllers.FilterController import FilterController
 from controllers.AnalysisController import AnalysisController
 from controllers.ErrorController import ErrorController
+from controllers.RulerController import RulerController
 
 
-class MainController(UploadController, FilterController, AnalysisController):
+class MainController(UploadController, FilterController, AnalysisController,RulerController):
 
     # --------------------- Initialisation ------------------------
     def __init__(self, model, view: MainView):
@@ -50,6 +51,8 @@ class MainController(UploadController, FilterController, AnalysisController):
         self.view.left_toolbar.high_pass_clicked.connect(self.handle_passe_haut)
         # bouton filtre de Sobel
         self.view.left_toolbar.sobel_clicked.connect(self.handle_sobel)
+        # bouton règle de mesure
+        self.view.left_toolbar.ruler_clicked.connect(self.handle_ruler_toggle)
 
         
     # -------------------------------------------------------------

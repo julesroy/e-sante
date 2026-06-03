@@ -4,17 +4,32 @@ from PyQt6.QtGui import QPixmap, QGuiApplication, QIcon, QPainter, QCursor, QPen
 import os
 from views.LeftToolBar import LeftToolbar
 from views.TopToolbar import TopToolbar
+from views.RulerOverlay import RulerOverlay
+
 class MedicalImageLabel(QLabel):
     def __init__(self, text, parent=None):
         super().__init__(text, parent)
-        self.visualizer = parent  # Référence vers la ScrollArea
+        self.visualizer = parent 
+        self.ruler_overlay = RulerOverlay(self)
+
+    def mousePressEvent(self, event):
+        """Intercepte les clics pour positionner les points de mesure si la règle est active."""
+        super().mousePressEvent(event)
+        if self.visualizer and self.visualizer.main_view and self.visualizer.main_view.ruler_active:
+            pixmap_displayed = self.pixmap()
+            if pixmap_displayed:
+                margin_x = (self.width() - pixmap_displayed.width()) // 2
+                margin_y = (self.height() - pixmap_displayed.height()) // 2
+                img_rect = QRect(margin_x, margin_y, pixmap_displayed.width(), pixmap_displayed.height())
+                
+                # Transmission de la position locale du clic à l'overlay
+                if self.ruler_overlay.handle_mouse_press(event.position().toPoint(), img_rect):
+                    self.update() # Redessine le label pour afficher la ligne
 
     def paintEvent(self, event):
         """Dessine l'image et force la ligne du slider au premier plan absolu"""
         super().paintEvent(event)
-        if not self.visualizer or not self.visualizer.main_view or not self.visualizer.main_view.slider_compare_active or not self.visualizer.main_view.current_pixmap:
-            return
-
+        
         pixmap_displayed = self.pixmap()
         if not pixmap_displayed:
             return
@@ -25,6 +40,14 @@ class MedicalImageLabel(QLabel):
         margin_x = (self.width() - pixmap_displayed.width()) // 2
         margin_y = (self.height() - pixmap_displayed.height()) // 2
         img_rect = QRect(margin_x, margin_y, pixmap_displayed.width(), pixmap_displayed.height())
+
+        # --- DESSIN DE LA REGLE DE MESURE AU PREMIER PLAN ---
+        if self.visualizer and self.visualizer.main_view and self.visualizer.main_view.ruler_active:
+            self.ruler_overlay.draw_measure(painter, img_rect)
+
+        if not self.visualizer or not self.visualizer.main_view or not self.visualizer.main_view.slider_compare_active or not self.visualizer.main_view.current_pixmap:
+            painter.end()
+            return
 
         # Récupération de l'image d'origine
         controller = getattr(self.visualizer.main_view, 'controller', None)
@@ -205,6 +228,9 @@ class MainView(QMainWindow):
         self.magnifier_power = 2.0
         self.slider_compare_active = False
         
+        # --- ETATS DE LA REGLE ---
+        self.ruler_active = False
+        
         self.center_on_screen()
 
         self.central_widget = QWidget()
@@ -314,6 +340,21 @@ class MainView(QMainWindow):
         else:
             print("Mode Slider de comparaison désactivé.")
             self.image_display.update()
+
+    def toggle_ruler_mode(self, checked):
+        """Active ou désactive l'état de la règle de mesure"""
+        if self.current_pixmap is None:
+            self.left_toolbar.btn_ruler.setChecked(False)
+            return
+
+        self.ruler_active = checked
+        if checked:
+            print("Mode Règle de mesure activé.")
+            if hasattr(self.image_display, 'ruler_overlay'):
+                self.image_display.ruler_overlay.clear()
+        else:
+            print("Mode Règle de mesure désactivé.")
+        self.image_display.update()
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
