@@ -24,6 +24,7 @@ class AnalysisController:
     _current_array: np.ndarray | None
     _display_numpy_array: Callable
     error_handler: ErrorController
+    _contrast_base_array: np.ndarray | None = None
     def handle_tfd2d(self):
         """
         Applique la Transformée de Fourier Discrète 2D sur l'image courante
@@ -72,6 +73,61 @@ class AnalysisController:
             result = clahe.appliquer()
 
             # Affichage du résultat
+            self._display_numpy_array(result)
+            
+        except Exception as e:
+            self.error_handler.handle_exception(e)
+            return
+        
+    def handle_contrast_slider(self, checked):
+        """
+        Initialise le slider de contraste en bas à gauche de l'image.
+        Le slider met à jour l'image en temps réel quand on le bouge.
+        Nécessite qu'une image soit chargée (_current_array != None).
+        
+        :param checked: True pour activer, False pour désactiver
+        """
+        try:
+            if self._current_array is None:
+                self.error_handler.show_error(
+                    "Erreur",
+                    "Aucune image chargée"
+                )
+                return
+            
+            if checked:
+                # Sauvegarder l'image courante comme référence pour les calculs de contraste
+                self._contrast_base_array = self._current_array.copy()
+                print("Slider de contraste activé - Image de base sauvegardée")
+            else:
+                # Réinitialiser
+                self._contrast_base_array = None
+                print("Slider de contraste désactivé")
+            
+        except Exception as e:
+            self.error_handler.handle_exception(e)
+            return
+    
+    def apply_contrast_realtime(self, facteur_contraste):
+        """
+        Applique le contraste en temps réel à partir de l'image de base.
+        Cette méthode est appelée à chaque mouvement du slider.
+        
+        :param facteur_contraste: Valeur du slider (1-10)
+        """
+        try:
+            if self._contrast_base_array is None:
+                return
+            
+            # Application de l'ajustement de contraste sur l'image de base
+            # new_pixel = 0.5 + facteur * (old_pixel - 0.5)
+            result = 0.5 + facteur_contraste * (self._contrast_base_array - 0.5)
+            result = np.clip(result, 0, 1).astype(np.float32)
+            
+            # Mettre à jour _current_array pour que l'affichage reflète les modifications
+            self._current_array = result
+            
+            # Affichage
             self._display_numpy_array(result)
             
         except Exception as e:

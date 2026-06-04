@@ -1,6 +1,10 @@
-from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QScrollArea, QInputDialog
+from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QScrollArea, QInputDialog, QSlider
 from PyQt6.QtCore import Qt, QPoint, QRect
 from PyQt6.QtGui import QPixmap, QGuiApplication, QIcon, QPainter, QCursor, QPen, QColor
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from controllers.MainController import MainController
 import os
 from views.LeftToolBar import LeftToolbar
 from views.TopToolbar import TopToolbar
@@ -211,6 +215,11 @@ class MedicalImageVisualizer(QScrollArea):
 class MainView(QMainWindow):
     def __init__(self):
         super().__init__()
+        # Déclaration des attributs pour Pylance
+        self.controller: MainController | None = None
+        self.contrast_slider: QSlider | None = None
+        self.zoom_factor: float = 1.0
+        
         self.setWindowTitle("PixelMed")
         self.resize(1024, 680)
 
@@ -229,6 +238,11 @@ class MainView(QMainWindow):
         
         # --- ETATS DE LA REGLE ---
         self.ruler_active = False
+        
+        # --- SLIDER DE CONTRASTE ---
+        self.contrast_slider_active = False
+        self.contrast_slider = None
+        self._contrast_slider_connection = None
         
         self.center_on_screen()
 
@@ -259,6 +273,18 @@ class MainView(QMainWindow):
         # Activer le suivi souris sur le label d'affichage
         self.image_display.setMouseTracking(True)
         self.scroll_area.setWidget(self.image_display)
+        
+        # --- SETUP SLIDER DE CONTRASTE (overlay) ---
+        self.contrast_slider = QSlider(Qt.Orientation.Horizontal, self.scroll_area)
+        self.contrast_slider.setMinimum(1)
+        self.contrast_slider.setMaximum(10)
+        self.contrast_slider.setValue(1)
+        self.contrast_slider.setFixedWidth(200)
+        self.contrast_slider.setFixedHeight(20)
+        self.contrast_slider.hide()
+        # Positionnement initial (sera mis à jour quand la fenêtre se redimensionne)
+        self.contrast_slider.move(15, self.scroll_area.height() - 35)
+        
         content_layout.addWidget(self.scroll_area)
 
         content_layout.setStretchFactor(self.left_toolbar, 0)
@@ -280,6 +306,11 @@ class MainView(QMainWindow):
         self.btn_slider_compare = self.top_toolbar.btn_slider_compare
         self.btn_slider_compare.setCheckable(True)
         self.btn_slider_compare.clicked.connect(self.toggle_slider_mode)
+        
+        # Btn Contrast Slider
+        self.btn_magnifier = self.left_toolbar.btn_contrast_slider
+        self.btn_magnifier.setCheckable(True)
+        self.left_toolbar.contrast_slider_clicked.connect(self.toggle_contrast_slider_mode)
 
     def display_medical_image(self, file_path: str):
         self.current_file_path = file_path
@@ -332,6 +363,7 @@ class MainView(QMainWindow):
             return
 
         self.slider_compare_active = checked
+        print(f"Mode Slider de comparaison {'activé' if checked else 'désactivé'}.")
         if checked:
             print("Mode Slider de comparaison activé.")
             self.scroll_area.slider_pos_x = self.scroll_area.width() // 2
@@ -339,6 +371,34 @@ class MainView(QMainWindow):
         else:
             print("Mode Slider de comparaison désactivé.")
             self.image_display.update()
+
+    def toggle_contrast_slider_mode(self, checked):
+        """Active ou désactive le mode slider de contraste"""
+        if self.current_pixmap is None or self.contrast_slider is None:
+            self.left_toolbar.btn_contrast_slider.setChecked(False)
+            return
+        
+        self.contrast_slider_active = checked
+        if checked:
+            print("Mode Slider de contraste activé.")
+            self.contrast_slider.show()
+            # Repositionner le slider en bas à gauche
+            self._update_contrast_slider_position()
+            # Connecter le slider au controller (si pas déjà connecté)
+            if self.controller and self._contrast_slider_connection is None:
+                self._contrast_slider_connection = self.contrast_slider.valueChanged.connect(self.controller.apply_contrast_realtime)
+        else:
+            print("Mode Slider de contraste désactivé.")
+            self.contrast_slider.hide()
+            # Déconnecter le signal proprement
+            if self._contrast_slider_connection is not None:
+                try:
+                    self.contrast_slider.valueChanged.disconnect(self._contrast_slider_connection)
+                except:
+                    pass
+                self._contrast_slider_connection = None
+            # Réinitialiser le slider
+            self.contrast_slider.setValue(1)
 
     def toggle_ruler_mode(self, checked):
         """Active ou désactive l'état de la règle de mesure"""
@@ -355,10 +415,20 @@ class MainView(QMainWindow):
             print("Mode Règle de mesure désactivé.")
         self.image_display.update()
 
+    def _update_contrast_slider_position(self):
+        """Repositionne le slider de contraste en bas à gauche de la scroll_area"""
+        if self.contrast_slider is not None and self.contrast_slider_active:
+            # Position en bas à gauche du scroll_area avec marges
+            x = 15
+            y = self.scroll_area.height() - 35
+            self.contrast_slider.move(x, y)
+
     def resizeEvent(self, event):
         super().resizeEvent(event)
         if self.current_pixmap is not None:
             self.update_image_render()
+        # Repositionner le slider de contraste lors du resize
+        self._update_contrast_slider_position()
 
     def center_on_screen(self):
         screen = QGuiApplication.primaryScreen()

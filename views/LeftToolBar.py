@@ -10,6 +10,7 @@ class LeftToolbar(QWidget):
     low_pass_clicked = pyqtSignal()
     high_pass_clicked = pyqtSignal()
     clahe_clicked = pyqtSignal()
+    contrast_slider_clicked = pyqtSignal(bool)
     ruler_clicked = pyqtSignal(bool)
 
     def __init__(self, parent=None):
@@ -95,8 +96,15 @@ class LeftToolbar(QWidget):
         self.btn_clahe.setFont(icon_font)
         self.btn_clahe.setFixedSize(button_size, button_size)
         self.btn_clahe.setToolTip("Appliquer un filtre CLAHE pour améliorer le contraste")
-       
         self.grid_layout_contrast.addWidget(self.btn_clahe, 0, 0)
+
+        self.btn_contrast_slider = QPushButton("\uf0b2")
+        self.btn_contrast_slider.setFont(icon_font)
+        self.btn_contrast_slider.setFixedSize(button_size, button_size)
+        self.btn_contrast_slider.setToolTip("Ajuster le contraste avec un slider")
+        self.btn_contrast_slider.setCheckable(True)
+        self.btn_contrast_slider.clicked.connect(self.contrast_slider_clicked.emit)
+        self.grid_layout_contrast.addWidget(self.btn_contrast_slider, 0, 1)
 
         self.main_layout.addWidget(self.contrast_container)
 

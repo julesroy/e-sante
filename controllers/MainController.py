@@ -33,6 +33,12 @@ class MainController(UploadController, FilterController, AnalysisController, Pat
         
         # AJOUT : Stockage du QPixmap d'origine brute (en mémoire RAM)
         self._original_pixmap: QPixmap | None = None
+        
+        # Stockage de l'image de base pour le slider de contraste (évite l'effet multiplicatif)
+        self._contrast_base_array: np.ndarray | None = None
+
+        # Rendre le controller accessible à la view
+        self.view.controller = self
 
         self._connect_signals()
 
@@ -47,6 +53,8 @@ class MainController(UploadController, FilterController, AnalysisController, Pat
         self.view.left_toolbar.reset_image_clicked.connect(self.handle_reset_image)
         # Bouton CLAHE
         self.view.left_toolbar.clahe_clicked.connect(self.handle_clahe)
+        # Bouton Contraste (slider)
+        self.view.left_toolbar.contrast_slider_clicked.connect(self.handle_contrast_slider)
         # Bouton Filtre Passe-Bas
         self.view.left_toolbar.low_pass_clicked.connect(self.handle_passe_bas)
         # Bouton Filtre Passe-Haut
@@ -113,5 +121,10 @@ class MainController(UploadController, FilterController, AnalysisController, Pat
         # On donne à la vue une copie propre du Pixmap brut de départ
         self.view.current_pixmap = self._original_pixmap.copy()
         
+        # On remet à 0 le slider de contraste
+        self._contrast_base_array = None
+        self.view.left_toolbar.btn_contrast_slider.setChecked(False)
+        self.view.left_toolbar.btn_contrast_slider.setChecked(True)
+
         # On demande à la vue de mettre à jour le QLabel à l'écran
         self.view.update_image_render()
