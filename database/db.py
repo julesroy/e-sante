@@ -3,6 +3,8 @@ import psycopg2
 from dotenv import load_dotenv
 import os
 
+from database.connection import get_connection, is_online
+
 # ==============================================================
 # CRUD
 # FONCTIONNEMENT GÉNÉRAL D'UNE REQUÊTE PSYCOPG2 :
@@ -28,27 +30,18 @@ import os
 #Charge les variables du fichier .env
 load_dotenv()
 
-def get_connection():
-    """
-    Crée et retourne une connexion PostgreSQL
-    Les credentials sont lus depuis le fichier .env à la racine du projet.
-    À appeler à chaque fois qu'on a besoin d'interagir avec la BDD.
-    """
-    return psycopg2.connect(
-        host=os.getenv("DB_HOST"),          # IP du serveur Oracle
-        port=os.getenv("DB_PORT"),          # 5432 par défaut
-        dbname=os.getenv("DB_NAME"),        # esante
-        user=os.getenv("DB_USER"),          # esante_user
-        password=os.getenv("DB_PASSWORD")   # mdp
-    )
-
 def init_db():
     """
     Crée les tables si elles n'existent pas déjà.
     Appelée une seule fois au démarrage de l'application dans main.py
     Le IF NOT EXISTS garantit qu'on ne recrée pas les tables à chaque lancement.
-    """
+    """ 
     conn = get_connection()
+    # Guard hors-ligne — pas besoin d'init si pas de BDD
+    if conn is None:
+        print("[DB] Hors-ligne. Veuillez vous connecter à Internet pour utiliser toutes les fonctionnalités.")
+        return
+    
     cursor = conn.cursor()
 
     # Création de la table patients
@@ -80,16 +73,16 @@ def init_db():
     conn.commit()
     cursor.close()
     conn.close()
-    print("Base de donnée initialisée")
+    print("[DB] Base de donnée initialisée")
 
 def test_connexion():
     """
     Teste la connexion à la BDD et affiche le résultat.
-    Utile pendant le développement pour vérifier que le .env est correct.
+    Utilise get_connection() de connection.py pour mettre à jour DB_MODE.
     """
-    try:
-        conn = get_connection()
-        print("Connexion BDD OK")
+    conn = get_connection()
+    if conn:
+        print("[DB] Connexion BDD OK")
         conn.close()
-    except Exception as e:
-        print(f"Erreur de connexion : {e}")
+    else:
+        print("[DB] Hors-ligne")

@@ -50,6 +50,13 @@ class ErrorController(QObject):
             message,
             QMessageBox.StandardButton.Ok
         )
+
+    def show_info(self, titre: str, message: str) -> None:
+        """
+        Affiche une boîte de dialogue d'information (succès, confirmation).
+        """
+        from PyQt6.QtWidgets import QMessageBox
+        QMessageBox.information(self.parent_window, titre, message, QMessageBox.StandardButton.Ok)  
     
     def handle_exception(self, exception: Exception):
         """Gère automatiquement une exception"""

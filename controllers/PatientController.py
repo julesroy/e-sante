@@ -7,7 +7,8 @@ if TYPE_CHECKING:
     from views.MainView import MainView
     from controllers.ErrorController import ErrorController
 
-# ===== IMPORTS DES CRUDS =====
+# ===== IMPORTS BDD =====
+from database.connection import is_online
 from database.crud.patients import (
     creer_patient,
     get_tous_les_patients,
@@ -15,6 +16,8 @@ from database.crud.patients import (
     supprimer_patient,
 )
 
+# Message réutilisé dans tous les guards hors-ligne
+_MSG_OFFLINE = "Cette fonctionnalité nécessite une connexion Internet"
 class PatientController:
     #Attributs pour Pylance
     view: MainView
@@ -26,9 +29,14 @@ class PatientController:
     def handle_nouveau_patient(self, nom: str, prenom: str, date_naissance: str | None = None, sexe: str | None = None, numero_patient: str | None = None,) -> int | None:
         """
         Insère un nouveau patient en BDD.
-        Retourne son id, ou None si l'insertion échoue.
+        Retourne son id, ou None si hors-ligne / erreur.
         Appelé depuis le formulaire de création dans la View.
         """
+        # Guard hors-ligne
+        if not is_online():
+            self.error_handler.show_error("Mode hors-ligne", _MSG_OFFLINE)
+            return None
+
         try:
             if not nom.strip() or not prenom.strip():
                 self.error_handler.show_error(
@@ -54,7 +62,12 @@ class PatientController:
         Retourne une liste de tuples :
         (id, nom, prenom, date_naissance, sexe, numero_patient)
         Appelé au démarrage ou après une modification pour rafraîchir la liste.
+        Retourne [] si hors-ligne ou erreur.
         """
+         # Guard hors-ligne — pas d'erreur affichée ici (appelé silencieusement)
+        if not is_online():
+            return []
+        
         try:
             patients = get_tous_les_patients()
             patients = patients or []
@@ -73,7 +86,11 @@ class PatientController:
         Recherche des patients par nom ou prénom (recherche partielle).
         Retourne la liste filtrée de tuples patients.
         Appelé à chaque frappe dans la barre de recherche.
+        Retourne [] si hors-ligne ou erreur.
         """
+        if not is_online():
+            return []
+        
         try:
             if not query.strip():
                 # Champ vide -> on retourne tous les patients
@@ -84,7 +101,7 @@ class PatientController:
             # On garantit explicitement une list, jamais None
             resultats = resultats if resultats is not None else []
 
-            print(f"[PatientController] Recherche '{query}' → {len(resultats)} résultat(s)")
+            print(f"[PatientController] Recherche '{query}' -> {len(resultats)} résultat(s)")
             return resultats
 
         except Exception as e:
@@ -97,9 +114,13 @@ class PatientController:
     def handle_supprimer_patient(self, patient_id: int) -> bool:
         """
         Supprime un patient et toutes ses images (CASCADE BDD).
-        Retourne True si OK, False si erreur.
+        Retourne True si OK, False si hors-ligne / erreur.
         Appelé depuis le bouton Supprimer dans la View.
         """
+        if not is_online():
+            self.error_handler.show_error("Mode hors-ligne", _MSG_OFFLINE)
+            return False
+        
         try:
             supprimer_patient(patient_id)
             print(f"[PatientController] Patient id={patient_id} supprimé")

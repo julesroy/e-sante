@@ -7,7 +7,8 @@ from PyQt6.QtGui import QFontDatabase
 from models.MainModel import MainModel
 from views.MainView import MainView
 from controllers.MainController import MainController
-from database.db import init_db, test_connexion
+from database.db import init_db
+from database.connection import get_connection
 
 if sys.platform == "win32":
     appId = "pixelmed.version_1"
@@ -21,7 +22,9 @@ def main():
    
     # Initialisation de la BDD au démarrage (crée les tables si besoin)
     # test_connexion() # à retirer une fois que c'est stable
-    # init_db()
+
+    # Tentative de connexion a la BDD, mets DB_MODE a jour
+    init_db()
 
     font_path = os.path.join(os.path.dirname(__file__), "assets", "styles", "fonts", "fontawesome-webfont.ttf")
     if os.path.exists(font_path):

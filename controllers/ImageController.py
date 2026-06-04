@@ -13,21 +13,22 @@ if TYPE_CHECKING:
 # ===== IMPORTS PYQT6 =====
 from PyQt6.QtWidgets import QFileDialog
 
-# ===== IMPORTS DES CRUDS =====
+# ===== IMPORTS BDD =====
+from database.connection import is_online
 from database.crud import (
     sauvegarder_image,
     get_images_patient,
     supprimer_image,
 )
 
+# Message réutilisé dans tous les guards hors-ligne
+_MSG_OFFLINE = "Cette fonctionnalité nécessite une connexion Internet"
 
 class ImageController:
-    # Attributs déclarés ici pour Pylance — appartiennent à MainController
+    # Attributs déclarés pour Pylance (définis dans MainController)
     view: MainView
     error_handler: ErrorController
-    _current_array: np.ndarray | None
-    _display_numpy_array: Callable
-    _current_patient_id: int | None  # patient actuellement sélectionné dans l'UI
+    _current_patient_id: int | None
 
     # ---------------------------------------------------------------
     # UPLOAD + SAUVEGARDE EN BDD
@@ -40,6 +41,11 @@ class ImageController:
         Remplace handle_upload() de UploadController quand un patient
         est sélectionné dans l'UI.
         """
+        # Guard hors-ligne
+        if not is_online():
+            self.error_handler.show_error("Mode hors-ligne", _MSG_OFFLINE)
+            return None
+
         try:
             # Vérifie qu'un patient est bien sélectionné avant d'uploader
             if self._current_patient_id is None:
@@ -66,10 +72,10 @@ class ImageController:
             # Sauvegarde en BDD
             nom_fichier = os.path.basename(file_path)
 
-            #Garde-fou parce que sauvegarder_image() attent un int et on envoie un int | None
+            # Garde-fou parce que sauvegarder_image() attend un int et on envoie un int | None
             if self._current_patient_id is None:
                 return
-            
+
             image_id = sauvegarder_image(
                 patient_id=self._current_patient_id,
                 nom_fichier=nom_fichier,
@@ -90,9 +96,14 @@ class ImageController:
         Retourne une liste de tuples :
         (id, nom_fichier, chemin, modalite, created_at)
         Appelé quand on sélectionne un patient dans la liste.
+        Retourne [] si hors-ligne ou erreur.
         """
+        # Guard hors-ligne — silencieux (appelé automatiquement au chargement)
+        if not is_online():
+            return []
+
         try:
-            images = get_images_patient(patient_id)
+            images: list = get_images_patient(patient_id) or []
             print(f"[ImageController] {len(images)} image(s) trouvée(s) pour patient id={patient_id}")
             return images
 
@@ -108,6 +119,7 @@ class ImageController:
         Affiche une image déjà enregistrée en BDD à partir de son chemin disque.
         Appelé depuis la liste des images d'un patient (double-clic ou bouton).
         """
+        # Pas de guard hors-ligne ici — ouvrir un fichier local ne nécessite pas la BDD, seulement le chemin disque
         try:
             if not os.path.exists(chemin):
                 self.error_handler.show_error(
@@ -128,8 +140,13 @@ class ImageController:
     def handle_supprimer_image(self, image_id: int) -> bool:
         """
         Supprime une image de la BDD (pas du disque).
-        Retourne True si OK, False si erreur.
+        Retourne True si OK, False si hors-ligne / erreur.
         """
+        # Guard hors-ligne
+        if not is_online():
+            self.error_handler.show_error("Mode hors-ligne", _MSG_OFFLINE)
+            return False
+
         try:
             supprimer_image(image_id)
             print(f"[ImageController] Image id={image_id} supprimée de la BDD")

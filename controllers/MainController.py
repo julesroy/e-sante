@@ -19,6 +19,8 @@ from controllers.PatientController import PatientController
 from controllers.ImageController import ImageController
 from controllers.RulerController import RulerController
 
+# ===== IMPORTS DE LA CONNEXION A LA BDD =====
+from database.connection import is_online, check_connection
 
 class MainController(UploadController, FilterController, AnalysisController, PatientController, ImageController, RulerController):
 
@@ -64,7 +66,49 @@ class MainController(UploadController, FilterController, AnalysisController, Pat
         # bouton règle de mesure
         self.view.left_toolbar.ruler_clicked.connect(self.handle_ruler_toggle)
 
-        
+        #Reconnexion BDD - Bouton à ajouter
+                
+    # -------------------------------------------------------------
+
+    # ------------------- BDD Online/Offline ----------------------
+    def _check_db_mode(self):
+        """
+        Appelé une fois au démarrage.
+        Teste la connexion BDD et demande à la View d'adapter l'UI.
+        """
+        online = is_online()
+
+        if online:
+            print("[MainController] ONLINE - Toutes les fonctionnalités sont actives.")
+        else:
+            print("[MainController] OFFLINE - Fonctionnalités nécessitant la BDD sont désactivées.")
+
+        # À décommenter une fois l'affichage dans l'UI fait !
+        #self.view.set_online_mode(online)
+
+    def handle_reconnect(self):
+        """
+        Appelé quand l'utilisateur clique sur le bouton 'Reconnecter'.
+        Reteste la connexion et met à jour l'UI.
+        """
+        print("[MainController] Tentative de reconnexion...")
+        success = check_connection()
+
+        if success:
+            #utilise show_error avec un titre positif
+            self.error_handler.show_info(
+                "Reconnexion réussie",
+                "La connexion à la BDD est rétablie."
+            )
+        else:
+            self.error_handler.show_error(
+                "Hors-ligne",
+                "Impossible de se connecter à la BDD. Veuillez réessazer ultérieurement."
+            )
+
+        # À décommenter une fois l'affiche dans l'UI fait !
+        #self.view.set_online_mode(success)
+
     # -------------------------------------------------------------
 
     # ----------------------- Affichage ---------------------------
