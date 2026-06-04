@@ -6,8 +6,8 @@ from CLAHE import CLAHE
 from FiltrageSobel import FiltrageSobel
 from Seuillage import Seuillage
 
-image = ImageConvertie("COVID-1024.png").convertirEnNumpyArray()
-# image = ImageConvertie("dcm1.dcm").convertirEnNumpyArray()
+# image = ImageConvertie("COVID-1024.png").convertirEnNumpyArray()
+image = ImageConvertie("dcm1.dcm").convertirEnNumpyArray()
 image = CLAHE(5.0, (16, 16), image).appliquer()
 image = FiltrageSobel(3, image).filtrage()
 

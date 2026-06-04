@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from scipy.ndimage import gaussian_filter
 from ImageConvertie import ImageConvertie
 
 
@@ -7,17 +8,15 @@ class FiltrageGaussien:
     """
     Classe pour appliquer un filtrage gaussien à une image.
     Exemple d'instanciation :
-    FiltrageGaussien((5, 5), 0, testImageConvertie)
+    FiltrageGaussien(4, testImageConvertie)
     """
 
-    def __init__(self, kernel: tuple, sigma: int, imageNpArray: np.ndarray):
+    def __init__(self, sigma: int, imageNpArray: np.ndarray):
         """
         Initialise les paramètres pour le filtrage gaussien.
-        :param kernel: Tuple représentant la taille du noyau de convolution (ex: (9, 9)).
         :param sigma: Écart type pour la fonction gaussienne.
         :param imageNpArray: Matrice Numpy de l'image.
         """
-        self._kernel = kernel
         self._sigma = sigma
         self._imageNpArray = imageNpArray
 
@@ -26,17 +25,7 @@ class FiltrageGaussien:
         Applique le filtrage gaussien à l'image spécifiée et sauvegarde le résultat.
         :return: Matrice de l'image filtrée en niveaux de gris (Numpy 2D array).
         """
-        # on convertit en uint8 si nécessaire (important pour DICOM)
-        if self._imageNpArray.dtype != np.uint8:
-            if self._imageNpArray.max() <= 1.0:
-                img_8bit = (self._imageNpArray * 255).astype(np.uint8)
-            else:
-                img_8bit = self._imageNpArray.astype(np.uint8)
-        else:
-            img_8bit = self._imageNpArray
-
-        imageFloueMatrice = cv2.GaussianBlur(img_8bit, self._kernel, self._sigma)
-        return imageFloueMatrice  # Retourne maintenant uint8 [0,255]
+        return gaussian_filter(self._imageNpArray, sigma=self._sigma)
     
     def afficher(self, imageFiltreeMatrice):
         """
@@ -51,7 +40,7 @@ class FiltrageGaussien:
 # tests
 # testImageConvertie = ImageConvertie("dcm1.dcm").convertirEnNumpyArray()
 # testImageConvertie = ImageConvertie("COVID-1024.png").convertirEnNumpyArray()
-# testMatrice = FiltrageGaussien((5, 5), 0, testImageConvertie)
+# testMatrice = FiltrageGaussien(15, testImageConvertie)
 # testMatriceFiltree = testMatrice.filtrage()
 # testMatrice.afficher(testMatriceFiltree)
 # print(testMatriceFiltree)

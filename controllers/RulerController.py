@@ -1,4 +1,15 @@
+# ===== IMPORTS UNIQUEMENT POUR PYLANCE (jamais exécutés) =====
+from typing import TYPE_CHECKING
+from collections.abc import Callable
+if TYPE_CHECKING:
+    from views.MainView import MainView
+    from controllers.ErrorController import ErrorController
+
 class RulerController:
+    def __init__(self, view: 'MainView', error_controller: 'ErrorController'):
+        self.view = view
+        self.error_controller = error_controller
+
     def handle_ruler_toggle(self, checked: bool):
         """Gère l'activation du mode règle depuis la LeftToolbar."""
         if self.view.current_pixmap is None:

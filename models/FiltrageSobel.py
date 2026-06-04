@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from scipy.ndimage import sobel
 from ImageConvertie import ImageConvertie
 
 
@@ -7,16 +8,14 @@ class FiltrageSobel:
     """
     Classe pour appliquer un filtre de sobel à une image.
     Exemple d'instanciation :
-    test = testMatrice = FiltrageSobel(3, image)
+    test = testMatrice = FiltrageSobel(image)
     """
 
-    def __init__(self, ksize: int, imageNpArray: np.ndarray):
+    def __init__(self, imageNpArray: np.ndarray):
         """
         Initialise les paramètres pour le filtrage sobel.
-        :param ksize: Taille du noyau de convolution (ex: 9).
         :param imageNpArray: Matrice Numpy de l'image.
         """
-        self._ksize = ksize
         self._imageNpArray = imageNpArray
 
     def filtrage(self) -> np.ndarray:
@@ -24,29 +23,17 @@ class FiltrageSobel:
         Calcule les gradients de Sobel en X et Y, puis les combine.
         :return: Matrice du gradient de Sobel normalisée en uint8 (0-255).
         """
-        # on s'assure que l'image est en uint8
-        if self._imageNpArray.dtype != np.uint8:
-            if self._imageNpArray.max() <= 1.0:
-                img_8bit = (self._imageNpArray * 255).astype(np.uint8)
-            else:
-                img_8bit = self._imageNpArray.astype(np.uint8)
-        else:
-            img_8bit = self._imageNpArray
+        gx = sobel(self._imageNpArray, axis=1)
+        gy = sobel(self._imageNpArray, axis=0)
+        magnitude = np.hypot(gx, gy)
 
-        # on calcule le gradient horizontal (X)
-        sobelx = cv2.Sobel(img_8bit, cv2.CV_64F, 1, 0, ksize=self._ksize)
-        
-        # on calcule le gradient vertical (Y)
-        sobely = cv2.Sobel(img_8bit, cv2.CV_64F, 0, 1, ksize=self._ksize)
+        # clip percentile : ignore les 1% de valeurs extrêmes
+        p_low  = np.percentile(magnitude, 1)
+        p_high = np.percentile(magnitude, 99)
+        magnitude = np.clip(magnitude, p_low, p_high)
+        magnitude = (magnitude - p_low) / (p_high - p_low)
 
-        # on combine les deux (Magnitude du gradient)
-        # on prend la valeur absolue pour capturer les transitions du noir vers le blanc ET du blanc vers le noir
-        sobel_combine = np.sqrt(sobelx**2 + sobely**2)
-        
-        # on normalise la matrice
-        sobel_normalise = cv2.normalize(sobel_combine, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U)
-
-        return sobel_normalise
+        return magnitude
 
     def afficher(self, imageFiltreeMatrice):
         """
@@ -60,7 +47,7 @@ class FiltrageSobel:
 # tests
 # testImageConvertie = ImageConvertie("COVID-1024.png").convertirEnNumpyArray()
 # testImageConvertie = ImageConvertie("dcm1.dcm").convertirEnNumpyArray()
-# testMatrice = FiltrageSobel(3, testImageConvertie)
+# testMatrice = FiltrageSobel(testImageConvertie)
 # testMatriceFiltree = testMatrice.filtrage()
 # print(testMatriceFiltree)
 # print(type(testMatriceFiltree))  # type de la matrice

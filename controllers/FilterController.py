@@ -41,15 +41,13 @@ class FilterController:
                 )
                 return
                 
-            # Kernel 9×9 (noyau de convolution) — sigma=0 = auto calculé par OpenCV
-            kernel_size = 9
-            filtre = FiltrageGaussien((kernel_size, kernel_size), 0, self._current_array)
+            filtre = FiltrageGaussien(8, self._current_array)
             result_array = filtre.filtrage()
             # print(result_array)  # Affiche la matrice filtrée dans la console pour vérification
 
             # Affichage du résultat via la méthode centrale de rendu
-            result = (result_array / 255.0).astype(np.float32)  # Normaliser en [0,1]
-            self._display_numpy_array(result)
+            # result = (result_array / 255.0).astype(np.float32)  # Normaliser en [0,1]
+            self._display_numpy_array(result_array)
 
         except Exception as e:
             self.error_handler.handle_exception(e)
@@ -71,13 +69,14 @@ class FilterController:
                 return
 
             # on applique le filtre
-            kernel_size = 3
-            filtre = FiltrageSobel(kernel_size, self._current_array)
+            filtreGauss = FiltrageGaussien(2, self._current_array)
+            image_gaussienne = filtreGauss.filtrage()
+            filtre = FiltrageSobel(image_gaussienne)
             result_array = filtre.filtrage()  # uint8 [0,255]
 
             # Affichage du résultat via la méthode centrale de rendu
-            result = (result_array / 255.0).astype(np.float32)  # Normaliser en [0,1]
-            self._display_numpy_array(result)
+            # result = (result_array / 255.0).astype(np.float32)  # Normaliser en [0,1]
+            self._display_numpy_array(result_array)
 
         except Exception as e:
             self.error_handler.handle_exception(e)

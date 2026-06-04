@@ -20,8 +20,8 @@ def main():
     app = QApplication(sys.argv)
    
     # Initialisation de la BDD au démarrage (crée les tables si besoin)
-    test_connexion() # à retirer une fois que c'est stable
-    init_db()
+    # test_connexion() # à retirer une fois que c'est stable
+    # init_db()
 
     font_path = os.path.join(os.path.dirname(__file__), "assets", "styles", "fonts", "fontawesome-webfont.ttf")
     if os.path.exists(font_path):
