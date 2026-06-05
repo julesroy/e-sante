@@ -18,16 +18,16 @@ class LeftToolbar(QWidget):
         super().__init__(parent)
 
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
-        self.setFixedWidth(160)
+        self.setFixedWidth(170)
 
         self.main_layout = QVBoxLayout()
         self.main_layout.setContentsMargins(0, 0, 0, 0)
-        self.main_layout.setSpacing(5)
+        self.main_layout.setSpacing(8)
         self.main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.setLayout(self.main_layout)
 
         icon_font = QFont("FontAwesome", 12)
-        button_size = 44
+        button_size = 40
 
         # === FILTRES ===
         self.section_filters = QPushButton("Filtres  ▼")
@@ -38,8 +38,10 @@ class LeftToolbar(QWidget):
 
         self.filters_container = QWidget()
         self.grid_layout = QGridLayout(self.filters_container)
-        self.grid_layout.setContentsMargins(8, 5, 8, 10)
+        self.grid_layout.setContentsMargins(12, 8, 8, 12)
         self.grid_layout.setSpacing(6)
+        self.grid_layout.setRowMinimumHeight(0, button_size)
+        self.grid_layout.setRowMinimumHeight(1, button_size)
 
         # Btn filtres
         self.btn_origin = QPushButton("\uf0e2")
@@ -90,8 +92,9 @@ class LeftToolbar(QWidget):
         self.contrast_container = QWidget()
         self.contrast_container.setVisible(False)
         self.grid_layout_contrast = QGridLayout(self.contrast_container)
-        self.grid_layout_contrast.setContentsMargins(8, 5, 8, 10)
+        self.grid_layout_contrast.setContentsMargins(12, 8, 8, 12)
         self.grid_layout_contrast.setSpacing(6)
+        self.grid_layout_contrast.setRowMinimumHeight(0, button_size)
 
         self.btn_clahe = QPushButton("\uf042")
         self.btn_clahe.setFont(icon_font)
@@ -119,7 +122,7 @@ class LeftToolbar(QWidget):
         self.measures_container.setVisible(False)
 
         measures_layout = QVBoxLayout(self.measures_container)
-        measures_layout.setContentsMargins(8, 5, 8, 10)
+        measures_layout.setContentsMargins(12, 8, 8, 12)
 
         self.btn_ruler = QPushButton("\uf545")
         self.btn_ruler.setFont(icon_font)

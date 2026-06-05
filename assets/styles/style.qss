@@ -67,17 +67,22 @@ LeftToolbar QPushButton#SectionHeader:checked {
     border: 1px solid #00a2ed;
 }
 
-LeftToolbar QWidget QGridLayout QPushButton {
+LeftToolbar QWidget QPushButton {
     background-color: #3c3c3c;
-    color: #000000;
-    border: 1px solid #3c3c3c;
-    border-radius: 0px;
+    color: #E0E0E0;
+    border: 1px solid #555555;
+    border-radius: 4px;
+    padding: 0px;
+    margin: 0px;
 }
 
-LeftToolbar QWidget QGridLayout QPushButton:toggle,
-LeftToolbar QWidget QGridLayout QPushButton:checked,
-LeftToolbar QWidget QGridLayout QPushButton:checked:hover,
-LeftToolbar QWidget QGridLayout QPushButton:pressed {
+LeftToolbar QWidget QPushButton:hover {
+    background-color: #4f4f4f;
+    border: 1px solid #666666;
+}
+
+LeftToolbar QWidget QPushButton:checked,
+LeftToolbar QWidget QPushButton:pressed {
     background-color: #00a2ed; 
     color: #FFFFFF;
     border: 1px solid #00a2ed;
