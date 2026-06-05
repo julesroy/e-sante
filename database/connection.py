@@ -25,8 +25,8 @@ def get_connection():
     global DB_MODE
 
     # TEST HORS-LIGNE — décommenter pour simuler le mode offline
-    DB_MODE = "offline"
-    return None
+    #DB_MODE = "offline"
+    #return None
 
     try:
         import psycopg2

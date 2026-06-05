@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QGridLayout
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QFont
+from views.PatientManagerWidget import PatientManagerWidget
 
 
 class LeftToolbar(QWidget):
@@ -32,8 +33,8 @@ class LeftToolbar(QWidget):
         # === FILTRES ===
         self.section_filters = QPushButton("Filtres  ▼")
         self.section_filters.setObjectName("SectionHeader")
-        self.section_filters.setCheckable(True)  # Rendu mémorisable pour le QSS
-        self.section_filters.setChecked(True)  # Sélectionné par défaut (ouvert)
+        self.section_filters.setCheckable(True)
+        self.section_filters.setChecked(True)
         self.main_layout.addWidget(self.section_filters)
 
         self.filters_container = QWidget()
@@ -43,7 +44,6 @@ class LeftToolbar(QWidget):
         self.grid_layout.setRowMinimumHeight(0, button_size)
         self.grid_layout.setRowMinimumHeight(1, button_size)
 
-        # Btn filtres
         self.btn_origin = QPushButton("\uf0e2")
         self.btn_origin.setFont(icon_font)
         self.btn_origin.setFixedSize(button_size, button_size)
@@ -86,7 +86,7 @@ class LeftToolbar(QWidget):
         # === CONTRASTE ===
         self.section_contrast = QPushButton("Contraste  ▶")
         self.section_contrast.setObjectName("SectionHeader")
-        self.section_contrast.setCheckable(True)  # Rendu mémorisable pour le QSS
+        self.section_contrast.setCheckable(True)
         self.main_layout.addWidget(self.section_contrast)
 
         self.contrast_container = QWidget()
@@ -115,7 +115,7 @@ class LeftToolbar(QWidget):
         # === MESURES ===
         self.section_measures = QPushButton("Mesures  ▶")
         self.section_measures.setObjectName("SectionHeader")
-        self.section_measures.setCheckable(True)  # Rendu mémorisable pour le QSS
+        self.section_measures.setCheckable(True)
         self.main_layout.addWidget(self.section_measures)
 
         self.measures_container = QWidget()
@@ -128,11 +128,27 @@ class LeftToolbar(QWidget):
         self.btn_ruler.setFont(icon_font)
         self.btn_ruler.setFixedSize(button_size, button_size)
         self.btn_ruler.setToolTip("Mesurer la distance entre deux points en cm")
-        self.btn_ruler.setCheckable(True)  # Devient bleu quand cliqué
+        self.btn_ruler.setCheckable(True)
         measures_layout.addWidget(self.btn_ruler)
 
         self.main_layout.addWidget(self.measures_container)
 
+        # === DOSSIERS (PATIENTS BDD) ===
+        self.section_folders = QPushButton("Dossiers  ▶")
+        self.section_folders.setObjectName("SectionHeader")
+        self.section_folders.setCheckable(True)
+        self.main_layout.addWidget(self.section_folders)
+
+        self.folders_container = QWidget()
+        self.folders_container.setVisible(False)
+        folders_layout = QVBoxLayout(self.folders_container)
+        folders_layout.setContentsMargins(12, 8, 8, 12)
+        folders_layout.setSpacing(8)
+
+        self.patient_manager = PatientManagerWidget(main_view=parent, parent=self.folders_container)
+        folders_layout.addWidget(self.patient_manager)
+
+        self.main_layout.addWidget(self.folders_container)
 
         # === CONFIG BTN GRILLE ===
         self.filter_buttons = [self.btn_origin, self.btn_gaussian, self.btn_tfd2d, self.btn_low_pass, self.btn_high_pass, self.btn_sobel, self.btn_clahe]
@@ -149,6 +165,7 @@ class LeftToolbar(QWidget):
         self.section_filters.clicked.connect(lambda: self.toggle_section(self.section_filters, self.filters_container, "Filtres"))
         self.section_contrast.clicked.connect(lambda: self.toggle_section(self.section_contrast, self.contrast_container, "Contraste"))
         self.section_measures.clicked.connect(lambda: self.toggle_section(self.section_measures, self.measures_container, "Mesures"))
+        self.section_folders.clicked.connect(lambda: self.toggle_section(self.section_folders, self.folders_container, "Dossiers"))
 
         # === CONNEXIONS SIGNAUX ===
         self.btn_origin.clicked.connect(self.reset_image_clicked.emit)

@@ -101,3 +101,43 @@ QToolTip {
     border-radius: 2px;
     padding: 2px 4px;
 }
+
+/* === STYLE DE LA POP-UP CRÉATION PATIENT === */
+
+QDialog#PatientDialog {
+    background-color: #2b2b2b;
+}
+
+QDialog#PatientDialog QLabel {
+    color: #ffffff;
+    font-weight: bold;
+    background-color: transparent;
+}
+
+QDialog#PatientDialog QLineEdit, 
+QDialog#PatientDialog QComboBox {
+    background-color: #3b3b3b;
+    color: #ffffff;
+    border: 1px solid #555555;
+    border-radius: 3px;
+    padding: 5px;
+}
+
+QDialog#PatientDialog QLineEdit:focus, 
+QDialog#PatientDialog QComboBox:focus {
+    border: 1px solid #00a2ed;
+}
+
+QDialog#PatientDialog QPushButton {
+    background-color: #00a2ed;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+QDialog#PatientDialog QPushButton:hover {
+    background-color: #0082bc;
+}
