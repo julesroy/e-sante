@@ -127,17 +127,22 @@ class ImageController:
     # OUVRIR UNE IMAGE DEPUIS LA BDD (chemin disque)
     # ---------------------------------------------------------------
     def handle_ouvrir_image_bdd(self, chemin: str) -> None:
-        """
-        Affiche une image déjà enregistrée en BDD à partir de son chemin disque.
-        Appelé depuis la liste des images d'un patient (double-clic ou bouton).
-        """
-        # Pas de guard hors-ligne ici — ouvrir un fichier local ne nécessite pas la BDD, seulement le chemin disque
         try:
             if not os.path.exists(chemin):
                 self.error_handler.show_error("Fichier introuvable", f"Le fichier n'existe plus à l'emplacement :\n{chemin}")
                 return
 
             self.view.display_medical_image(chemin)
+
+            # RESET le slider de contraste à 1 pour repartir proprement
+            if self.view.contrast_slider is not None:
+                self.view.contrast_slider.setValue(1)
+
+            # Désactive les modes actifs pour éviter les états parasites
+            if self.view.contrast_slider_active:
+                self.view.toggle_contrast_slider_mode(False)
+                self.view.left_toolbar.btn_contrast_slider.setChecked(False)
+
             print(f"[ImageController] Image ouverte depuis BDD : {chemin}")
 
         except Exception as e:
