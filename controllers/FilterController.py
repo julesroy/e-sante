@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 from models.FiltrageGaussien import FiltrageGaussien
 from models.FiltrageSobel import FiltrageSobel
 from models.TFD2D import TFD2D
-from views.PopupFFT import FilterDialog
+from views.FilterDialog import FilterDialog
 
 
 class FilterController:

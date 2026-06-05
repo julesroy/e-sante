@@ -189,10 +189,8 @@ class MainController:
 
         print("Réaffichage instantané de l'image d'origine depuis la RAM...")
 
-        # On remet le facteur de zoom de la vue à 1.0 pour un reset visuel propre
-        self.view.zoom_factor = 1.0
-
         # On donne à la vue une copie propre du Pixmap brut de départ
+
         self.view.current_pixmap = self._original_pixmap.copy()
 
         # On remet à 0 le slider de contraste

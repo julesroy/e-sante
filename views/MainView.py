@@ -212,7 +212,6 @@ class MainView(QMainWindow):
         # Déclaration des attributs pour Pylance
         self.controller: MainController | None = None
         self.contrast_slider: QSlider | None = None
-        self.zoom_factor: float = 1.0
 
         self.setWindowTitle("PixelMed")
         self.resize(1024, 680)
@@ -428,6 +427,4 @@ class MainView(QMainWindow):
             y = (screen_geometry.height() - self.height()) // 2
             self.move(x, y)
 
-    def zoom_reset(self):
-        # Conservé au cas où pour l'architecture, mais non lié
-        pass
+

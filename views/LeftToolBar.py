@@ -130,15 +130,6 @@ class LeftToolbar(QWidget):
 
         self.main_layout.addWidget(self.measures_container)
 
-        # === ANNOTER ===
-        self.section_annotate = QPushButton("Annoter  ▶")
-        self.section_annotate.setObjectName("SectionHeader")
-        self.section_annotate.setCheckable(True)
-        self.main_layout.addWidget(self.section_annotate)
-
-        self.annotate_container = QWidget()
-        self.annotate_container.setVisible(False)
-        self.main_layout.addWidget(self.annotate_container)
 
         # === CONFIG BTN GRILLE ===
         self.filter_buttons = [self.btn_origin, self.btn_gaussian, self.btn_tfd2d, self.btn_low_pass, self.btn_high_pass, self.btn_sobel, self.btn_clahe]
@@ -155,7 +146,6 @@ class LeftToolbar(QWidget):
         self.section_filters.clicked.connect(lambda: self.toggle_section(self.section_filters, self.filters_container, "Filtres"))
         self.section_contrast.clicked.connect(lambda: self.toggle_section(self.section_contrast, self.contrast_container, "Contraste"))
         self.section_measures.clicked.connect(lambda: self.toggle_section(self.section_measures, self.measures_container, "Mesures"))
-        self.section_annotate.clicked.connect(lambda: self.toggle_section(self.section_annotate, self.annotate_container, "Annoter"))
 
         # === CONNEXIONS SIGNAUX ===
         self.btn_origin.clicked.connect(self.reset_image_clicked.emit)

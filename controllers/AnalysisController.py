@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 from models.TFD2D import TFD2D
 from models.CLAHE import CLAHE
 from models.Seuillage import Seuillage
-from views.PopupFFT import FilterDialog
+from views.FilterDialog import FilterDialog
 
 
 class AnalysisController:
