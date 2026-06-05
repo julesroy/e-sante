@@ -2,14 +2,15 @@ import math
 from PyQt6.QtCore import Qt, QPoint, QRect
 from PyQt6.QtGui import QPainter, QPen, QColor, QFont
 
+
 class RulerOverlay:
     def __init__(self, label_view):
         self.label_view = label_view
-        
+
         # Positions relatives unifiées (en pourcentage de l'image de 0.0 à 1.0)
         self.rel_a = None
         self.rel_b = None
-        
+
         self.pixel_to_cm = 0.14
 
     def clear(self):
@@ -37,7 +38,7 @@ class RulerOverlay:
             self.rel_b = None
         elif self.rel_b is None:
             self.rel_b = pos_relative
-            
+
         return True
 
     def draw_measure(self, painter: QPainter, img_rect: QRect):
@@ -52,7 +53,7 @@ class RulerOverlay:
 
         pen_line = QPen(QColor("#00ff00"), 2, Qt.PenStyle.SolidLine)
         pen_dots = QPen(QColor("#ffaa00"), 6, Qt.PenStyle.SolidLine)
-        
+
         # Dessiner le premier point
         painter.setPen(pen_dots)
         painter.drawPoint(screen_a)
@@ -86,8 +87,8 @@ class RulerOverlay:
                 # Pythagore sur l'image brute de base
                 dx = orig_bx - orig_ax
                 dy = orig_by - orig_ay
-                distance_px_orig = math.sqrt(dx*dx + dy*dy)
-                
+                distance_px_orig = math.sqrt(dx * dx + dy * dy)
+
                 # Conversion finale avec le coefficient dynamique
                 distance_cm = distance_px_orig * dynamic_pixel_to_cm
             else:
@@ -100,10 +101,10 @@ class RulerOverlay:
             text = f" {distance_cm:.2f} cm "
             font = QFont("Arial", 10, QFont.Weight.Bold)
             painter.setFont(font)
-            
+
             text_rect = painter.fontMetrics().boundingRect(text)
             text_rect.moveCenter(QPoint(mid_x, mid_y))
-            
+
             painter.fillRect(text_rect, QColor(0, 0, 0, 180))
             painter.setPen(QColor("#ffffff"))
             painter.drawText(text_rect, Qt.AlignmentFlag.AlignCenter, text)

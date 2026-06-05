@@ -7,12 +7,13 @@
 import os
 from dotenv import load_dotenv
 
-#Chargement des variables d'environnement (.env)
+# Chargement des variables d'environnement (.env)
 load_dotenv()
 
-#Mode global : "online" si connecté, "offline" sinon
-#Initialisé à "offline", mis à jour par get_connection()
+# Mode global : "online" si connecté, "offline" sinon
+# Initialisé à "offline", mis à jour par get_connection()
 DB_MODE = "offline"
+
 
 def get_connection():
     """
@@ -31,10 +32,10 @@ def get_connection():
         import psycopg2
 
         # Lecture des variables séparées
-        host     = os.getenv("DB_HOST")
-        port     = os.getenv("DB_PORT")
-        dbname   = os.getenv("DB_NAME")
-        user     = os.getenv("DB_USER")
+        host = os.getenv("DB_HOST")
+        port = os.getenv("DB_PORT")
+        dbname = os.getenv("DB_NAME")
+        user = os.getenv("DB_USER")
         password = os.getenv("DB_PASSWORD")
 
         # Vérifie que les variables essentielles sont présentes
@@ -43,14 +44,7 @@ def get_connection():
             DB_MODE = "offline"
             return None
 
-        conn = psycopg2.connect(
-            host=host,
-            port=port,
-            dbname=dbname,
-            user=user,
-            password=password,
-            connect_timeout=10
-        )
+        conn = psycopg2.connect(host=host, port=port, dbname=dbname, user=user, password=password, connect_timeout=10)
         DB_MODE = "online"
         print("[DB] Connexion PostgreSQL réussie")
         return conn
@@ -59,13 +53,15 @@ def get_connection():
         DB_MODE = "offline"
         print(f"[DB] Connexion impossible -> mode hors-ligne ({e})")
         return None
-    
+
+
 def is_online() -> bool:
     """
     Retourne True si la BDD est accessible, False sinon.
     À appeler dans les controllers avant toute opération BDD.
     """
     return DB_MODE == "online"
+
 
 def check_connection() -> bool:
     """

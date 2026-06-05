@@ -1,7 +1,8 @@
 import cv2
 import numpy as np
-from ImageConvertie import ImageConvertie
-from TFD2D import TFD2D
+from .ImageConvertie import ImageConvertie
+from .TFD2D import TFD2D
+
 
 class CLAHE:
     """
@@ -41,27 +42,8 @@ class CLAHE:
             img_8bit = self._imageNpArray
 
         # on crée l'objet CLAHE avec les paramètres spécifiés
-        clahe_obj = cv2.createCLAHE(
-            clipLimit=self._limitationContraste, 
-            tileGridSize=self._tailleGrilleLocale
-        )
+        clahe_obj = cv2.createCLAHE(clipLimit=self._limitationContraste, tileGridSize=self._tailleGrilleLocale)
 
-        matrice_clahe = clahe_obj.apply(img_8bit) # on applique le CLAHE à l'image en niveaux de gris
+        matrice_clahe = clahe_obj.apply(img_8bit)  # on applique le CLAHE à l'image en niveaux de gris
 
         return matrice_clahe.astype(np.float32) / 255.0
-    
-
-# tests
-# testCLAHEImage = ImageConvertie("COVID-1024.png").convertirEnNumpyArray()
-
-# on applique le CLAHE à l'image d'origine pour améliorer le contraste avant de faire la TFD
-# outil_clahe = CLAHE(5.0, (16, 16), testCLAHEImage)
-# imgContrastee = outil_clahe.appliquer()
-
-# passage à la TFD
-# analyseur_tfd = TFD2D(imgContrastee)
-# spectre = analyseur_tfd.calculerTFDSpectre()
-# analyseur_tfd.afficher_spectre()
-# analyseur_tfd.filtragePasseBas(90)  # appliquer un filtre passe-bas avec un rayon de coupure de 90 pixels
-# image_reconstruite = analyseur_tfd.calculerTFDInverse()
-# analyseur_tfd.afficher_image_reconstruite(image_reconstruite)

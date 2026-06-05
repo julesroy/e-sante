@@ -1,9 +1,10 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-from ImageConvertie import ImageConvertie
-from FiltrageGaussien import FiltrageGaussien
-from TFD2D import TFD2D
+from .ImageConvertie import ImageConvertie
+from .FiltrageGaussien import FiltrageGaussien
+from .TFD2D import TFD2D
+
 
 class Seuillage:
     """
@@ -18,55 +19,29 @@ class Seuillage:
         self._seuil_manuel = seuil_manuel
 
     def appliquer(self, imageNpArray: np.ndarray) -> tuple[np.ndarray, float]:
-            if imageNpArray is None:
-                raise ValueError("La matrice d'image fournie est vide.")
+        if imageNpArray is None:
+            raise ValueError("La matrice d'image fournie est vide.")
 
-            # on recale dynamiquement le minimum à 0 et le maximum à 255
-            img_min = imageNpArray.min()
-            img_max = imageNpArray.max()
-            
-            if img_max - img_min == 0:
-                # on évite la division par zéro si l'image est déjà complètement uniforme
-                img_8bit = np.zeros(imageNpArray.shape, dtype=np.uint8)
-            else:
-                # formule de normalisation Min-Max
-                img_8bit = (255 * (imageNpArray - img_min) / (img_max - img_min)).astype(np.uint8)
-            # ----------------------------------------------------
+        # on recale dynamiquement le minimum à 0 et le maximum à 255
+        img_min = imageNpArray.min()
+        img_max = imageNpArray.max()
 
-            if self._seuil_manuel is not None:
-                seuil_calcule, masque_binaire = cv2.threshold(
-                    img_8bit, self._seuil_manuel, 255, cv2.THRESH_BINARY
-                )
-            else:
-                seuil_calcule, masque_binaire = cv2.threshold(
-                    img_8bit, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU
-                )
+        if img_max - img_min == 0:
+            # on évite la division par zéro si l'image est déjà complètement uniforme
+            img_8bit = np.zeros(imageNpArray.shape, dtype=np.uint8)
+        else:
+            # formule de normalisation Min-Max
+            img_8bit = (255 * (imageNpArray - img_min) / (img_max - img_min)).astype(np.uint8)
+        # ----------------------------------------------------
 
-            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5)) # noyau elliptique pour les opérations morphologiques
+        if self._seuil_manuel is not None:
+            seuil_calcule, masque_binaire = cv2.threshold(img_8bit, self._seuil_manuel, 255, cv2.THRESH_BINARY)
+        else:
+            seuil_calcule, masque_binaire = cv2.threshold(img_8bit, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
-            masque_binaire = cv2.morphologyEx(masque_binaire, cv2.MORPH_OPEN, kernel) # on élimine les petits objets parasites
-            masque_binaire = cv2.morphologyEx(masque_binaire, cv2.MORPH_CLOSE, kernel) # on comble les petits trous à l'intérieur des objets détectés
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))  # noyau elliptique pour les opérations morphologiques
 
-            return masque_binaire, seuil_calcule
+        masque_binaire = cv2.morphologyEx(masque_binaire, cv2.MORPH_OPEN, kernel)  # on élimine les petits objets parasites
+        masque_binaire = cv2.morphologyEx(masque_binaire, cv2.MORPH_CLOSE, kernel)  # on comble les petits trous à l'intérieur des objets détectés
 
-# tests
-# testImageConvertie = ImageConvertie("COVID-1024.png").convertirEnNumpyArray()
-# testMatrice = FiltrageGaussien((7, 7), 0, testImageConvertie)
-# testMatriceFiltree = testMatrice.filtrage()
-# testTFD2D = TFD2D(testImageConvertie)
-# testMatriceTFD2D = testTFD2D.calculerTFDSpectre()
-# testTFD2D.filtragePasseBas(90)  # appliquer un filtre passe-bas avec un rayon de coupure de 90 pixels
-# testTFD2D.filtragePasseHaut(10)  # appliquer un filtre passe-haut avec un rayon de coupure de 10 pixels
-# testImageReconstruite = testTFD2D.calculerTFDInverse()
-# testTFD2D.afficher_image_reconstruite(testImageReconstruite)
-
-# instancier le seuillage automatique d'Otsu (Fortement recommandé en médical)
-# outil_seuillage = Seuillage(seuil_manuel=None)
-# masque, seuil_choisi = outil_seuillage.appliquer(testMatriceFiltree)
-
-# print(f"Le seuil optimal calculé par Otsu est : {seuil_choisi}")
-# fig, ax = plt.subplots(1, 1, figsize=(6, 6))
-# ax.imshow(masque, cmap="gray")
-# ax.set_title(f"Masque Binaire Otsu (Seuil: {seuil_choisi})")
-# ax.axis("off")
-# plt.show()
+        return masque_binaire, seuil_calcule

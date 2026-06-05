@@ -24,7 +24,7 @@ class ImageConvertie:
         """
         matrice = None
 
-        if self._imageChemin.lower().endswith('.dcm'): # images DICOM
+        if self._imageChemin.lower().endswith(".dcm"):  # images DICOM
             # on utilise la bibliothèque pydicom pour ouvrir le fichier DICOM et extraire les données d'image
             dicom_image = pydicom.dcmread(self._imageChemin)
             pixel_array = dicom_image.pixel_array.astype(np.float32)
@@ -36,21 +36,9 @@ class ImageConvertie:
                 matrice = (pixel_array - min_val) / (max_val - min_val)
             else:
                 matrice = np.zeros_like(pixel_array, dtype=np.float32)  # image uniforme si max == min
-        else : # images classiques (png, jpg)
+        else:  # images classiques (png, jpg)
             # on utilise la bibliothèque PIL pour ouvrir l'image et la convertir en niveaux de gris
             image = Image.open(self._imageChemin).convert("L")  # 'L' pour convertir en niveaux de gris
             matrice = np.array(image).astype(np.float32) / 255.0  # on convertit l'image en un Numpy array 2D et on normalise les valeurs entre 0 et 1
 
         return matrice
-
-
-# tests
-# testImageConvertie = ImageConvertie("COVID-1024.png")
-# testImageConvertie = ImageConvertie("dcm1.dcm")
-# matriceImage = testImageConvertie.convertirEnNumpyArray()
-# print(f"[DEBUG] Type de matrice: {matriceImage.dtype}")
-# print(matriceImage)  # affiche la matrice de l'image convertie
-# print(type(matriceImage))  # type de la matrice de l'image convertie
-
-# assert isinstance(matriceImage, np.ndarray), "La matrice de l'image convertie doit être un Numpy array."
-# assert matriceImage.ndim == 2, "La matrice de l'image convertie doit être en 2D (niveaux de gris)."

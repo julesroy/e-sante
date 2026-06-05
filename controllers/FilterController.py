@@ -6,25 +6,40 @@ import numpy as np
 
 # ===== IMPORTS UNIQUEMENT POUR PYLANCE (jamais exécutés) =====
 from typing import TYPE_CHECKING
-from collections.abc import Callable
+
 if TYPE_CHECKING:
     from views.MainView import MainView
-    from controllers.ErrorController import ErrorController
+    from controllers.MainController import MainController
 
 # ===== IMPORTS DES MODÈLES =====
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", "models"))
-from FiltrageGaussien import FiltrageGaussien
+from models.FiltrageGaussien import FiltrageGaussien
+from models.FiltrageSobel import FiltrageSobel
+from models.TFD2D import TFD2D
 from views.PopupFFT import FilterDialog
-from TFD2D import TFD2D
-from FiltrageSobel import FiltrageSobel
+
 
 class FilterController:
-    # Ces attributs appartiennent à MainController.
-    # On les déclare ici pour que Pylance sache qu'ils existent quand on y accède via self.
-    view: MainView
-    _current_array: np.ndarray | None
-    _display_numpy_array: Callable
-    error_handler: ErrorController
+    def __init__(self, main_controller: MainController):
+        self.main_controller = main_controller
+
+    @property
+    def view(self):
+        return self.main_controller.view
+
+    @property
+    def _current_array(self):
+        return self.main_controller._current_array
+
+    @_current_array.setter
+    def _current_array(self, value):
+        self.main_controller._current_array = value
+
+    @property
+    def error_handler(self):
+        return self.main_controller.error_handler
+
+    def _display_numpy_array(self, array):
+        self.main_controller._display_numpy_array(array)
 
     def handle_gaussian(self):
         """
@@ -32,21 +47,13 @@ class FilterController:
         et affiche le résultat dans la View.
         Nécessite qu'une image soit chargée (_current_array != None).
         """
-        # On ne fait rien si aucune image n'est chargée
         try:
             if self._current_array is None:
-                self.error_handler.show_error(
-                    "Erreur",
-                    "Aucune image chargée"
-                )
+                self.error_handler.show_error("Erreur", "Aucune image chargée")
                 return
-                
+
             filtre = FiltrageGaussien(8, self._current_array)
             result_array = filtre.filtrage()
-            # print(result_array)  # Affiche la matrice filtrée dans la console pour vérification
-
-            # Affichage du résultat via la méthode centrale de rendu
-            # result = (result_array / 255.0).astype(np.float32)  # Normaliser en [0,1]
             self._display_numpy_array(result_array)
 
         except Exception as e:
@@ -59,13 +66,9 @@ class FilterController:
         et affiche le résultat dans la View.
         Nécessite qu'une image soit chargée (_current_array != None).
         """
-        # On ne fait rien si aucune image n'est chargée
         try:
             if self._current_array is None:
-                self.error_handler.show_error(
-                    "Erreur",
-                    "Aucune image chargée"
-                )
+                self.error_handler.show_error("Erreur", "Aucune image chargée")
                 return
 
             # on applique le filtre
@@ -74,8 +77,6 @@ class FilterController:
             filtre = FiltrageSobel(image_gaussienne)
             result_array = filtre.filtrage()  # uint8 [0,255]
 
-            # Affichage du résultat via la méthode centrale de rendu
-            # result = (result_array / 255.0).astype(np.float32)  # Normaliser en [0,1]
             self._display_numpy_array(result_array)
 
         except Exception as e:
@@ -89,10 +90,7 @@ class FilterController:
         """
         try:
             if self._current_array is None:
-                self.error_handler.show_error(
-                    "Erreur",
-                    "Aucune image chargée"
-                )
+                self.error_handler.show_error("Erreur", "Aucune image chargée")
                 return
 
             dialog = FilterDialog(self.view)
@@ -116,23 +114,18 @@ class FilterController:
 
                 print(f"Popup Passe-Bas fermée. Fréquence sélectionnée : {rayon}")
 
-
         except Exception as e:
             self.error_handler.handle_exception(e)
             return
 
     def handle_passe_haut(self):
         """
-        Ouvre la popup pour le filtre Passe-Haut et permet de choisir 
+        Ouvre la popup pour le filtre Passe-Haut et permet de choisir
         une fréquence via le slider
         """
-        # Sécurité : image chargée obligatoire
         try:
             if self._current_array is None:
-                self.error_handler.show_error(
-                    "Erreur",
-                    "Aucune image chargée"
-                )
+                self.error_handler.show_error("Erreur", "Aucune image chargée")
                 return
 
             dialog = FilterDialog(self.view)

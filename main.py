@@ -2,7 +2,7 @@ import os
 import sys
 import ctypes
 from PyQt6.QtWidgets import QApplication
-from PyQt6.QtGui import QFontDatabase 
+from PyQt6.QtGui import QFontDatabase
 
 from models.MainModel import MainModel
 from views.MainView import MainView
@@ -14,12 +14,13 @@ if sys.platform == "win32":
     appId = "pixelmed.version_1"
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(appId)
 
+
 def main():
     """
     Point d'entrée du logiciel.
     """
     app = QApplication(sys.argv)
-   
+
     # Initialisation de la BDD au démarrage (crée les tables si besoin)
     # test_connexion() # à retirer une fois que c'est stable
 
@@ -48,7 +49,7 @@ def main():
     controller = MainController(model, view)
 
     view.controller = controller
-    
+
     # affichage de la vue
     view.show()
 

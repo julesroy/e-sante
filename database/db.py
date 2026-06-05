@@ -27,21 +27,22 @@ from database.connection import get_connection, is_online
 #      conn.close()      -> ferme la connexion à la BDD
 # ==============================================================
 
-#Charge les variables du fichier .env
+# Charge les variables du fichier .env
 load_dotenv()
+
 
 def init_db():
     """
     Crée les tables si elles n'existent pas déjà.
     Appelée une seule fois au démarrage de l'application dans main.py
     Le IF NOT EXISTS garantit qu'on ne recrée pas les tables à chaque lancement.
-    """ 
+    """
     conn = get_connection()
     # Guard hors-ligne — pas besoin d'init si pas de BDD
     if conn is None:
         print("[DB] Hors-ligne. Veuillez vous connecter à Internet pour utiliser toutes les fonctionnalités.")
         return
-    
+
     cursor = conn.cursor()
 
     # Création de la table patients
@@ -74,6 +75,7 @@ def init_db():
     cursor.close()
     conn.close()
     print("[DB] Base de donnée initialisée")
+
 
 def test_connexion():
     """

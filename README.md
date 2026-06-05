@@ -104,3 +104,9 @@ Pour formatter le code on utilise `black`, il suffit de lancer la commande suiva
 ```bash
 black .
 ```
+
+## 6. Tester le code :
+Pour tester le code, on utilise `pytest`, il suffit de lancer la commande suivante dans le terminal à la racine du projet :
+```bash
+pytest
+```

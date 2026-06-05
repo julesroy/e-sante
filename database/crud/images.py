@@ -5,6 +5,7 @@ from database.db import get_connection
 # TABLE DES IMAGES
 # ===================================================
 
+
 def sauvegarder_image(patient_id: int, nom_fichier: str, chemin: str, modalite: str | None = None) -> int | None:
     """
     Enregistre une image liée à un patient en BDD.
@@ -17,22 +18,28 @@ def sauvegarder_image(patient_id: int, nom_fichier: str, chemin: str, modalite: 
         modalite    : type d'imagerie optionnel (ex: "IRM", "Scanner")
     """
     conn = get_connection()
-    cursor = conn.cursor()
+    if conn is None:
+        return None
 
-    # RETURNING id demande à PostgreSQL de nous renvoyer l'id auto-généré juste après l'insertion
-    cursor.execute("""
-        INSERT INTO images (patient_id, nom_fichier, chemin, modalite)
-        VALUES (%s, %s, %s, %s)
-        RETURNING id
-    """, (patient_id, nom_fichier, chemin, modalite))
-
-    row = cursor.fetchone()  # Récupère la ligne (id,) renvoyée par RETURNING
-
-    conn.commit()    # Valide l'INSERT en base
-    cursor.close()
-    conn.close()
-
-    return row[0] if row else None
+    try:
+        with conn:
+            with conn.cursor() as cursor:
+                # RETURNING id demande à PostgreSQL de nous renvoyer l'id auto-généré juste après l'insertion
+                cursor.execute(
+                    """
+                    INSERT INTO images (patient_id, nom_fichier, chemin, modalite)
+                    VALUES (%s, %s, %s, %s)
+                    RETURNING id
+                """,
+                    (patient_id, nom_fichier, chemin, modalite),
+                )
+                row = cursor.fetchone()  # Récupère la ligne (id,) renvoyée par RETURNING
+                return row[0] if row else None
+    except Exception as e:
+        print(f"[DB Error] Erreur dans sauvegarder_image : {e}")
+        return None
+    finally:
+        conn.close()
 
 
 def get_images_patient(patient_id: int) -> list:
@@ -41,30 +48,41 @@ def get_images_patient(patient_id: int) -> list:
     Chaque élément = tuple (id, nom_fichier, chemin, modalite, created_at)
     """
     conn = get_connection()
-    cursor = conn.cursor()
+    if conn is None:
+        return []
 
-    cursor.execute("""
-        SELECT id, nom_fichier, chemin, modalite, created_at
-        FROM images
-        WHERE patient_id = %s
-        ORDER BY created_at DESC
-    """, (patient_id,))
-
-    images = cursor.fetchall()  # Liste de tuples, vide [] si aucun résultat
-
-    # Pas de commit nécessaire : un SELECT ne modifie pas la BDD
-    cursor.close()
-    conn.close()
-    return images or []
+    try:
+        with conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT id, nom_fichier, chemin, modalite, created_at
+                    FROM images
+                    WHERE patient_id = %s
+                    ORDER BY created_at DESC
+                """,
+                    (patient_id,),
+                )
+                images = cursor.fetchall()  # Liste de tuples, vide [] si aucun résultat
+                return images or []
+    except Exception as e:
+        print(f"[DB Error] Erreur dans get_images_patient : {e}")
+        return []
+    finally:
+        conn.close()
 
 
 def supprimer_image(image_id: int) -> None:
     """Supprime une image par son id."""
     conn = get_connection()
-    cursor = conn.cursor()
+    if conn is None:
+        return
 
-    cursor.execute("DELETE FROM images WHERE id = %s", (image_id,))
-
-    conn.commit()
-    cursor.close()
-    conn.close()
+    try:
+        with conn:
+            with conn.cursor() as cursor:
+                cursor.execute("DELETE FROM images WHERE id = %s", (image_id,))
+    except Exception as e:
+        print(f"[DB Error] Erreur dans supprimer_image : {e}")
+    finally:
+        conn.close()

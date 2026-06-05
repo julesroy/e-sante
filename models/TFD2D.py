@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from FiltrageGaussien import FiltrageGaussien
-from ImageConvertie import ImageConvertie
+from .FiltrageGaussien import FiltrageGaussien
+from .ImageConvertie import ImageConvertie
 
 
 class TFD2D:
@@ -136,19 +136,3 @@ class TFD2D:
         self._fshift_complexe = self._fshift_complexe * masque_circulaire
 
         return self._fshift_complexe
-
-
-# tests
-# testImageConvertie = ImageConvertie("COVID-1024.png").convertirEnNumpyArray()
-# testImageConvertie = FiltrageGaussien((5, 5), 0, testImageConvertie).filtrage() # uniquement si on veut appliquer un filtre Gaussien avant de calculer la TFD
-# testTFD2D = TFD2D(testImageConvertie)
-# testMatriceTFD2D = testTFD2D.calculerTFDSpectre()
-# print(type(testMatriceTFD2D))  # type de la matrice du spectre
-# testTFD2D.afficher_spectre()  # à utiliser uniquement pour visualiser le spectre
-# testTFD2D.filtragePasseBas(90)  # appliquer un filtre passe-bas avec un rayon de coupure de 90 pixels
-# testTFD2D.filtragePasseHaut(10)  # appliquer un filtre passe-haut avec un rayon de coupure de 10 pixels
-# testImageReconstruite = testTFD2D.calculerTFDInverse()
-# testTFD2D.afficher_image_reconstruite(testImageReconstruite)
-
-# assert isinstance(testMatriceTFD2D, np.ndarray), "La matrice du spectre doit être un Numpy array."
-# assert testMatriceTFD2D.ndim == 2, "La matrice du spectre doit être en 2D."

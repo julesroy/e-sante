@@ -1,29 +1,56 @@
 # ===== IMPORTS PYTHON STANDARD =====
-from __future__ import annotations  # permet d'utiliser les annotations de type avant leur définition
+from __future__ import annotations
 import sys, os
 
 # ===== IMPORTS UNIQUEMENT POUR PYLANCE (jamais exécutés) =====
-# Ces imports permettent à Pylance de connaître les types sans créer de dépendances circulaires
 from typing import TYPE_CHECKING
-from collections.abc import Callable
+
 if TYPE_CHECKING:
     import numpy as np
     from views.MainView import MainView
+    from controllers.MainController import MainController
 
 # ===== IMPORTS PYQT6 =====
 from PyQt6.QtWidgets import QFileDialog
 
 # ===== IMPORTS DES MODÈLES =====
-# On ajoute le dossier models au path car ce fichier est dans controllers/
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", "models"))
-from ImageConvertie import ImageConvertie
+from models.ImageConvertie import ImageConvertie
 
 
 class UploadController:
-    # Ces attributs appartiennent à MainController.
-    # On les déclare ici pour que Pylance sache qu'ils existent quand on y accède via self.
-    view: MainView
-    _current_array: np.ndarray | None
+    def __init__(self, main_controller: MainController):
+        self.main_controller = main_controller
+
+    @property
+    def view(self):
+        return self.main_controller.view
+
+    @property
+    def _current_array(self):
+        return self.main_controller._current_array
+
+    @_current_array.setter
+    def _current_array(self, value):
+        self.main_controller._current_array = value
+
+    @property
+    def _original_pixmap(self):
+        return self.main_controller._original_pixmap
+
+    @_original_pixmap.setter
+    def _original_pixmap(self, value):
+        self.main_controller._original_pixmap = value
+
+    @property
+    def _last_file_path(self):
+        return self.main_controller._last_file_path
+
+    @_last_file_path.setter
+    def _last_file_path(self, value):
+        self.main_controller._last_file_path = value
+
+    def _display_numpy_array(self, array):
+        self.main_controller._display_numpy_array(array)
 
     def handle_upload(self):
         """
@@ -45,7 +72,7 @@ class UploadController:
             self._current_array = ImageConvertie(file_path).convertirEnNumpyArray()
 
             # Pour les DICOM, afficher via numpy array plutôt que QPixmap directement
-            if file_path.lower().endswith('.dcm'):
+            if file_path.lower().endswith(".dcm"):
                 self._display_numpy_array(self._current_array)
             else:
                 # Pour PNG/JPG, afficher directement et mémoriser

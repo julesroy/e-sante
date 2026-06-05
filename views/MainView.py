@@ -10,10 +10,11 @@ from views.LeftToolBar import LeftToolbar
 from views.TopToolbar import TopToolbar
 from views.RulerOverlay import RulerOverlay
 
+
 class MedicalImageLabel(QLabel):
     def __init__(self, text, parent=None):
         super().__init__(text, parent)
-        self.visualizer = parent 
+        self.visualizer = parent
         self.ruler_overlay = RulerOverlay(self)
 
     def mousePressEvent(self, event):
@@ -25,20 +26,21 @@ class MedicalImageLabel(QLabel):
                 margin_x = (self.width() - pixmap_displayed.width()) // 2
                 margin_y = (self.height() - pixmap_displayed.height()) // 2
                 img_rect = QRect(margin_x, margin_y, pixmap_displayed.width(), pixmap_displayed.height())
-                
+
                 # Plus besoin de passer scale_x et scale_y ici, l'overlay gère tout seul avec le pixmap d'origine !
                 if self.ruler_overlay.handle_mouse_press(event.position().toPoint(), img_rect):
                     self.update()
+
     def paintEvent(self, event):
         """Dessine l'image et force la ligne du slider au premier plan absolu"""
         super().paintEvent(event)
-        
+
         pixmap_displayed = self.pixmap()
         if not pixmap_displayed:
             return
 
         painter = QPainter(self)
-        
+
         # Calcul des marges
         margin_x = (self.width() - pixmap_displayed.width()) // 2
         margin_y = (self.height() - pixmap_displayed.height()) // 2
@@ -53,17 +55,14 @@ class MedicalImageLabel(QLabel):
             return
 
         # Récupération de l'image d'origine
-        controller = getattr(self.visualizer.main_view, 'controller', None)
-        if controller and hasattr(controller, '_original_pixmap') and controller._original_pixmap:
-            image_a = controller._original_pixmap.scaled(
-                pixmap_displayed.width(), pixmap_displayed.height(),
-                Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation
-            )
+        controller = getattr(self.visualizer.main_view, "controller", None)
+        if controller and hasattr(controller, "_original_pixmap") and controller._original_pixmap:
+            image_a = controller._original_pixmap.scaled(pixmap_displayed.width(), pixmap_displayed.height(), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
         else:
             image_a = pixmap_displayed
 
         image_b = pixmap_displayed
-        
+
         # Conversion pos slider
         local_slider_x = self.mapFrom(self.visualizer.viewport(), QPoint(self.visualizer.slider_pos_x, 0)).x()
         split_x = local_slider_x - img_rect.left()
@@ -95,18 +94,18 @@ class MedicalImageVisualizer(QScrollArea):
         self.setWidgetResizable(True)
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.main_view = parent
-        
+
         # Tracking souris
         self.setMouseTracking(True)
         self.magnifier = QLabel(self)
         self.magnifier.setFixedSize(230, 230)
         self.magnifier.setObjectName("MagnifierLens")
-        
+
         self.magnifier.hide()
 
         # Var slider compa
-        self.slider_pos_x = 300  
-        self.is_dragging_slider = False  
+        self.slider_pos_x = 300
+        self.is_dragging_slider = False
 
         self.controller = None
 
@@ -120,7 +119,7 @@ class MedicalImageVisualizer(QScrollArea):
             return
 
         pos_viewport = event.position().toPoint()
-        
+
         if abs(pos_viewport.x() - self.slider_pos_x) < 10:
             self.is_dragging_slider = True
             self.setCursor(Qt.CursorShape.SplitHCursor)
@@ -133,39 +132,39 @@ class MedicalImageVisualizer(QScrollArea):
     def mouseMoveEvent(self, event):
         """Gère la découpe et le déplacement de la bulle loupe avec correction d'offset"""
         super().mouseMoveEvent(event)
-        
+
         # Logique glissement slider
         if self.main_view and self.main_view.slider_compare_active and self.main_view.current_pixmap is not None:
             pos_viewport = event.position().toPoint()
             content_widget = self.widget()
-            
+
             if content_widget and content_widget.pixmap():
                 pixmap_displayed = content_widget.pixmap()
                 margin_x = (content_widget.width() - pixmap_displayed.width()) // 2
-                
+
                 if self.is_dragging_slider:
                     min_x = margin_x
                     max_x = margin_x + pixmap_displayed.width()
                     self.slider_pos_x = max(min_x, min(pos_viewport.x(), max_x))
                     content_widget.update()  # Rafraîchit le label directement
                     return
-                
+
                 if abs(pos_viewport.x() - self.slider_pos_x) < 10:
                     self.setCursor(Qt.CursorShape.SplitHCursor)
                 else:
                     self.setCursor(Qt.CursorShape.ArrowCursor)
-        
+
         if not self.main_view or self.main_view.current_pixmap is None or not self.main_view.magnifier_active:
             self.magnifier.hide()
             return
 
-        content_widget = self.widget() # Le QLabel affichant la radio
+        content_widget = self.widget()  # Le QLabel affichant la radio
         if not content_widget or not content_widget.pixmap():
             return
 
         pixmap_displayed = content_widget.pixmap()
 
-        #Position souris repère global
+        # Position souris repère global
         pos_viewport = event.position().toPoint()
         pos_in_label = content_widget.mapFrom(self.viewport(), pos_viewport)
 
@@ -173,14 +172,14 @@ class MedicalImageVisualizer(QScrollArea):
         margin_x = (content_widget.width() - pixmap_displayed.width()) // 2
         margin_y = (content_widget.height() - pixmap_displayed.height()) // 2
 
-        #Position souris relative image
+        # Position souris relative image
         img_x = pos_in_label.x() - margin_x
         img_y = pos_in_label.y() - margin_y
 
         # Vérifier curseur dans l'image ou pas
         if 0 <= img_x < pixmap_displayed.width() and 0 <= img_y < pixmap_displayed.height():
             self.magnifier.show()
-            
+
             # loupe suivre curseur
             self.magnifier.move(pos_viewport.x() + 15, pos_viewport.y() + 15)
             self.magnifier.raise_()
@@ -188,24 +187,19 @@ class MedicalImageVisualizer(QScrollArea):
             # 4. Projection image origine
             scale_x = self.main_view.current_pixmap.width() / pixmap_displayed.width()
             scale_y = self.main_view.current_pixmap.height() / pixmap_displayed.height()
-            
+
             orig_x = int(img_x * scale_x)
             orig_y = int(img_y * scale_y)
 
             # Taille zone source
             size_src = int(230 / self.main_view.magnifier_power)
-            
-            rect_src = QRect(
-                orig_x - size_src // 2,
-                orig_y - size_src // 2,
-                size_src,
-                size_src
-            )
 
-            #Découpe / redim le zoom via image affiché
+            rect_src = QRect(orig_x - size_src // 2, orig_y - size_src // 2, size_src, size_src)
+
+            # Découpe / redim le zoom via image affiché
             cropped = self.main_view.current_pixmap.copy(rect_src)
             zoom_pixmap = cropped.scaled(230, 230, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
-            
+
             self.magnifier.setPixmap(zoom_pixmap)
         else:
             self.magnifier.hide()
@@ -219,7 +213,7 @@ class MainView(QMainWindow):
         self.controller: MainController | None = None
         self.contrast_slider: QSlider | None = None
         self.zoom_factor: float = 1.0
-        
+
         self.setWindowTitle("PixelMed")
         self.resize(1024, 680)
 
@@ -229,26 +223,26 @@ class MainView(QMainWindow):
             self.setWindowIcon(QIcon(icon_path))
 
         self.current_file_path = None
-        self.current_pixmap = None  
-        
+        self.current_pixmap = None
+
         # --- ETATS DE LA LOUPE ---
         self.magnifier_active = False
         self.magnifier_power = 2.0
         self.slider_compare_active = False
-        
+
         # --- ETATS DE LA REGLE ---
         self.ruler_active = False
-        
+
         # --- SLIDER DE CONTRASTE ---
         self.contrast_slider_active = False
         self.contrast_slider = None
         self._contrast_slider_connection = None
-        
+
         self.center_on_screen()
 
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
-        
+
         self.layout = QVBoxLayout(self.central_widget)
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
@@ -265,15 +259,15 @@ class MainView(QMainWindow):
         content_layout.addWidget(self.left_toolbar)
 
         self.scroll_area = MedicalImageVisualizer(self)
-    
+
         self.image_display = MedicalImageLabel("Aucune radiographie chargée.", self.scroll_area)
         self.image_display.setObjectName("PlaceholderLabel")
         self.image_display.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        
+
         # Activer le suivi souris sur le label d'affichage
         self.image_display.setMouseTracking(True)
         self.scroll_area.setWidget(self.image_display)
-        
+
         # --- SETUP SLIDER DE CONTRASTE (overlay) ---
         self.contrast_slider = QSlider(Qt.Orientation.Horizontal, self.scroll_area)
         self.contrast_slider.setMinimum(1)
@@ -284,7 +278,7 @@ class MainView(QMainWindow):
         self.contrast_slider.hide()
         # Positionnement initial (sera mis à jour quand la fenêtre se redimensionne)
         self.contrast_slider.move(15, self.scroll_area.height() - 35)
-        
+
         content_layout.addWidget(self.scroll_area)
 
         content_layout.setStretchFactor(self.left_toolbar, 0)
@@ -294,7 +288,7 @@ class MainView(QMainWindow):
         # On transforme le bouton d'agrandissement du haut en Interrupteur Loupe
         self.btn_magnifier = self.top_toolbar.btn_loupe
         self.btn_magnifier.setCheckable(True)
-        
+
         # Déconnexion des anciens signaux pour lier le nouveau mode
         try:
             self.btn_magnifier.clicked.disconnect()
@@ -306,7 +300,7 @@ class MainView(QMainWindow):
         self.btn_slider_compare = self.top_toolbar.btn_slider_compare
         self.btn_slider_compare.setCheckable(True)
         self.btn_slider_compare.clicked.connect(self.toggle_slider_mode)
-        
+
         # Btn Contrast Slider
         self.btn_magnifier = self.left_toolbar.btn_contrast_slider
         self.btn_magnifier.setCheckable(True)
@@ -336,16 +330,12 @@ class MainView(QMainWindow):
         if self.current_pixmap is None:
             self.btn_magnifier.setChecked(False)
             return
-            
+
         self.magnifier_active = checked
-        
+
         if checked:
             # Affichage de la boîte de dialogue (Popup)
-            power, ok = QInputDialog.getDouble(
-                self, "Configuration Loupe", 
-                "Facteur de zoom de la lentille (x2.0 à x8.0) :", 
-                value=3.0, min=2.0, max=8.0, decimals=1
-            )
+            power, ok = QInputDialog.getDouble(self, "Configuration Loupe", "Facteur de zoom de la lentille (x2.0 à x8.0) :", value=3.0, min=2.0, max=8.0, decimals=1)
             if ok:
                 self.magnifier_power = power
                 self.btn_magnifier.setToolTip(f"Désactiver la loupe (Active: x{power})")
@@ -377,7 +367,7 @@ class MainView(QMainWindow):
         if self.current_pixmap is None or self.contrast_slider is None:
             self.left_toolbar.btn_contrast_slider.setChecked(False)
             return
-        
+
         self.contrast_slider_active = checked
         if checked:
             print("Mode Slider de contraste activé.")
@@ -409,7 +399,7 @@ class MainView(QMainWindow):
         self.ruler_active = checked
         if checked:
             print("Mode Règle de mesure activé.")
-            if hasattr(self.image_display, 'ruler_overlay'):
+            if hasattr(self.image_display, "ruler_overlay"):
                 self.image_display.ruler_overlay.clear()
         else:
             print("Mode Règle de mesure désactivé.")

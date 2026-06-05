@@ -3,9 +3,10 @@ from __future__ import annotations
 
 # ===== IMPORTS UNIQUEMENT POUR PYLANCE (jamais exécutés) =====
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from views.MainView import MainView
-    from controllers.ErrorController import ErrorController
+    from controllers.MainController import MainController
 
 # ===== IMPORTS BDD =====
 from database.connection import is_online
@@ -18,15 +19,31 @@ from database.crud.patients import (
 
 # Message réutilisé dans tous les guards hors-ligne
 _MSG_OFFLINE = "Cette fonctionnalité nécessite une connexion Internet"
+
+
 class PatientController:
-    #Attributs pour Pylance
-    view: MainView
-    error_handler: ErrorController
+    def __init__(self, main_controller: MainController):
+        self.main_controller = main_controller
+
+    @property
+    def view(self):
+        return self.main_controller.view
+
+    @property
+    def error_handler(self):
+        return self.main_controller.error_handler
 
     # ---------------------------------------------------------------
     # CRÉER UN PATIENT
     # ---------------------------------------------------------------
-    def handle_nouveau_patient(self, nom: str, prenom: str, date_naissance: str | None = None, sexe: str | None = None, numero_patient: str | None = None,) -> int | None:
+    def handle_nouveau_patient(
+        self,
+        nom: str,
+        prenom: str,
+        date_naissance: str | None = None,
+        sexe: str | None = None,
+        numero_patient: str | None = None,
+    ) -> int | None:
         """
         Insère un nouveau patient en BDD.
         Retourne son id, ou None si hors-ligne / erreur.
@@ -39,10 +56,7 @@ class PatientController:
 
         try:
             if not nom.strip() or not prenom.strip():
-                self.error_handler.show_error(
-                    "Champs manquants",
-                    "Le nom et le prénom sont obligatoires."
-                )
+                self.error_handler.show_error("Champs manquants", "Le nom et le prénom sont obligatoires.")
                 return None
 
             patient_id = creer_patient(nom.strip(), prenom.strip(), date_naissance, sexe, numero_patient)
@@ -64,10 +78,10 @@ class PatientController:
         Appelé au démarrage ou après une modification pour rafraîchir la liste.
         Retourne [] si hors-ligne ou erreur.
         """
-         # Guard hors-ligne — pas d'erreur affichée ici (appelé silencieusement)
+        # Guard hors-ligne — pas d'erreur affichée ici (appelé silencieusement)
         if not is_online():
             return []
-        
+
         try:
             patients = get_tous_les_patients()
             patients = patients or []
@@ -90,7 +104,7 @@ class PatientController:
         """
         if not is_online():
             return []
-        
+
         try:
             if not query.strip():
                 # Champ vide -> on retourne tous les patients
@@ -107,7 +121,7 @@ class PatientController:
         except Exception as e:
             self.error_handler.handle_exception(e)
             return []
-        
+
     # ---------------------------------------------------------------
     # SUPPRIMER UN PATIENT
     # ---------------------------------------------------------------
@@ -120,7 +134,7 @@ class PatientController:
         if not is_online():
             self.error_handler.show_error("Mode hors-ligne", _MSG_OFFLINE)
             return False
-        
+
         try:
             supprimer_patient(patient_id)
             print(f"[PatientController] Patient id={patient_id} supprimé")

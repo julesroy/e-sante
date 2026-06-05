@@ -1,14 +1,22 @@
 # ===== IMPORTS UNIQUEMENT POUR PYLANCE (jamais exécutés) =====
 from typing import TYPE_CHECKING
-from collections.abc import Callable
+
 if TYPE_CHECKING:
     from views.MainView import MainView
-    from controllers.ErrorController import ErrorController
+    from controllers.MainController import MainController
+
 
 class RulerController:
-    def __init__(self, view: 'MainView', error_controller: 'ErrorController'):
-        self.view = view
-        self.error_controller = error_controller
+    def __init__(self, main_controller: MainController):
+        self.main_controller = main_controller
+
+    @property
+    def view(self):
+        return self.main_controller.view
+
+    @property
+    def error_controller(self):
+        return self.main_controller.error_handler
 
     def handle_ruler_toggle(self, checked: bool):
         """Gère l'activation du mode règle depuis la LeftToolbar."""
@@ -20,9 +28,9 @@ class RulerController:
         if checked:
             print("Mode Règle de mesure activé.")
             # Si on active la règle, on nettoie l'ancienne mesure pour être propre
-            if hasattr(self.view.image_display, 'ruler_overlay'):
+            if hasattr(self.view.image_display, "ruler_overlay"):
                 self.view.image_display.ruler_overlay.clear()
         else:
             print("Mode Règle de mesure désactivé.")
-            
+
         self.view.image_display.update()

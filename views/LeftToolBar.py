@@ -2,6 +2,7 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QGridLayout
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QFont
 
+
 class LeftToolbar(QWidget):
     reset_image_clicked = pyqtSignal()
     gaussian_clicked = pyqtSignal()
@@ -15,47 +16,47 @@ class LeftToolbar(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        
+
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         self.setFixedWidth(160)
-        
+
         self.main_layout = QVBoxLayout()
         self.main_layout.setContentsMargins(0, 0, 0, 0)
         self.main_layout.setSpacing(5)
         self.main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.setLayout(self.main_layout)
-        
+
         icon_font = QFont("FontAwesome", 12)
         button_size = 44
-        
+
         # === FILTRES ===
         self.section_filters = QPushButton("Filtres  ▼")
         self.section_filters.setObjectName("SectionHeader")
         self.section_filters.setCheckable(True)  # Rendu mémorisable pour le QSS
-        self.section_filters.setChecked(True)    # Sélectionné par défaut (ouvert)
+        self.section_filters.setChecked(True)  # Sélectionné par défaut (ouvert)
         self.main_layout.addWidget(self.section_filters)
-        
+
         self.filters_container = QWidget()
         self.grid_layout = QGridLayout(self.filters_container)
         self.grid_layout.setContentsMargins(8, 5, 8, 10)
         self.grid_layout.setSpacing(6)
-        
+
         # Btn filtres
         self.btn_origin = QPushButton("\uf0e2")
         self.btn_origin.setFont(icon_font)
         self.btn_origin.setFixedSize(button_size, button_size)
         self.btn_origin.setToolTip("Afficher l'image d'origine")
-        
+
         self.btn_gaussian = QPushButton("\uf0d0")
         self.btn_gaussian.setFont(icon_font)
         self.btn_gaussian.setFixedSize(button_size, button_size)
         self.btn_gaussian.setToolTip("Appliquer un filtre gaussien pour lisser l'image")
-        
+
         self.btn_tfd2d = QPushButton("\uf1fe")
         self.btn_tfd2d.setFont(icon_font)
         self.btn_tfd2d.setFixedSize(button_size, button_size)
         self.btn_tfd2d.setToolTip("Afficher la Transformée de Fourier 2D de l'image")
-        
+
         self.btn_low_pass = QPushButton("\uf103")
         self.btn_low_pass.setFont(icon_font)
         self.btn_low_pass.setFixedSize(button_size, button_size)
@@ -77,15 +78,15 @@ class LeftToolbar(QWidget):
         self.grid_layout.addWidget(self.btn_low_pass, 1, 0)
         self.grid_layout.addWidget(self.btn_high_pass, 1, 1)
         self.grid_layout.addWidget(self.btn_sobel, 1, 2)
-        
+
         self.main_layout.addWidget(self.filters_container)
-        
+
         # === CONTRASTE ===
         self.section_contrast = QPushButton("Contraste  ▶")
         self.section_contrast.setObjectName("SectionHeader")
         self.section_contrast.setCheckable(True)  # Rendu mémorisable pour le QSS
         self.main_layout.addWidget(self.section_contrast)
-        
+
         self.contrast_container = QWidget()
         self.contrast_container.setVisible(False)
         self.grid_layout_contrast = QGridLayout(self.contrast_container)
@@ -111,46 +112,41 @@ class LeftToolbar(QWidget):
         # === MESURES ===
         self.section_measures = QPushButton("Mesures  ▶")
         self.section_measures.setObjectName("SectionHeader")
-        self.section_measures.setCheckable(True)   # Rendu mémorisable pour le QSS
+        self.section_measures.setCheckable(True)  # Rendu mémorisable pour le QSS
         self.main_layout.addWidget(self.section_measures)
-        
+
         self.measures_container = QWidget()
-        self.measures_container.setVisible(False) 
-        
+        self.measures_container.setVisible(False)
+
         measures_layout = QVBoxLayout(self.measures_container)
         measures_layout.setContentsMargins(8, 5, 8, 10)
-        
+
         self.btn_ruler = QPushButton("\uf545")
         self.btn_ruler.setFont(icon_font)
         self.btn_ruler.setFixedSize(button_size, button_size)
         self.btn_ruler.setToolTip("Mesurer la distance entre deux points en cm")
-        self.btn_ruler.setCheckable(True) # Devient bleu quand cliqué
+        self.btn_ruler.setCheckable(True)  # Devient bleu quand cliqué
         measures_layout.addWidget(self.btn_ruler)
-        
+
         self.main_layout.addWidget(self.measures_container)
-        
+
         # === ANNOTER ===
         self.section_annotate = QPushButton("Annoter  ▶")
         self.section_annotate.setObjectName("SectionHeader")
-        self.section_annotate.setCheckable(True) 
+        self.section_annotate.setCheckable(True)
         self.main_layout.addWidget(self.section_annotate)
-        
+
         self.annotate_container = QWidget()
-        self.annotate_container.setVisible(False) 
+        self.annotate_container.setVisible(False)
         self.main_layout.addWidget(self.annotate_container)
 
         # === CONFIG BTN GRILLE ===
-        self.filter_buttons = [
-            self.btn_origin, self.btn_gaussian, self.btn_tfd2d,
-            self.btn_low_pass, self.btn_high_pass, self.btn_sobel, self.btn_clahe
-        ]
+        self.filter_buttons = [self.btn_origin, self.btn_gaussian, self.btn_tfd2d, self.btn_low_pass, self.btn_high_pass, self.btn_sobel, self.btn_clahe]
         for btn in self.filter_buttons:
             btn.setCheckable(True)
             btn.setAutoExclusive(True)
 
-        self.contrast_buttons = [
-            self.btn_clahe
-        ]
+        self.contrast_buttons = [self.btn_clahe]
         for btn in self.contrast_buttons:
             btn.setCheckable(True)
             btn.setAutoExclusive(True)

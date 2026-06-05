@@ -2,6 +2,7 @@
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QSlider, QLabel, QPushButton
 from PyQt6.QtCore import Qt, pyqtSignal
 
+
 class FilterDialog(QDialog):
     cutoff_changed = pyqtSignal(int)
 

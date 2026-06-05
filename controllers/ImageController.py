@@ -4,18 +4,18 @@ import os
 
 # ===== IMPORTS UNIQUEMENT POUR PYLANCE (jamais exécutés) =====
 from typing import TYPE_CHECKING
-from collections.abc import Callable
+
 if TYPE_CHECKING:
     import numpy as np
     from views.MainView import MainView
-    from controllers.ErrorController import ErrorController
+    from controllers.MainController import MainController
 
 # ===== IMPORTS PYQT6 =====
 from PyQt6.QtWidgets import QFileDialog
 
 # ===== IMPORTS BDD =====
 from database.connection import is_online
-from database.crud import (
+from database.crud.images import (
     sauvegarder_image,
     get_images_patient,
     supprimer_image,
@@ -24,11 +24,26 @@ from database.crud import (
 # Message réutilisé dans tous les guards hors-ligne
 _MSG_OFFLINE = "Cette fonctionnalité nécessite une connexion Internet"
 
+
 class ImageController:
-    # Attributs déclarés pour Pylance (définis dans MainController)
-    view: MainView
-    error_handler: ErrorController
-    _current_patient_id: int | None
+    def __init__(self, main_controller: MainController):
+        self.main_controller = main_controller
+
+    @property
+    def view(self):
+        return self.main_controller.view
+
+    @property
+    def error_handler(self):
+        return self.main_controller.error_handler
+
+    @property
+    def _current_patient_id(self):
+        return self.main_controller._current_patient_id
+
+    @_current_patient_id.setter
+    def _current_patient_id(self, value):
+        self.main_controller._current_patient_id = value
 
     # ---------------------------------------------------------------
     # UPLOAD + SAUVEGARDE EN BDD
@@ -49,10 +64,7 @@ class ImageController:
         try:
             # Vérifie qu'un patient est bien sélectionné avant d'uploader
             if self._current_patient_id is None:
-                self.error_handler.show_error(
-                    "Aucun patient sélectionné",
-                    "Sélectionnez ou créez un patient avant d'importer une image."
-                )
+                self.error_handler.show_error("Aucun patient sélectionné", "Sélectionnez ou créez un patient avant d'importer une image.")
                 return
 
             # Ouverture de l'explorateur de fichiers natif
@@ -122,10 +134,7 @@ class ImageController:
         # Pas de guard hors-ligne ici — ouvrir un fichier local ne nécessite pas la BDD, seulement le chemin disque
         try:
             if not os.path.exists(chemin):
-                self.error_handler.show_error(
-                    "Fichier introuvable",
-                    f"Le fichier n'existe plus à l'emplacement :\n{chemin}"
-                )
+                self.error_handler.show_error("Fichier introuvable", f"Le fichier n'existe plus à l'emplacement :\n{chemin}")
                 return
 
             self.view.display_medical_image(chemin)
