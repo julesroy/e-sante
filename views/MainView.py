@@ -180,8 +180,36 @@ class MedicalImageVisualizer(QScrollArea):
         if 0 <= img_x < pixmap_displayed.width() and 0 <= img_y < pixmap_displayed.height():
             self.magnifier.show()
 
+            # Empêcher la loupe de sortir du viewport
+            viewport_w = self.viewport().width()
+            viewport_h = self.viewport().height()
+            mag_w = self.magnifier.width()
+            mag_h = self.magnifier.height()
+
+            # Offsets par défaut (en bas à droite du curseur)
+            offset_x = 15
+            offset_y = 15
+
+            # Si la loupe dépasse à droite, on la place à gauche du curseur
+            if pos_viewport.x() + offset_x + mag_w > viewport_w:
+                offset_x = -mag_w - 15
+
+            # Si la loupe dépasse en bas, on la place au-dessus du curseur
+            if pos_viewport.y() + offset_y + mag_h > viewport_h:
+                offset_y = -mag_h - 15
+
+            target_x = pos_viewport.x() + offset_x
+            target_y = pos_viewport.y() + offset_y
+
+            # Sécurité : forcer dans les limites du viewport
+            target_x = max(0, min(target_x, viewport_w - mag_w))
+            target_y = max(0, min(target_y, viewport_h - mag_h))
+
+            # Conversion dans le repère du parent (QScrollArea)
+            pos_in_parent = self.viewport().mapTo(self, QPoint(target_x, target_y))
+
             # loupe suivre curseur
-            self.magnifier.move(pos_viewport.x() + 15, pos_viewport.y() + 15)
+            self.magnifier.move(pos_in_parent)
             self.magnifier.raise_()
 
             # 4. Projection image origine
