@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QGridLayout
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QFont
+from PyQt6.QtCore import Qt, pyqtSignal, QSize
+from PyQt6.QtGui import QFont, QIcon
+import os
 from views.PatientManagerWidget import PatientManagerWidget
 
 
@@ -127,15 +128,21 @@ class LeftToolbar(QWidget):
         measures_layout.setContentsMargins(12, 8, 8, 12)
         measures_layout.setSpacing(6)
 
-        self.btn_ruler = QPushButton("\uf545")
-        self.btn_ruler.setFont(icon_font)
+        self.btn_ruler = QPushButton()
+        ruler_icon_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "icons", "ruler-icon.svg")
+        if os.path.exists(ruler_icon_path):
+            self.btn_ruler.setIcon(QIcon(ruler_icon_path))
+            self.btn_ruler.setIconSize(QSize(18, 18))
         self.btn_ruler.setFixedSize(button_size, button_size)
         self.btn_ruler.setToolTip("Mesurer la distance entre deux points en cm")
         self.btn_ruler.setCheckable(True)
         measures_layout.addWidget(self.btn_ruler)
 
-        self.btn_angle = QPushButton("\uf5ad")
-        self.btn_angle.setFont(icon_font)
+        self.btn_angle = QPushButton()
+        icon_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "icons", "angle-icon.svg")
+        if os.path.exists(icon_path):
+            self.btn_angle.setIcon(QIcon(icon_path))
+            self.btn_angle.setIconSize(QSize(18, 18))
         self.btn_angle.setFixedSize(button_size, button_size)
         self.btn_angle.setToolTip("Mesurer l'angle entre deux droites")
         self.btn_angle.setCheckable(True)
