@@ -10,6 +10,8 @@ from views.LeftToolBar import LeftToolbar
 from views.TopToolbar import TopToolbar
 from views.RulerOverlay import RulerOverlay
 from views.PatientInfoWidget import PatientInfoWidget
+from views.AngleOverlay import AngleOverlay
+from views.HeightCompOverlay import HeightCompOverlay
 
 
 class MedicalImageLabel(QLabel):
@@ -17,19 +19,40 @@ class MedicalImageLabel(QLabel):
         super().__init__(text, parent)
         self.visualizer = parent
         self.ruler_overlay = RulerOverlay(self)
+        self.angle_overlay = AngleOverlay(self)
+        self.height_comp_overlay = HeightCompOverlay(self)
 
     def mousePressEvent(self, event):
-        """Intercepte les clics pour positionner les points de mesure si la règle est active."""
+        """Intercepte les clics pour positionner les points de mesure si la règle, l'angle ou le comparateur de hauteur est actif."""
         super().mousePressEvent(event)
-        if self.visualizer and self.visualizer.main_view and self.visualizer.main_view.ruler_active:
-            pixmap_displayed = self.pixmap()
-            if pixmap_displayed:
-                margin_x = (self.width() - pixmap_displayed.width()) // 2
-                margin_y = (self.height() - pixmap_displayed.height()) // 2
-                img_rect = QRect(margin_x, margin_y, pixmap_displayed.width(), pixmap_displayed.height())
+        if self.visualizer and self.visualizer.main_view:
+            if self.visualizer.main_view.ruler_active:
+                pixmap_displayed = self.pixmap()
+                if pixmap_displayed:
+                    margin_x = (self.width() - pixmap_displayed.width()) // 2
+                    margin_y = (self.height() - pixmap_displayed.height()) // 2
+                    img_rect = QRect(margin_x, margin_y, pixmap_displayed.width(), pixmap_displayed.height())
 
-                if self.ruler_overlay.handle_mouse_press(event.position().toPoint(), img_rect):
-                    self.update()
+                    if self.ruler_overlay.handle_mouse_press(event.position().toPoint(), img_rect):
+                        self.update()
+            elif self.visualizer.main_view.angle_active:
+                pixmap_displayed = self.pixmap()
+                if pixmap_displayed:
+                    margin_x = (self.width() - pixmap_displayed.width()) // 2
+                    margin_y = (self.height() - pixmap_displayed.height()) // 2
+                    img_rect = QRect(margin_x, margin_y, pixmap_displayed.width(), pixmap_displayed.height())
+
+                    if self.angle_overlay.handle_mouse_press(event.position().toPoint(), img_rect):
+                        self.update()
+            elif self.visualizer.main_view.height_comp_active:
+                pixmap_displayed = self.pixmap()
+                if pixmap_displayed:
+                    margin_x = (self.width() - pixmap_displayed.width()) // 2
+                    margin_y = (self.height() - pixmap_displayed.height()) // 2
+                    img_rect = QRect(margin_x, margin_y, pixmap_displayed.width(), pixmap_displayed.height())
+
+                    if self.height_comp_overlay.handle_mouse_press(event.position().toPoint(), img_rect):
+                        self.update()
 
     def paintEvent(self, event):
         """Dessine l'image et force la ligne du slider au premier plan absolu"""
@@ -49,6 +72,14 @@ class MedicalImageLabel(QLabel):
         # --- DESSIN DE LA REGLE DE MESURE AU PREMIER PLAN ---
         if self.visualizer and self.visualizer.main_view and self.visualizer.main_view.ruler_active:
             self.ruler_overlay.draw_measure(painter, img_rect)
+
+        # --- DESSIN DE L'ANGLE DE MESURE AU PREMIER PLAN ---
+        if self.visualizer and self.visualizer.main_view and self.visualizer.main_view.angle_active:
+            self.angle_overlay.draw_measure(painter, img_rect)
+
+        # --- DESSIN DU COMPARATEUR DE HAUTEUR AU PREMIER PLAN ---
+        if self.visualizer and self.visualizer.main_view and self.visualizer.main_view.height_comp_active:
+            self.height_comp_overlay.draw_measure(painter, img_rect)
 
         if not self.visualizer or not self.visualizer.main_view or not self.visualizer.main_view.slider_compare_active or not self.visualizer.main_view.current_pixmap:
             painter.end()
@@ -259,6 +290,8 @@ class MainView(QMainWindow):
 
         # --- ETATS DE LA REGLE ---
         self.ruler_active = False
+        self.angle_active = False
+        self.height_comp_active = False
 
         # --- SLIDER DE CONTRASTE ---
         self.contrast_slider_active = False

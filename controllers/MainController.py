@@ -56,6 +56,8 @@ class MainController:
         self.view.left_toolbar.high_pass_clicked.connect(self.filter_ctrl.handle_passe_haut)
         self.view.left_toolbar.sobel_clicked.connect(self.filter_ctrl.handle_sobel)
         self.view.left_toolbar.ruler_clicked.connect(self.ruler_ctrl.handle_ruler_toggle)
+        self.view.left_toolbar.angle_clicked.connect(self.ruler_ctrl.handle_angle_toggle)
+        self.view.left_toolbar.height_comp_clicked.connect(self.ruler_ctrl.handle_height_comp_toggle)
     
     @property
     def _current_array(self): return self.model.current_array
