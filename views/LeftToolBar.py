@@ -1,8 +1,37 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QGridLayout
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QGridLayout, QLabel
 from PyQt6.QtCore import Qt, pyqtSignal, QSize
 from PyQt6.QtGui import QFont, QIcon
 import os
 from views.PatientManagerWidget import PatientManagerWidget
+
+
+class SectionHeaderButton(QPushButton):
+    def __init__(self, title, is_expanded=False, parent=None):
+        super().__init__(parent)
+        self.setObjectName("SectionHeader")
+        self.setCheckable(True)
+
+        # Layout interne flex-like
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(12, 0, 12, 0)
+        layout.setSpacing(0)
+
+        self.title_label = QLabel(title)
+        self.title_label.setStyleSheet("color: white; font-weight: bold; background-color: transparent;")
+        
+        self.arrow_label = QLabel("▼" if is_expanded else "▶")
+        self.arrow_label.setStyleSheet("color: white; font-weight: bold; background-color: transparent;")
+
+        layout.addWidget(self.title_label)
+        layout.addStretch()
+        layout.addWidget(self.arrow_label)
+
+        # Ignore mouse events on labels so they pass through to the button
+        self.title_label.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+        self.arrow_label.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+
+    def set_expanded(self, expanded):
+        self.arrow_label.setText("▼" if expanded else "▶")
 
 
 class LeftToolbar(QWidget):
@@ -26,7 +55,7 @@ class LeftToolbar(QWidget):
 
         self.main_layout = QVBoxLayout()
         self.main_layout.setContentsMargins(0, 0, 0, 0)
-        self.main_layout.setSpacing(8)
+        self.main_layout.setSpacing(20)
         self.main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.setLayout(self.main_layout)
 
@@ -34,9 +63,7 @@ class LeftToolbar(QWidget):
         button_size = 40
 
         # === FILTRES ===
-        self.section_filters = QPushButton("Filtres  ▼")
-        self.section_filters.setObjectName("SectionHeader")
-        self.section_filters.setCheckable(True)
+        self.section_filters = SectionHeaderButton("Filtres", is_expanded=True)
         self.section_filters.setChecked(True)
         self.main_layout.addWidget(self.section_filters)
 
@@ -87,9 +114,7 @@ class LeftToolbar(QWidget):
         self.main_layout.addWidget(self.filters_container)
 
         # === CONTRASTE ===
-        self.section_contrast = QPushButton("Contraste  ▶")
-        self.section_contrast.setObjectName("SectionHeader")
-        self.section_contrast.setCheckable(True)
+        self.section_contrast = SectionHeaderButton("Contraste", is_expanded=False)
         self.main_layout.addWidget(self.section_contrast)
 
         self.contrast_container = QWidget()
@@ -116,9 +141,7 @@ class LeftToolbar(QWidget):
         self.main_layout.addWidget(self.contrast_container)
 
         # === MESURES ===
-        self.section_measures = QPushButton("Mesures  ▶")
-        self.section_measures.setObjectName("SectionHeader")
-        self.section_measures.setCheckable(True)
+        self.section_measures = SectionHeaderButton("Mesures", is_expanded=False)
         self.main_layout.addWidget(self.section_measures)
 
         self.measures_container = QWidget()
@@ -160,9 +183,7 @@ class LeftToolbar(QWidget):
         self.main_layout.addWidget(self.measures_container)
 
         # === DOSSIERS (PATIENTS BDD) ===
-        self.section_folders = QPushButton("Dossiers  ▶")
-        self.section_folders.setObjectName("SectionHeader")
-        self.section_folders.setCheckable(True)
+        self.section_folders = SectionHeaderButton("Dossiers", is_expanded=False)
         self.main_layout.addWidget(self.section_folders)
 
         self.folders_container = QWidget()
@@ -211,7 +232,4 @@ class LeftToolbar(QWidget):
         new_visibility = not is_visible
         container.setVisible(new_visibility)
         button.setChecked(new_visibility)
-        if is_visible:
-            button.setText(f"{title_text}  ▶")
-        else:
-            button.setText(f"{title_text}  ▼")
+        button.set_expanded(new_visibility)

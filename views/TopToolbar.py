@@ -13,7 +13,7 @@ class TopToolbar(QWidget):
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
 
         toolbar_layout = QHBoxLayout()
-        toolbar_layout.setContentsMargins(15, 10, 15, 10)
+        toolbar_layout.setContentsMargins(15, 15, 15, 15)
         toolbar_layout.setSpacing(10)
         self.setLayout(toolbar_layout)
 
@@ -48,6 +48,7 @@ class TopToolbar(QWidget):
         toolbar_layout.addWidget(self.btn_slider_compare)
         toolbar_layout.addStretch()
         toolbar_layout.addWidget(self.btn_help)
+        # self.setFixedHeight(80)
 
         self.btn_upload.clicked.connect(self.upload_clicked.emit)
         self.btn_help.clicked.connect(self.help_clicked.emit)

@@ -30,9 +30,9 @@ class PatientManagerWidget(QWidget):
 
         # 🛠️ BOUTONS PATIENT
         btn_patient_layout = QHBoxLayout()
-        self.btn_add_patient = QPushButton("➕ Nouveau")
+        self.btn_add_patient = QPushButton("Nouveau")
         self.btn_add_patient.clicked.connect(self.open_create_patient_dialog)
-        self.btn_del_patient = QPushButton("🗑️ Supprimer")
+        self.btn_del_patient = QPushButton("Supprimer")
         self.btn_del_patient.clicked.connect(self.delete_selected_patient)
         
         btn_patient_layout.addWidget(self.btn_add_patient)
@@ -47,9 +47,9 @@ class PatientManagerWidget(QWidget):
 
         # 🛠️ BOUTONS IMAGES
         btn_image_layout = QHBoxLayout()
-        self.btn_upload_img = QPushButton("💾 Sauver Radio")
+        self.btn_upload_img = QPushButton("Importer")
         self.btn_upload_img.clicked.connect(self.upload_and_save_image)
-        self.btn_del_img = QPushButton("🗑️ Suppr. Radio")
+        self.btn_del_img = QPushButton("Supprimer")
         self.btn_del_img.clicked.connect(self.delete_selected_image)
         
         btn_image_layout.addWidget(self.btn_upload_img)

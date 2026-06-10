@@ -305,7 +305,7 @@ class MainView(QMainWindow):
 
         self.layout = QVBoxLayout(self.central_widget)
         self.layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.setSpacing(0)
+        self.layout.setSpacing(15)
 
         self.top_toolbar = TopToolbar(self)
         self.layout.addWidget(self.top_toolbar)
