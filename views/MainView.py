@@ -341,6 +341,22 @@ class MainView(QMainWindow):
         # Positionnement initial (sera mis à jour quand la fenêtre se redimensionne)
         self.contrast_slider.move(15, self.scroll_area.height() - 35)
 
+        # --- INFO DE L'IMAGE (overlay en bas à droite) ---
+        self.image_info_label = QLabel(self.scroll_area)
+        self.image_info_label.setObjectName("ImageInfoLabel")
+        self.image_info_label.setStyleSheet("""
+            #ImageInfoLabel {
+                color: #e0e0e0;
+                background-color: rgba(32, 32, 32, 200);
+                border: 1px solid #3c3c3c;
+                border-radius: 4px;
+                padding: 6px 10px;
+                font-size: 11px;
+                font-family: "Segoe UI", Arial, sans-serif;
+            }
+        """)
+        self.image_info_label.hide()
+
         content_layout.addWidget(self.scroll_area)
 
         content_layout.setStretchFactor(self.left_toolbar, 0)
@@ -386,6 +402,12 @@ class MainView(QMainWindow):
             Qt.TransformationMode.SmoothTransformation,
         )
         self.image_display.setPixmap(scaled_pixmap)
+
+        # Mettre à jour les infos de l'image
+        path = self.current_file_path
+        if (path == "from_controller" or not path) and self.controller:
+            path = self.controller._last_file_path
+        self.update_image_info(path, self.current_pixmap)
 
     def toggle_magnifier_mode(self, checked):
         """Ouvre la popup de réglage et active l'effet au survol"""
@@ -470,11 +492,55 @@ class MainView(QMainWindow):
             y = self.scroll_area.height() - 35
             self.contrast_slider.move(x, y)
 
+    def _update_image_info_position(self):
+        """Repositionne les infos de l'image en bas à droite de la scroll_area"""
+        if hasattr(self, "image_info_label") and self.image_info_label.isVisible():
+            self.image_info_label.adjustSize()
+            x = self.scroll_area.width() - self.image_info_label.width() - 15
+            y = self.scroll_area.height() - self.image_info_label.height() - 15
+            self.image_info_label.move(max(0, x), max(0, y))
+
+    def update_image_info(self, file_path: str | None, pixmap: QPixmap | None):
+        """Met à jour et affiche le panneau d'information de l'image"""
+        if pixmap is None or pixmap.isNull():
+            if hasattr(self, "image_info_label"):
+                self.image_info_label.hide()
+            return
+
+        dims = f"{pixmap.width()} x {pixmap.height()} px"
+
+        # Par défaut, on conserve les anciennes valeurs si le chemin est None / from_controller
+        if file_path and file_path != "from_controller" and os.path.exists(file_path):
+            try:
+                size_bytes = os.path.getsize(file_path)
+                size_mb = size_bytes / (1024 * 1024)
+                self.original_image_size_str = f"{size_mb:.2f} Mo"
+                
+                _, ext = os.path.splitext(file_path)
+                fmt_str = ext.lstrip('.').upper()
+                if fmt_str == "DCM":
+                    self.original_image_format = "DICOM (dcm)"
+                else:
+                    self.original_image_format = fmt_str if fmt_str else "INCONNU"
+            except Exception as e:
+                print(f"Erreur lors de la lecture des infos fichier : {e}")
+                self.original_image_size_str = "-- Mo"
+                self.original_image_format = "N/A"
+        elif not hasattr(self, "original_image_size_str"):
+            self.original_image_size_str = "-- Mo"
+            self.original_image_format = "N/A"
+
+        text = f"Dimensions : {dims}\nTaille : {self.original_image_size_str}\nFormat : {self.original_image_format}"
+        self.image_info_label.setText(text)
+        self.image_info_label.show()
+        self._update_image_info_position()
+
     def resizeEvent(self, event):
         super().resizeEvent(event)
         if self.current_pixmap is not None:
             self.update_image_render()
         self._update_contrast_slider_position()
+        self._update_image_info_position()
 
     def center_on_screen(self):
         screen = QGuiApplication.primaryScreen()
