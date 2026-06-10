@@ -15,6 +15,7 @@ from models.TFD2D import TFD2D
 from models.CLAHE import CLAHE
 from models.Seuillage import Seuillage
 from views.FilterDialog import FilterDialog
+from views.ClaheDialog import ClaheDialog
 
 
 class AnalysisController:
@@ -83,12 +84,16 @@ class AnalysisController:
                 self.error_handler.show_error("Erreur", "Aucune image chargée")
                 return
 
-            # Application du CLAHE
-            clahe = CLAHE(5.0, (16, 16), self._current_array)
-            result = clahe.appliquer()
+            dialog = ClaheDialog(self.view)
+            if dialog.exec():
+                clip_limit, tile_grid = dialog.get_values()
 
-            # Affichage du résultat
-            self._display_numpy_array(result)
+                # Application du CLAHE avec les paramètres de la popup
+                clahe = CLAHE(clip_limit, tile_grid, self._current_array)
+                result = clahe.appliquer()
+
+                # Affichage du résultat
+                self._display_numpy_array(result)
 
         except Exception as e:
             self.error_handler.handle_exception(e)

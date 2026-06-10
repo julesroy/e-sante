@@ -16,6 +16,7 @@ from models.FiltrageGaussien import FiltrageGaussien
 from models.FiltrageSobel import FiltrageSobel
 from models.TFD2D import TFD2D
 from views.FilterDialog import FilterDialog
+from views.GaussianDialog import GaussianDialog
 
 
 class FilterController:
@@ -52,9 +53,12 @@ class FilterController:
                 self.error_handler.show_error("Erreur", "Aucune image chargée")
                 return
 
-            filtre = FiltrageGaussien(8, self._current_array)
-            result_array = filtre.filtrage()
-            self._display_numpy_array(result_array)
+            dialog = GaussianDialog(self.view)
+            if dialog.exec():
+                sigma = dialog.get_value()
+                filtre = FiltrageGaussien(sigma, self._current_array)
+                result_array = filtre.filtrage()
+                self._display_numpy_array(result_array)
 
         except Exception as e:
             self.error_handler.handle_exception(e)

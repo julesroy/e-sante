@@ -11,7 +11,7 @@ class FiltrageGaussien:
     FiltrageGaussien(4, testImageConvertie)
     """
 
-    def __init__(self, sigma: int, imageNpArray: np.ndarray):
+    def __init__(self, sigma: float | int, imageNpArray: np.ndarray):
         """
         Initialise les paramètres pour le filtrage gaussien.
         :param sigma: Écart type pour la fonction gaussienne.
