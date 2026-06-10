@@ -1,6 +1,7 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QGridLayout
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QFont
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QGridLayout
+from PyQt6.QtCore import Qt, pyqtSignal, QSize
+from PyQt6.QtGui import QFont, QIcon
+import os
 from views.PatientManagerWidget import PatientManagerWidget
 
 
@@ -14,6 +15,8 @@ class LeftToolbar(QWidget):
     clahe_clicked = pyqtSignal()
     contrast_slider_clicked = pyqtSignal(bool)
     ruler_clicked = pyqtSignal(bool)
+    angle_clicked = pyqtSignal(bool)
+    height_comp_clicked = pyqtSignal(bool)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -121,15 +124,38 @@ class LeftToolbar(QWidget):
         self.measures_container = QWidget()
         self.measures_container.setVisible(False)
 
-        measures_layout = QVBoxLayout(self.measures_container)
+        measures_layout = QHBoxLayout(self.measures_container)
         measures_layout.setContentsMargins(12, 8, 8, 12)
+        measures_layout.setSpacing(6)
 
-        self.btn_ruler = QPushButton("\uf545")
-        self.btn_ruler.setFont(icon_font)
+        self.btn_ruler = QPushButton()
+        ruler_icon_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "icons", "ruler-icon.svg")
+        if os.path.exists(ruler_icon_path):
+            self.btn_ruler.setIcon(QIcon(ruler_icon_path))
+            self.btn_ruler.setIconSize(QSize(18, 18))
         self.btn_ruler.setFixedSize(button_size, button_size)
         self.btn_ruler.setToolTip("Mesurer la distance entre deux points en cm")
         self.btn_ruler.setCheckable(True)
         measures_layout.addWidget(self.btn_ruler)
+
+        self.btn_angle = QPushButton()
+        icon_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "icons", "angle-icon.svg")
+        if os.path.exists(icon_path):
+            self.btn_angle.setIcon(QIcon(icon_path))
+            self.btn_angle.setIconSize(QSize(18, 18))
+        self.btn_angle.setFixedSize(button_size, button_size)
+        self.btn_angle.setToolTip("Mesurer l'angle entre deux droites")
+        self.btn_angle.setCheckable(True)
+        measures_layout.addWidget(self.btn_angle)
+
+        self.btn_height_comp = QPushButton("\uf07d")
+        self.btn_height_comp.setFont(icon_font)
+        self.btn_height_comp.setFixedSize(button_size, button_size)
+        self.btn_height_comp.setToolTip("Comparer la hauteur entre deux plans")
+        self.btn_height_comp.setCheckable(True)
+        measures_layout.addWidget(self.btn_height_comp)
+
+        measures_layout.addStretch()
 
         self.main_layout.addWidget(self.measures_container)
 
@@ -176,6 +202,8 @@ class LeftToolbar(QWidget):
         self.btn_sobel.clicked.connect(self.sobel_clicked.emit)
         self.btn_clahe.clicked.connect(self.clahe_clicked.emit)
         self.btn_ruler.clicked.connect(self.ruler_clicked.emit)
+        self.btn_angle.clicked.connect(self.angle_clicked.emit)
+        self.btn_height_comp.clicked.connect(self.height_comp_clicked.emit)
 
     def toggle_section(self, button, container, title_text):
         """Masque ou affiche le conteneur et force l'état Checked pour le QSS."""
