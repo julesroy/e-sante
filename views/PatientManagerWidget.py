@@ -191,9 +191,10 @@ class PatientManagerWidget(QWidget):
         
         item = selected_items[0]
         image_id = item.data(Qt.ItemDataRole.UserRole)
+        chemin_serveur = item.toolTip()
         
         if self.main_view.controller:
-            if self.main_view.controller.handle_supprimer_image(image_id):
+            if self.main_view.controller.image_ctrl.handle_supprimer_image(image_id, chemin_serveur):
                 p_id = self.main_view.controller._current_patient_id
                 if p_id:
                     self.refresh_images(self.main_view.controller.image_ctrl.handle_charger_images_patient(p_id))
