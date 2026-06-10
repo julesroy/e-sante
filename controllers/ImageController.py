@@ -86,8 +86,8 @@ class ImageController:
             nom_fichier = os.path.basename(file_path)
 
             # Envoi du fichier sur le serveur via l'API
-            # → retourne le chemin distant ex: /home/ubuntu/esante/images/radio.png
-            chemin_serveur = upload_image(file_path)
+            # -> retourne le chemin distant ex: /home/ubuntu/esante/images/radio.png
+            chemin_serveur = upload_image(file_path, self._current_patient_id)
 
             if chemin_serveur is None:
                 self.error_handler.show_error("Erreur serveur", "Impossible d'envoyer l'image au serveur.")
@@ -104,7 +104,7 @@ class ImageController:
                 chemin=chemin_serveur,
                 modalite=modalite,
             )
-            print(f"[ImageController] Image '{nom_fichier}' envoyée sur serveur et sauvegardée → id={image_id}")
+            print(f"[ImageController] Image '{nom_fichier}' envoyée sur serveur et sauvegardée -> id={image_id}")
 
         except Exception as e:
             self.error_handler.handle_exception(e)

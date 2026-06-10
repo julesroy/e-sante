@@ -12,24 +12,24 @@ SERVER_URL = f"http://{_HOST}:5000"
 _TIMEOUT = 10
 
 
-def upload_image(file_path: str) -> str | None:
+def upload_image(file_path: str, patient_id:int) -> str | None:
     """
-    Envoie un fichier local vers le serveur.
-    Retourne le chemin distant (str) à stocker en BDD, ou None si échec.
-
+    Envoie un fichier local vers le serveur qui sera stocke dans le dossier d'un patient.
+    Le nom du dossier est hashé.
     Params:
-        file_path : chemin local du fichier à uploader (ex: "C:/images/radio.png")
+        file_path : chemin local du fichier à uploader (ex: "home/ubuntu/esante/images/hash_dossier/radio.png")
     """
     try:
         with open(file_path, "rb") as f:
             response = requests.post(
                 f"{SERVER_URL}/upload",
+                params={"patient_id": patient_id},
                 files={"file": (os.path.basename(file_path), f)},
                 timeout=_TIMEOUT,
             )
         response.raise_for_status()
         chemin_distant = response.json().get("chemin")
-        print(f"[API Client] Upload OK → {chemin_distant}")
+        print(f"[API Client] Upload OK -> {chemin_distant}")
         return chemin_distant
 
     except requests.exceptions.ConnectionError:
@@ -62,7 +62,7 @@ def download_image(chemin_distant: str, destination_locale: str) -> bool:
             for chunk in response.iter_content(chunk_size=8192):
                 f.write(chunk)
 
-        print(f"[API Client] Download OK → {destination_locale}")
+        print(f"[API Client] Download OK -> {destination_locale}")
         return True
 
     except requests.exceptions.ConnectionError:
@@ -88,7 +88,7 @@ def delete_image(chemin_distant: str) -> bool:
             timeout=_TIMEOUT,
         )
         response.raise_for_status()
-        print(f"[API Client] Delete OK → {chemin_distant}")
+        print(f"[API Client] Delete OK -> {chemin_distant}")
         return True
 
     except requests.exceptions.ConnectionError:
