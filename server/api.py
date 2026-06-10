@@ -1,33 +1,37 @@
-from flask import Flask, request, send_file, jsonify
-import os
+#Ce fichier sert concretement a rien, il s'agit juste d'une copie du fichier existant sur le serveur Oracle.
+from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi.responses import FileResponse
+import os, shutil
 
-app = Flask(__name__)
+app = FastAPI()
 IMAGES_DIR = "/home/ubuntu/esante/images"
 
 # ---------------------------------------------------------------
 # UPLOAD — reçoit un fichier et le sauvegarde dans IMAGES_DIR
 # ---------------------------------------------------------------
-@app.route("/upload", methods=["POST"])
-def upload():
-    if "file" not in request.files:
-        return jsonify({"erreur": "Aucun fichier reçu"}), 400
-
-    f = request.files["file"]
-    nom = os.path.basename(f.filename)
+@app.post("/upload")
+async def upload(file: UploadFile = File(...)):
+    nom = os.path.basename(file.filename)
     chemin = os.path.join(IMAGES_DIR, nom)
-    f.save(chemin)
-    print(f"[API] Image sauvegardée : {chemin}")
-    return jsonify({"chemin": chemin})
+    with open(chemin, "wb") as f:
+        shutil.copyfileobj(file.file, f)
+    return {"chemin": chemin}
 
 # ---------------------------------------------------------------
 # DOWNLOAD — retourne un fichier depuis IMAGES_DIR
 # ---------------------------------------------------------------
-@app.route("/image", methods=["GET"])
-def get_image():
-    chemin = request.args.get("chemin")
+@app.get("/image")
+async def get_image(chemin: str):
     if not chemin or not os.path.exists(chemin):
-        return jsonify({"erreur": "Fichier introuvable"}), 404
-    return send_file(chemin)
+        raise HTTPException(status_code=404, detail="Fichier introuvable")
+    return FileResponse(chemin)
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+# ---------------------------------------------------------------
+# DELETE — supprime un fichier du disque serveur
+# ---------------------------------------------------------------
+@app.delete("/image")
+async def delete_image(chemin: str):
+    if not chemin or not os.path.exists(chemin):
+        raise HTTPException(status_code=404, detail="Fichier introuvable")
+    os.remove(chemin)
+    return {"message": f"Fichier supprimé : {chemin}"}
