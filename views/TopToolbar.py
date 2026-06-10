@@ -6,6 +6,7 @@ from PyQt6.QtGui import QFont
 class TopToolbar(QWidget):
     upload_clicked = pyqtSignal()
     loupe_clicked = pyqtSignal()
+    help_clicked = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -36,9 +37,17 @@ class TopToolbar(QWidget):
         self.btn_slider_compare.setFixedSize(42, 42)
         self.btn_slider_compare.setToolTip("Activer le slider de comparaison Avant/Après")
 
+        # Btn Help
+        self.btn_help = QPushButton("\uf059")
+        self.btn_help.setFont(icon_font)
+        self.btn_help.setFixedSize(42, 42)
+        self.btn_help.setToolTip("Ouvrir le guide d'utilisation (manuel.html)")
+
         toolbar_layout.addWidget(self.btn_upload)
         toolbar_layout.addWidget(self.btn_loupe)
         toolbar_layout.addWidget(self.btn_slider_compare)
         toolbar_layout.addStretch()
+        toolbar_layout.addWidget(self.btn_help)
 
         self.btn_upload.clicked.connect(self.upload_clicked.emit)
+        self.btn_help.clicked.connect(self.help_clicked.emit)

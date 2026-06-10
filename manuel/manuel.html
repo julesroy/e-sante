@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Guide d'utilisation - PixelMed</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js" defer></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bg:        '#0f0f0f',
+            surface:   '#181818',
+            panel:     '#1f1f1f',
+            border:    '#2a2a2a',
+            blue:      '#2a8cf0',
+            bluehover: '#1a7adc',
+            bluedim:   '#1a3a5c',
+            text:      '#d4d4d4',
+            muted:     '#6b6b6b',
+            accent:    '#00a2ed',
+          },
+          fontFamily: {
+            sans: ['Inter', 'Segoe UI', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Consolas', 'monospace'],
+          },
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { background: #0f0f0f; color: #d4d4d4; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f0f0f; }
+    ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 0; }
+    ::-webkit-scrollbar-thumb:hover { background: #3a3a3a; }
+
+    /* Sidebar nav link */
+    .nav-link {
+      display: block;
+      padding: 6px 16px;
+      font-size: 13px;
+      color: #888;
+      cursor: pointer;
+      border-left: 2px solid transparent;
+      transition: color .15s, border-color .15s, background .15s;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .nav-link:hover { color: #d4d4d4; background: #1f1f1f; }
+    .nav-link.active { color: #00a2ed; border-left-color: #00a2ed; background: #111e2d; }
+
+    /* Section header in sidebar */
+    .nav-section {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 14px 6px;
+      font-size: 11px; font-weight: 600; letter-spacing: .08em;
+      text-transform: uppercase; color: #555;
+      cursor: pointer; user-select: none;
+      transition: color .15s;
+    }
+    .nav-section:hover { color: #888; }
+    .nav-section-arrow { transition: transform .2s; }
+    .nav-section.collapsed .nav-section-arrow { transform: rotate(-90deg); }
+
+    /* Code block */
+    pre {
+      background: #141414;
+      border: 1px solid #222;
+      padding: 16px;
+      border-radius: 2px;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #c8c8c8;
+    }
+    code {
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: .85em;
+      background: #1f1f1f;
+      border: 1px solid #2a2a2a;
+      padding: 1px 5px;
+      color: #3b9eff;
+    }
+    pre code { background: none; border: none; padding: 0; color: inherit; font-size: 1em; }
+
+    /* Table */
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    th { background: #1a1a1a; color: #888; font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; padding: 8px 14px; text-align: left; border-bottom: 1px solid #2a2a2a; }
+    td { padding: 9px 14px; border-bottom: 1px solid #1e1e1e; color: #c0c0c0; }
+    tr:hover td { background: #161616; }
+
+    /* Callout */
+    .callout { border-left: 3px solid; padding: 12px 16px; font-size: 13.5px; border-radius: 0 2px 2px 0; }
+    .callout-info  { border-color: #2a8cf0; background: #0e1c2e; color: #9ac9ff; }
+    .callout-warn  { border-color: #e6a817; background: #1e1700; color: #f0c94a; }
+    .callout-tip   { border-color: #1db954; background: #061610; color: #52d68a; }
+    .callout-danger{ border-color: #e05252; background: #1e0a0a; color: #f08080; }
+
+    /* Badge */
+    .badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 1px 7px; border-radius: 2px; font-family: 'JetBrains Mono', monospace; }
+    .badge-blue   { background: #0e2040; color: #3b9eff; border: 1px solid #1a3a60; }
+    .badge-green  { background: #061810; color: #1db954; border: 1px solid #0c3020; }
+    .badge-yellow { background: #1e1500; color: #e6a817; border: 1px solid #3a2c00; }
+    .badge-red    { background: #1e0808; color: #e05252; border: 1px solid #3a1010; }
+
+    /* Content headings */
+    h1 { font-size: 22px; font-weight: 600; color: #e8e8e8; margin-bottom: 6px; }
+    h2 { font-size: 17px; font-weight: 600; color: #d8d8d8; margin: 32px 0 12px; padding-bottom: 6px; border-bottom: 1px solid #222; }
+    h3 { font-size: 14px; font-weight: 600; color: #c8c8c8; margin: 22px 0 8px; text-transform: uppercase; letter-spacing: .06em; }
+    p  { font-size: 14px; line-height: 1.7; color: #a8a8a8; margin-bottom: 14px; }
+
+    /* Sidebar resize */
+    #sidebar { width: 220px; min-width: 160px; flex-shrink: 0; }
+
+    /* Active section highlight in content */
+    .content-section { scroll-margin-top: 24px; }
+
+    /* Toolbar button */
+    .toolbar-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 5px 12px; font-size: 12.5px; font-weight: 500; color: #888;
+      background: transparent; border: none; cursor: pointer;
+      transition: color .15s, background .15s;
+      border-radius: 1px;
+    }
+    .toolbar-btn:hover { color: #d4d4d4; background: #1f1f1f; }
+    .toolbar-btn svg { flex-shrink: 0; }
+  </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden">
+
+  <!-- ══════════ TOP BAR ══════════ -->
+  <header class="flex items-center justify-between px-4 h-11 border-b shrink-0"
+          style="background:#141414; border-color:#222;">
+    <div class="flex items-center gap-3">
+      <!-- Logo / App name -->
+      <div class="flex items-center gap-2 pr-4 mr-1" style="border-right:1px solid #2a2a2a;">
+        <div class="w-5 h-5 rounded-sm flex items-center justify-center text-white text-xs font-bold"
+             style="background:#2a8cf0; letter-spacing:-.02em;">PM</div>
+        <span class="text-sm font-semibold" style="color:#e0e0e0;">PixelMed</span>
+        <span class="text-xs ml-1" style="color:#444;">v1.0</span>
+      </div>
+      <!-- Nav links -->
+      <nav class="flex items-center gap-1">
+        <button class="toolbar-btn" onclick="setTab(this,'guide')" id="tab-guide" style="color:#00a2ed; background:#111e2d;">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2 3h12v1H2zm0 3h12v1H2zm0 3h8v1H2zm0 3h5v1H2z"/></svg>
+          Guide
+        </button>
+      </nav>
+    </div>
+    <!-- Search -->
+    <div class="flex items-center gap-2 px-3 py-1.5 text-xs cursor-pointer hover:border-accent transition-colors" 
+         style="background:#1a1a1a; border:1px solid #272727; color:#888; min-width:180px;"
+         onclick="openSearchModal()">
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M11.742 10.344a6.5 6.5 0 10-1.397 1.398l3.85 3.85a1 1 0 001.415-1.415l-3.868-3.833zm-5.44 1.343a5 5 0 110-10 5 5 0 010 10z"/></svg>
+      <span style="color: #6b6b6b;">Rechercher…</span>
+      <span class="ml-auto font-mono text-[9px] bg-bg px-1 border border-border rounded" style="color:#555;">Ctrl K</span>
+    </div>
+  </header>
+
+  <!-- ══════════ BODY (sidebar + content) ══════════ -->
+  <div class="flex flex-1 overflow-hidden">
+
+    <!-- ── SIDEBAR ── -->
+    <aside id="sidebar" class="flex flex-col overflow-y-auto shrink-0 border-r"
+           style="background:#141414; border-color:#1e1e1e;">
+
+      <div>
+        <div class="nav-section" onclick="toggleSection(this)"
+             style="color:#fff; background:#00a2ed; padding:9px 14px 8px;">
+          <span>Guide d'utilisation</span>
+          <svg class="nav-section-arrow" width="10" height="10" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 1l4 4 4-4"/></svg>
+        </div>
+        <div class="nav-group">
+          <a class="nav-link active" onclick="scrollToSection('apercu', this)">Aperçu du projet</a>
+          <a class="nav-link" onclick="scrollToSection('barre-outils', this)">Barre supérieure</a>
+          <a class="nav-link" onclick="scrollToSection('traitements', this)">Filtres &amp; Contraste</a>
+          <a class="nav-link" onclick="scrollToSection('mesures', this)">Outils de mesure</a>
+          <a class="nav-link" onclick="scrollToSection('dossiers', this)">Dossiers &amp; Patients</a>
+        </div>
+      </div>
+
+      <div>
+        <div class="nav-section" onclick="toggleSection(this)">
+          <span>Pour les développeurs</span>
+          <svg class="nav-section-arrow" width="10" height="10" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 1l4 4 4-4"/></svg>
+        </div>
+        <div class="nav-group">
+          <a class="nav-link" onclick="scrollToSection('installation', this)">Installation</a>
+          <a class="nav-link" onclick="scrollToSection('demarrage', this)">Démarrage rapide</a>
+          <a class="nav-link" onclick="scrollToSection('architecture', this)">Architecture MVC</a>
+          <a class="nav-link" onclick="scrollToSection('configuration', this)">Configuration (.env)</a>
+          <a class="nav-link" onclick="scrollToSection('modeles', this)">Modèles &amp; Algorithmes</a>
+          <a class="nav-link" onclick="scrollToSection('qualite', this)">Qualité &amp; Tests</a>
+          <a class="nav-link" onclick="scrollToSection('erreurs', this)">Gestion des erreurs</a>
+        </div>
+      </div>
+
+      <div class="flex-1"></div>
+      <!-- Version footer -->
+      <div class="px-4 pt-3 text-xs border-t" style="color:#333; border-color:#1e1e1e;">
+        PixelMed v1.0 - 2026
+      </div>
+      <div class="px-4 pt-1 pb-3 text-[10px]" style="color:#333; border-color:#1e1e1e;">
+        DURAND Cem
+        <br>
+        LEROY Simon
+        <br>
+        ROY Jules
+      </div>
+    </aside>
+
+    <!-- ── MAIN CONTENT ── -->
+    <main class="flex-1 overflow-y-auto" id="main-content" style="background:#0f0f0f;">
+      <div class="mx-auto px-10 py-9">
+
+        <!-- ─── PAGE : GUIDE ─── -->
+        <div id="page-guide">
+
+          <!-- APERÇU -->
+          <section class="content-section" id="apercu">
+            <div class="flex items-center gap-3 mb-5">
+              <h1>Aperçu du projet</h1>
+              <span class="badge badge-blue">v1.0</span>
+              <span class="badge badge-green">stable</span>
+            </div>
+            <p><strong>PixelMed</strong> est une application de bureau performante développée avec PyQt6, conçue pour aider les professionnels de santé dans l'analyse et le traitement d'images médicales bidimensionnelles (radiographies, clichés standard et fichiers DICOM). Elle implémente une architecture Modèle-Vue-Contrôleur (MVC) stricte et s'intègre avec une base de données PostgreSQL pour la gestion sécurisée des dossiers patients.</p>
+            <div class="callout callout-info mt-2 mb-6">
+              <strong>Note de compatibilité</strong> — Ce logiciel a été testé sous les environnements suivants :
+              <ul class="list-disc list-inside mt-1">
+                <li>Windows (10/11)</li>
+                <li>macOS (26 Tahoe - Apple Silicon)</li>
+                <li>Linux (Debian 13)</li>
+              </ul>
+            </div>
+          </section>
+
+          <!-- BARRE SUPÉRIEURE -->
+          <section class="content-section mt-10" id="barre-outils">
+            <div class="flex items-center gap-3 mb-5">
+              <h1>Barre supérieure (Actions Globales)</h1>
+            </div>
+            <p>La barre supérieure regroupe les fonctions d'importation et les outils de visualisation globale sur l'image active :</p>
+            <table class="mb-6">
+              <thead>
+                <tr>
+                  <th style="width: 15%;">Bouton</th>
+                  <th style="width: 35%;">Action / Rôle</th>
+                  <th>Fonctionnement détaillé</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>📁 Import</code></td>
+                  <td><strong>Ouvrir un cliché</strong></td>
+                  <td>Ouvre l'explorateur natif pour charger un fichier local. Formats acceptés : <code>.png</code>, <code>.jpg</code>, <code>.jpeg</code>, et <code>.dcm</code> (DICOM). Le format DICOM est automatiquement normalisé.</td>
+                </tr>
+                <tr>
+                  <td><code>🔍 Loupe</code></td>
+                  <td><strong>Loupe de précision</strong></td>
+                  <td>Active une loupe interactive au survol. Lors de l'activation, une boîte de dialogue demande à l'utilisateur de spécifier un facteur d'agrandissement dynamique (de <strong>x2.0</strong> à <strong>x8.0</strong>).</td>
+                </tr>
+                <tr>
+                  <td><code>↕ Slider Comp</code></td>
+                  <td><strong>Slider de comparaison</strong></td>
+                  <td>Sépare l'image en deux via une ligne verticale mobile. La partie à gauche affiche l'image originale non filtrée, tandis que la partie à droite présente l'image modifiée après traitement. Le séparateur peut être déplacé à la souris.</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <!-- FILTRES & TRAITEMENTS -->
+          <section class="content-section mt-10" id="traitements">
+            <div class="flex items-center gap-3 mb-5">
+              <h1>Filtres &amp; Traitements d'image</h1>
+            </div>
+            <p>Le panneau latéral gauche contient plusieurs modules de filtrage pour améliorer la lisibilité des radiographies :</p>
+
+            <h3>Module : Filtres</h3>
+            <p>Ce volet regroupe les opérations de filtrage spatial et fréquentiel :</p>
+            <table class="mb-6">
+              <thead>
+                <tr>
+                  <th style="width: 25%;">Filtre</th>
+                  <th>Description technique</th>
+                  <th style="width: 20%;">Paramètres</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Image d'origine</strong></td>
+                  <td>Réinitialise l'affichage. Annule tous les filtres actifs pour restituer la matrice d'image initiale.</td>
+                  <td>—</td>
+                </tr>
+                <tr>
+                  <td><strong>Filtre Gaussien</strong></td>
+                  <td>Lissage spatial réduisant le bruit haute fréquence. Recommandé avant la détection de contours.</td>
+                  <td>Sigma fixe (<code>σ = 8</code>)</td>
+                </tr>
+                <tr>
+                  <td><strong>Sobel (Contours)</strong></td>
+                  <td>Détection de contours en calculant la magnitude des gradients horizontaux et verticaux. Filtre au préalable l'image avec un flou gaussien (<code>σ = 2</code>) pour éliminer le bruit. Normalise les gradients à 99%.</td>
+                  <td>Automatique</td>
+                </tr>
+                <tr>
+                  <td><strong>TFD 2D (Spectre)</strong></td>
+                  <td>Calcule la Transformée de Fourier Discrète 2D de l'image. Affiche son spectre de magnitude en échelle logarithmique <code>20 * log(|TFD| + 1)</code> centré sur l'origine.</td>
+                  <td>Normalisé [0, 1]</td>
+                </tr>
+                <tr>
+                  <td><strong>Filtre Passe-Bas</strong></td>
+                  <td>Filtre fréquentiel idéal circulaire. Supprime les hautes fréquences au-delà du rayon spécifié, provoquant un flou uniforme.</td>
+                  <td>Rayon de coupure [1 à 150px]</td>
+                </tr>
+                <tr>
+                  <td><strong>Filtre Passe-Haut</strong></td>
+                  <td>Filtre fréquentiel idéal circulaire inversé. Supprime les basses fréquences à l'intérieur du rayon spécifié, mettant en valeur les micro-textures et contours abrupts.</td>
+                  <td>Rayon de coupure [1 à 150px]</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h3>Module : Contraste</h3>
+            <p>Indispensable pour faire ressortir les variations de densité tissulaire sur les clichés sombres ou peu contrastés :</p>
+            <ul class="list-disc list-inside mb-4 pl-4 text-sm text-muted">
+              <li><strong style="color: #d4d4d4;">CLAHE (Histogramme adaptatif) :</strong> Égalise localement l'histogramme de l'image sur une grille de tuiles 16x16 avec une limitation du contraste réglée à 5.0 pour éviter le bruit d'amplification.</li>
+              <li><strong style="color: #d4d4d4;">Slider de contraste manuel :</strong> Fait apparaître un curseur en bas de l'écran. Ajuste en temps réel le gain de contraste de l'image par rapport à un point gris moyen via la formule : <code>Pixel_final = 0.5 + Facteur * (Pixel_base - 0.5)</code> avec un facteur ajustable de 1 à 10.</li>
+            </ul>
+          </section>
+
+          <!-- OUTILS DE MESURE -->
+          <section class="content-section mt-10" id="mesures">
+            <div class="flex items-center gap-3 mb-5">
+              <h1>Outils de Mesure interactifs</h1>
+            </div>
+            <p>Ces outils permettent de dessiner des repères et de calculer des mesures cliniques directement à l'écran par simple clic de souris :</p>
+            
+            <div class="my-4 p-4 text-xs font-mono text-center leading-7"
+                 style="background:#141414; border:1px solid #222; color:#555;">
+              <span style="color:#2ecc71;">[ Point A ]</span> ─── (Distance physique calibrée sur 45 cm de large) ─── <span style="color:#2ecc71;">[ Point B ]</span>
+              <br>
+              <span style="color:#3b9eff;">Distance affichée au centre : X.XX cm</span>
+            </div>
+
+            <table class="mb-6">
+              <thead>
+                <tr>
+                  <th style="width: 25%;">Outil</th>
+                  <th style="width: 20%;">Nombre de Clics</th>
+                  <th>Fonctionnement &amp; Formule</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Règle de distance</strong></td>
+                  <td>2 points (A, B)</td>
+                  <td>Calcule la distance euclidienne entre les deux points. Elle projette les coordonnées sur l'image d'origine pour rester insensible au zoom de la fenêtre, puis applique un calibrage physique (largeur de cliché de référence = 45 cm).</td>
+                </tr>
+                <tr>
+                  <td><strong>Rapporteur d'angle</strong></td>
+                  <td>4 points (A-B, C-D)</td>
+                  <td>Forme deux droites séparées (droite AB et droite CD). Calcule l'angle aigu $\theta$ via le produit scalaire normalisé de leurs vecteurs directeurs. Affiche le résultat en degrés à l'intersection ou au barycentre.</td>
+                </tr>
+                <tr>
+                  <td><strong>Comparateur hauteur</strong></td>
+                  <td>2 points (A, B)</td>
+                  <td>Utile pour mesurer un décalage vertical (ex. bascule de bassin). Trace deux plans horizontaux passant par A et B, puis calcule et affiche l'écart vertical $\Delta y$ en centimètres.</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <!-- DOSSIERS ET PATIENTS -->
+          <section class="content-section mt-10" id="dossiers">
+            <div class="flex items-center gap-3 mb-5">
+              <h1>Gestion des Dossiers &amp; Patients</h1>
+            </div>
+            <p>PixelMed propose un gestionnaire de dossiers médicaux intégré connecté à une base de données PostgreSQL, disponible dans l'onglet <strong>Dossiers</strong> du menu gauche :</p>
+
+            <div class="callout callout-tip mb-6">
+              <strong>Architecture résiliente</strong> — L'application intègre une détection automatique de connexion réseau au démarrage :
+              <ul class="list-disc list-inside mt-1">
+                <li><strong class="text-green-400" style="color: #52d68a;">Mode En Ligne (Online) :</strong> Synchronise la liste des patients, permet d'ajouter/supprimer des fiches patients et d'associer des clichés de radiographie directement en base de données.</li>
+                <li><strong class="text-yellow-400" style="color: #f0c94a;">Mode Hors Ligne (Offline) :</strong> Si le serveur PostgreSQL est inaccessible, l'application bloque silencieusement les actions d'écriture en BDD et avertit l'utilisateur. Les fonctions de filtrage d'image locale restent pleinement opérationnelles.</li>
+              </ul>
+            </div>
+
+            <h3>Fonctionnalités du gestionnaire :</h3>
+            <ul class="list-disc list-inside mb-4 pl-4 text-sm">
+              <li><strong>Barre de recherche :</strong> Recherche instantanée à la saisie parmi les fiches patients stockées.</li>
+              <li><strong>Création d'un Patient :</strong> Formulaire comprenant le Nom, Prénom, Date de naissance (AAAA-MM-JJ), le Sexe (M/F) et un numéro d'identifiant hospitalier unique.</li>
+              <li><strong>Fiche d'informations :</strong> L'affichage d'un patient ouvre un panneau flottant détaillant sa fiche clinique.</li>
+              <li><strong>Radiographies sauvegardées :</strong> Liste tous les clichés affectés au patient actif. Un double-clic sur un élément de la liste charge instantanément l'image correspondante dans le visualiseur.</li>
+              <li><strong>Import et Sauvegarde :</strong> Le bouton "Sauver Radio" permet d'affecter l'image actuellement affichée au patient sélectionné.</li>
+            </ul>
+          </section>
+
+          <!-- INSTALLATION -->
+          <section class="content-section mt-10" id="installation">
+            <h2>Installation pour développeurs</h2>
+            <p>Suivez les étapes ci-dessous pour installer l'environnement de développement de PixelMed.</p>
+            <h3>Prérequis</h3>
+            <table class="mb-6">
+              <thead><tr><th>Composant</th><th>Version requise</th><th>Usage</th></tr></thead>
+              <tbody>
+                <tr><td><code>python</code></td><td>3.9+ (3.12 conseillé)</td><td>Langage de programmation et exécution du projet</td></tr>
+                <tr><td><code>PostgreSQL</code></td><td>14+</td><td>Moteur de base de données relationnelle</td></tr>
+                <tr><td><code>pip</code></td><td>Dernière version</td><td>Gestionnaire de paquets Python</td></tr>
+              </tbody>
+            </table>
+
+            <h3>Configuration de l'environnement virtuel (venv)</h3>
+            <p>Placez-vous dans le répertoire du projet, puis exécutez les commandes correspondant à votre système d'exploitation :</p>
+            
+            <strong>Windows :</strong>
+            <pre><code>python -m venv venv
+.\venv\Scripts\activate
+pip install -r requirements.txt</code></pre>
+
+            <strong>macOS / Linux :</strong>
+            <pre><code>python3 -m venv venv
+source venv/bin/activate
+pip3 install -r requirements.txt</code></pre>
+          </section>
+
+          <!-- DÉMARRAGE RAPIDE -->
+          <section class="content-section mt-10" id="demarrage">
+            <h2>Démarrage rapide</h2>
+            <p>Une fois l'environnement activé et les dépendances installées, vous pouvez démarrer l'application principale via la ligne de commande :</p>
+            
+            <strong>Windows :</strong>
+            <pre><code>python main.py</code></pre>
+            
+            <strong>macOS / Linux :</strong>
+            <pre><code>python3 main.py</code></pre>
+
+            <div class="callout callout-info mt-4">
+              <strong>Processus de démarrage</strong> — Au lancement, l'application initialise la base de données, charge la police FontAwesome pour les icônes de boutons, lit le fichier de style QSS personnalisé (<code>style.qss</code>), puis affiche la fenêtre principale centrée à l'écran.
+            </div>
+          </section>
+
+          <!-- ARCHITECTURE MVC -->
+          <section class="content-section mt-10" id="architecture">
+            <h2>Architecture MVC</h2>
+            <p>PixelMed suit une implémentation rigoureuse du patron d'architecture <strong>Modèle-Vue-Contrôleur (MVC)</strong> pour séparer les responsabilités :</p>
+            
+            <!-- ASCII Architecture Diagram -->
+            <div class="my-4 p-6 text-xs font-mono text-center leading-7"
+                 style="background:#141414; border:1px solid #222; color:#555;">
+              <div style="color:#2a8cf0;">┌──────────────────────────────────────────────────┐</div>
+              <div style="color:#2a8cf0;">│                 main.py (Entrée)                 │</div>
+              <div style="color:#2a8cf0;">└────────────────────────┬─────────────────────────┘</div>
+              <div style="color:#333;">                         │ Instanciation</div>
+              <div style="color:#2a8cf0;">┌────────────────────────▼─────────────────────────┐</div>
+              <div style="color:#2a8cf0;">│        MainController (Contrôleur Principal)     │◄──────────┐</div>
+              <div style="color:#2a8cf0;">└─────────────┬──────────────────────────┬─────────┘           │</div>
+              <div style="color:#333;">              │ Composition              │ Liaison             │ Signaux /</div>
+              <div class="flex justify-center gap-12 mt-1">
+                <div>
+                  <div style="color:#1db954;">┌───────────▼───────────┐</div>
+                  <div style="color:#1db954;">│       MainModel       │</div>
+                  <div style="color:#1db954;">│ (État applicatif)     │</div>
+                  <div style="color:#1db954;">└───────────────────────┘</div>
+                </div>
+                <div>
+                  <div style="color:#e6a817;">┌───────────▼───────────┐</div>
+                  <div style="color:#e6a817;">│       MainView        ├─────────────────────────────┘</div>
+                  <div style="color:#e6a817;">│ (Interface &amp; Layout)  │</div>
+                  <div style="color:#e6a817;">└───────────────────────┘</div>
+                </div>
+              </div>
+            </div>
+
+            <ul class="list-disc list-inside mt-4 pl-4 text-sm">
+              <li><strong>Models (<code>models/</code>) :</strong> Gèrent l'état applicatif (<code>MainModel.py</code>) et encapsulent les traitements de calcul d'image (ex : <code>TFD2D.py</code>, <code>CLAHE.py</code>). Ils sont agnostiques de l'interface graphique.</li>
+              <li><strong>Views (<code>views/</code>) :</strong> Définissent l'IHM (<code>MainView.py</code>, les barres d'outils, les overlays de mesure). Elles affichent les données fournies et captent les interactions souris pour émettre des signaux Qt.</li>
+              <li><strong>Controllers (<code>controllers/</code>) :</strong> Composent le contrôleur principal (<code>MainController.py</code>) et ses sous-contrôleurs spécialisés (ex : <code>ImageController.py</code>, <code>PatientController.py</code>). Ils interceptent les signaux des vues, invoquent les modèles appropriés et mettent à jour l'affichage en conséquence.</li>
+            </ul>
+          </section>
+
+          <!-- CONFIGURATION BDD -->
+          <section class="content-section mt-10" id="configuration">
+            <h2>Configuration de la Base de Données</h2>
+            <p>La base de données PostgreSQL est configurée via des variables d'environnement lues depuis le fichier <code>.env</code> situé à la racine du projet.</p>
+            
+            <h3>Exemple de fichier .env</h3>
+            <pre><code>DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_NAME=pixelmed
+DB_USER=postgres
+DB_PASSWORD=votre_mot_de_passe</code></pre>
+
+            <div class="callout callout-warn mt-4">
+              <strong>Initialisation automatique</strong> — Le script <code>database/db.py</code> crée automatiquement le schéma et les tables nécessaires (<code>patients</code> et <code>images</code> avec liaison par clé étrangère et suppression en cascade) au démarrage s'ils n'existent pas déjà.
+            </div>
+          </section>
+
+          <!-- MODÈLES ET TRAITEMENTS -->
+          <section class="content-section mt-10" id="modeles">
+            <h2>Modèles &amp; Algorithmes de traitement</h2>
+            <p>Voici la liste des classes métiers qui gèrent la logique scientifique de PixelMed :</p>
+            
+            <table class="mb-6">
+              <thead>
+                <tr>
+                  <th style="width: 25%;">Classe</th>
+                  <th style="width: 25%;">Fichier</th>
+                  <th>Description &amp; Logique métier</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>ImageConvertie</code></td>
+                  <td><a href="file:///Users/julesr0y/Repos/e-sante/models/ImageConvertie.py">ImageConvertie.py</a></td>
+                  <td>Charge et convertit les clichés. Décompresse les fichiers DICOM via <code>pydicom</code>, normalise les intensités en flottants de 0 à 1, et extrait la matrice 2D.</td>
+                </tr>
+                <tr>
+                  <td><code>CLAHE</code></td>
+                  <td><a href="file:///Users/julesr0y/Repos/e-sante/models/CLAHE.py">CLAHE.py</a></td>
+                  <td>Égalise l'histogramme de manière adaptative pour amplifier localement les détails peu visibles sur l'image en niveaux de gris.</td>
+                </tr>
+                <tr>
+                  <td><code>FiltrageGaussien</code></td>
+                  <td><a href="file:///Users/julesr0y/Repos/e-sante/models/FiltrageGaussien.py">FiltrageGaussien.py</a></td>
+                  <td>Applique un flou gaussien à l'aide de <code>scipy.ndimage.gaussian_filter</code> pour débruiter ou lisser les clichés médicaux.</td>
+                </tr>
+                <tr>
+                  <td><code>FiltrageSobel</code></td>
+                  <td><a href="file:///Users/julesr0y/Repos/e-sante/models/FiltrageSobel.py">FiltrageSobel.py</a></td>
+                  <td>Calcule les gradients en X et Y puis extrait la magnitude pour la détection de contours abrupts.</td>
+                </tr>
+                <tr>
+                  <td><code>TFD2D</code></td>
+                  <td><a href="file:///Users/julesr0y/Repos/e-sante/models/TFD2D.py">TFD2D.py</a></td>
+                  <td>Effectue les transformations de Fourier rapide 2D (FFT2) et inverse (IFFT2) et applique des masques de filtrage fréquentiel circulaire.</td>
+                </tr>
+                <tr>
+                  <td><code>Seuillage</code></td>
+                  <td><a href="file:///Users/julesr0y/Repos/e-sante/models/Seuillage.py">Seuillage.py</a></td>
+                  <td>Binarise l'image. Implémente le seuil fixe ou l'algorithme d'Otsu automatique, suivi d'opérations morphologiques d'ouverture/fermeture pour nettoyer le bruit.</td>
+                </tr>
+                <tr>
+                  <td><code>SegmentationWatershed</code></td>
+                  <td><a href="file:///Users/julesr0y/Repos/e-sante/models/Watershed.py">Watershed.py</a></td>
+                  <td>Segmentation géomorphologique avancée pour délimiter des régions d'intérêt anatomiques en calculant des lignes de partage des eaux.</td>
+                </tr>
+                <tr>
+                  <td><code>MorphologieMathematique</code></td>
+                  <td><a href="file:///Users/julesr0y/Repos/e-sante/models/MorphologieMathematique.py">MorphologieMathematique.py</a></td>
+                  <td>Fournit les filtres morphologiques de base (érosion, dilatation, ouverture, fermeture) appliqués sur les masques binaires.</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <!-- QUALITÉ ET TESTS -->
+          <section class="content-section mt-10" id="qualite">
+            <h2>Qualité du code &amp; Tests</h2>
+            <p>Le projet PixelMed suit des règles de développement strictes pour assurer la stabilité du code :</p>
+            
+            <h3>Formatage avec Black</h3>
+            <p>Tous les fichiers Python doivent être formatés à l'aide de <code>black</code> avant d'être poussés dans le dépôt :</p>
+            <pre><code>black .</code></pre>
+
+            <h3>Tests unitaires avec Pytest</h3>
+            <p>Les tests de non-régression valident le bon comportement des filtres (Gaussien, Sobel, CLAHE, Seuillage) :</p>
+            <pre><code>pytest</code></pre>
+
+            <h3>Génération de la documentation API</h3>
+            <p>La documentation technique complète est générée de manière automatisée à partir des docstrings de nos modules via <code>pdoc</code> :</p>
+            <pre><code>pdoc ./models ./views ./controllers -o ./docs</code></pre>
+          </section>
+
+          <!-- GESTION DES ERREURS -->
+          <section class="content-section mt-10 pb-20" id="erreurs">
+            <h2>Gestion centralisée des Erreurs</h2>
+            <p>PixelMed encapsule tous ses blocs d'exécution dans des structures try-except gérées par la classe <code>ErrorController</code> :</p>
+            
+            <ul class="list-disc list-inside mb-4 pl-4 text-sm text-muted">
+              <li><strong style="color: #d4d4d4;">Journalisation (Logging) :</strong> Toutes les erreurs et avertissements sont consignés avec leur horodatage et leur niveau de criticité dans le fichier local <code>error.log</code>.</li>
+              <li><strong style="color: #d4d4d4;">Popups utilisateur (GUI) :</strong> Le contrôleur traduit l'exception interceptée en une boîte de dialogue Qt native (<code>QMessageBox</code>) affichant un descriptif clair de la panne, et proposant la trace d'exécution détaillée en option pour les développeurs.</li>
+            </ul>
+          </section>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // ── Tab switching ──
+    function setTab(btn, tab) {
+      document.querySelectorAll('.toolbar-btn').forEach(b => {
+        b.style.color = ''; b.style.background = '';
+      });
+      btn.style.color = '#3b9eff';
+      btn.style.background = '#111e2d';
+    }
+
+    // ── Sidebar section collapse ──
+    function toggleSection(header) {
+      header.classList.toggle('collapsed');
+      const group = header.nextElementSibling;
+      if (group) {
+        group.style.display = header.classList.contains('collapsed') ? 'none' : '';
+      }
+    }
+
+    // ── Smooth scroll to anchor ──
+    function scrollToSection(id, linkEl) {
+      const el = document.getElementById(id);
+      const mainEl = document.getElementById('main-content');
+      if (el && mainEl) {
+        // Scroll the main content container to the section
+        const offsetTop = el.offsetTop;
+        mainEl.scrollTo({ top: offsetTop - 24, behavior: 'smooth' });
+      }
+      // Update active link
+      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+      if (linkEl) linkEl.classList.add('active');
+    }
+
+    // ── Highlight active section on scroll ──
+    const sections = document.querySelectorAll('.content-section');
+    const navLinks = document.querySelectorAll('.nav-link');
+    const mainEl   = document.getElementById('main-content');
+
+    mainEl.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(sec => {
+        if (mainEl.scrollTop + 80 >= sec.offsetTop) current = sec.id;
+      });
+      navLinks.forEach(l => {
+        l.classList.remove('active');
+        if (l.getAttribute('onclick')?.includes(current)) l.classList.add('active');
+      });
+    });
+
+    // ── Index de recherche du manuel ──
+    const searchIndex = [
+      {
+        id: 'apercu',
+        title: 'Aperçu du projet',
+        category: "Guide d'utilisation",
+        content: "PixelMed est une application de bureau performante développée avec PyQt6 pour l'analyse d'images médicales 2D et fichiers DICOM.",
+        tags: "radiographies dcm png jpg jpeg windows macos linux"
+      },
+      {
+        id: 'barre-outils',
+        title: 'Barre supérieure (Actions Globales)',
+        category: "Guide d'utilisation",
+        content: "Importation d'image, Loupe de précision avec facteur d'agrandissement dynamique x2.0 à x8.0, Slider de comparaison Avant/Après.",
+        tags: "ouvrir fichier zoom loupe slider comparaison séparateur"
+      },
+      {
+        id: 'traitements',
+        title: 'Filtres & Traitements d\'image',
+        category: "Guide d'utilisation",
+        content: "Filtres spatiaux et fréquentiels : Image d'origine, Filtre Gaussien, Sobel (Contours), TFD 2D (Spectre), Filtre Passe-Bas, Filtre Passe-Haut, CLAHE, Contraste.",
+        tags: "contours fourier fft passe-bas passe-haut histogramme clahe"
+      },
+      {
+        id: 'mesures',
+        title: 'Outils de Mesure interactifs',
+        category: "Guide d'utilisation",
+        content: "Dessin de repères cliniques : Règle de distance (cm, calibrage 45cm), Rapporteur d'angle (degrés), Comparateur de hauteur (Δy).",
+        tags: "distance angle hauteur pelvis bassin calibrage clic points"
+      },
+      {
+        id: 'dossiers',
+        title: 'Gestion des Dossiers & Patients',
+        category: "Guide d'utilisation",
+        content: "Base de données PostgreSQL, résilience réseau Mode En Ligne / Hors Ligne, fiches cliniques, barre de recherche patient, sauvegarde de radiographies.",
+        tags: "postgres bdd base de donnees recherche patient sauvegarde radio"
+      },
+      {
+        id: 'installation',
+        title: 'Installation pour développeurs',
+        category: "Pour les développeurs",
+        content: "Prérequis (Python, PostgreSQL, pip), configuration de l'environnement virtuel (venv) sous Windows, macOS et Linux, installation des dépendances.",
+        tags: "setup virtuel pip install requirements"
+      },
+      {
+        id: 'demarrage',
+        title: 'Démarrage rapide',
+        category: "Pour les développeurs",
+        content: "Lancement de l'application via python main.py ou python3 main.py. Processus de démarrage (initialisation BDD, chargement des polices et styles QSS).",
+        tags: "lancement executer lancer python qss"
+      },
+      {
+        id: 'architecture',
+        title: 'Architecture MVC',
+        category: "Pour les développeurs",
+        content: "Patron d'architecture Modèle-Vue-Contrôleur (MVC). Modèles (models/), Vues (views/), Contrôleurs (controllers/). Rôles de chaque couche.",
+        tags: "structure patron conception diagramme composition"
+      },
+      {
+        id: 'configuration',
+        title: 'Configuration de la Base de Données',
+        category: "Pour les développeurs",
+        content: "Fichier de configuration .env pour la connexion PostgreSQL (DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD). Initialisation automatique du schéma.",
+        tags: "env credentials mot de passe tables"
+      },
+      {
+        id: 'modeles',
+        title: 'Modèles & Algorithmes de traitement',
+        category: "Pour les développeurs",
+        content: "Classes métiers : ImageConvertie, CLAHE, FiltrageGaussien, FiltrageSobel, TFD2D, Seuillage, SegmentationWatershed, MorphologieMathematique.",
+        tags: "classes pydicom cv2 scipy numpy"
+      },
+      {
+        id: 'qualite',
+        title: 'Qualité du code & Tests',
+        category: "Pour les développeurs",
+        content: "Outils de développement : formatage automatique avec Black, tests unitaires avec Pytest, génération de documentation d'API avec Pdoc.",
+        tags: "black pytest tests pdoc docstrings"
+      },
+      {
+        id: 'erreurs',
+        title: 'Gestion centralisée des Erreurs',
+        category: "Pour les développeurs",
+        content: "Gestionnaire ErrorController. Popups QMessageBox pour l'utilisateur, journalisation des traces de pile dans error.log.",
+        tags: "exception try except crash logs logging"
+      }
+    ];
+
+    let currentActiveIndex = -1;
+
+    function openSearchModal() {
+      const modal = document.getElementById('search-modal');
+      modal.classList.remove('hidden');
+      const input = document.getElementById('search-input');
+      input.value = '';
+      input.focus();
+      performSearch();
+    }
+
+    function closeSearchModal() {
+      const modal = document.getElementById('search-modal');
+      modal.classList.add('hidden');
+    }
+
+    function selectResult(id) {
+      closeSearchModal();
+      scrollToSection(id);
+      
+      // Met en évidence temporairement la section ciblée
+      const el = document.getElementById(id);
+      if (el) {
+        const originalBg = el.style.background || '';
+        el.style.transition = 'background 0.3s ease';
+        el.style.background = '#1a3a5c'; // bluedim
+        setTimeout(() => {
+          el.style.background = originalBg;
+        }, 1200);
+      }
+    }
+
+    function escapeHTML(str) {
+      return str.replace(/[&<>'"]/g, 
+        tag => ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          "'": '&#39;',
+          '"': '&quot;'
+        }[tag] || tag)
+      );
+    }
+
+    function performSearch() {
+      const query = document.getElementById('search-input').value.toLowerCase().trim();
+      const resultsContainer = document.getElementById('search-results');
+      resultsContainer.innerHTML = '';
+      
+      let matches = [];
+      if (query === '') {
+        // Suggestions par défaut
+        matches = searchIndex.slice(0, 5);
+      } else {
+        matches = searchIndex.filter(doc => {
+          return doc.title.toLowerCase().includes(query) ||
+                 doc.category.toLowerCase().includes(query) ||
+                 doc.content.toLowerCase().includes(query) ||
+                 doc.tags.toLowerCase().includes(query);
+        });
+      }
+      
+      if (matches.length === 0) {
+        resultsContainer.innerHTML = `
+          <div class="px-4 py-8 text-center text-muted text-xs">
+            Aucun résultat trouvé pour « <span class="text-text font-medium">${escapeHTML(query)}</span> »
+          </div>
+        `;
+        return;
+      }
+      
+      matches.forEach((doc, index) => {
+        const item = document.createElement('div');
+        item.className = 'flex flex-col px-3 py-2 rounded cursor-pointer border border-transparent transition-colors search-item';
+        item.setAttribute('data-id', doc.id);
+        item.onclick = () => selectResult(doc.id);
+        
+        let highlightedTitle = doc.title;
+        let highlightedContent = doc.content;
+        if (query !== '') {
+          const regex = new RegExp(`(${query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')})`, 'gi');
+          highlightedTitle = doc.title.replace(regex, '<mark class="bg-blue/30 text-accent font-semibold p-0 rounded-sm">$1</mark>');
+          highlightedContent = doc.content.replace(regex, '<mark class="bg-blue/30 text-accent font-semibold p-0 rounded-sm">$1</mark>');
+        }
+        
+        item.innerHTML = `
+          <span class="text-[10px] text-accent font-semibold uppercase tracking-wider">${doc.category}</span>
+          <span class="text-xs text-text font-medium mt-0.5">${highlightedTitle}</span>
+          <p class="text-[11px] text-muted mt-1 leading-relaxed">${highlightedContent}</p>
+        `;
+        
+        resultsContainer.appendChild(item);
+      });
+      
+      currentActiveIndex = -1;
+    }
+
+    function handleSearchKeydown(e) {
+      const modal = document.getElementById('search-modal');
+      if (modal.classList.contains('hidden')) {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+          e.preventDefault();
+          openSearchModal();
+        }
+        return;
+      }
+      
+      const items = document.querySelectorAll('.search-item');
+      if (e.key === 'Escape') {
+        closeSearchModal();
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (items.length > 0) {
+          if (currentActiveIndex >= 0 && items[currentActiveIndex]) {
+            items[currentActiveIndex].classList.remove('bg-surface', 'border-border');
+          }
+          currentActiveIndex = (currentActiveIndex + 1) % items.length;
+          items[currentActiveIndex].classList.add('bg-surface', 'border-border');
+          items[currentActiveIndex].scrollIntoView({ block: 'nearest' });
+        }
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (items.length > 0) {
+          if (currentActiveIndex >= 0 && items[currentActiveIndex]) {
+            items[currentActiveIndex].classList.remove('bg-surface', 'border-border');
+          }
+          currentActiveIndex = (currentActiveIndex - 1 + items.length) % items.length;
+          items[currentActiveIndex].classList.add('bg-surface', 'border-border');
+          items[currentActiveIndex].scrollIntoView({ block: 'nearest' });
+        }
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (currentActiveIndex >= 0 && items[currentActiveIndex]) {
+          const id = items[currentActiveIndex].getAttribute('data-id');
+          selectResult(id);
+        } else if (items.length > 0) {
+          const id = items[0].getAttribute('data-id');
+          selectResult(id);
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleSearchKeydown);
+  </script>
+
+  <!-- ══════════ SEARCH MODAL ══════════ -->
+  <div id="search-modal" class="fixed inset-0 z-50 flex items-start justify-center pt-[15vh] px-4 bg-black/60 backdrop-blur-sm hidden" onclick="closeSearchModal()">
+    <div class="w-full max-w-lg bg-panel border border-border shadow-2xl rounded-lg overflow-hidden flex flex-col" onclick="event.stopPropagation()">
+      <!-- Header -->
+      <div class="flex items-center gap-3 px-4 py-3 border-b border-border bg-surface">
+        <svg class="text-muted" width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M11.742 10.344a6.5 6.5 0 10-1.397 1.398l3.85 3.85a1 1 0 001.415-1.415l-3.868-3.833zm-5.44 1.343a5 5 0 110-10 5 5 0 010 10z"/></svg>
+        <input type="text" id="search-input" placeholder="Rechercher une section, un filtre, un outil..." class="w-full bg-transparent text-sm text-text border-none focus:outline-none focus:ring-0 placeholder:text-muted py-1" oninput="performSearch()"/>
+        <kbd class="text-[10px] bg-bg px-2 py-0.5 border border-border rounded text-muted">ESC</kbd>
+      </div>
+      <!-- Results List -->
+      <div id="search-results" class="max-h-[350px] overflow-y-auto p-2 flex flex-col gap-1">
+        <!-- Result Items will be injected here -->
+      </div>
+      <!-- Footer -->
+      <div class="px-4 py-2 border-t border-border bg-surface text-[10px] text-muted flex items-center justify-between">
+        <span>Utilisez les flèches <kbd class="px-1 bg-bg border border-border rounded">↑</kbd> <kbd class="px-1 bg-bg border border-border rounded">↓</kbd> pour naviguer, et <kbd class="px-1 bg-bg border border-border rounded">Entrée</kbd> pour valider.</span>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

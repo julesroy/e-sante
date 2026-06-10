@@ -58,6 +58,7 @@ class MainController:
         self.view.left_toolbar.ruler_clicked.connect(self.ruler_ctrl.handle_ruler_toggle)
         self.view.left_toolbar.angle_clicked.connect(self.ruler_ctrl.handle_angle_toggle)
         self.view.left_toolbar.height_comp_clicked.connect(self.ruler_ctrl.handle_height_comp_toggle)
+        self.view.top_toolbar.help_clicked.connect(self.handle_open_help)
     
     @property
     def _current_array(self): return self.model.current_array
@@ -139,3 +140,13 @@ class MainController:
         self.view.left_toolbar.btn_contrast_slider.setChecked(False)
         self.view.left_toolbar.btn_contrast_slider.setChecked(True)
         self.view.update_image_render()
+
+    def handle_open_help(self):
+        import webbrowser
+        import os
+        base_dir = os.path.dirname(os.path.dirname(__file__))
+        help_path = os.path.join(base_dir, "manuel", "manuel.html")
+        if os.path.exists(help_path):
+            webbrowser.open(f"file://{help_path}")
+        else:
+            self.error_handler.show_error("Erreur", f"Le guide d'utilisation est introuvable à l'emplacement :\n{help_path}")
