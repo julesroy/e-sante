@@ -6,6 +6,7 @@ from PyQt6.QtGui import QFont
 class TopToolbar(QWidget):
     upload_clicked = pyqtSignal()
     loupe_clicked = pyqtSignal()
+    fft_clicked = pyqtSignal(bool)
     help_clicked = pyqtSignal()
 
     def __init__(self, parent=None):
@@ -37,6 +38,13 @@ class TopToolbar(QWidget):
         self.btn_slider_compare.setFixedSize(42, 42)
         self.btn_slider_compare.setToolTip("Activer le slider de comparaison Avant/Après")
 
+        # Btn FFT
+        self.btn_fft = QPushButton("\uf1fe")
+        self.btn_fft.setFont(icon_font)
+        self.btn_fft.setFixedSize(42, 42)
+        self.btn_fft.setToolTip("Afficher la Transformée de Fourier 2D (FFT)")
+        self.btn_fft.setCheckable(True)
+
         # Btn Help
         self.btn_help = QPushButton("\uf059")
         self.btn_help.setFont(icon_font)
@@ -46,9 +54,11 @@ class TopToolbar(QWidget):
         toolbar_layout.addWidget(self.btn_upload)
         toolbar_layout.addWidget(self.btn_loupe)
         toolbar_layout.addWidget(self.btn_slider_compare)
+        toolbar_layout.addWidget(self.btn_fft)
         toolbar_layout.addStretch()
         toolbar_layout.addWidget(self.btn_help)
         # self.setFixedHeight(80)
 
         self.btn_upload.clicked.connect(self.upload_clicked.emit)
+        self.btn_fft.clicked.connect(self.fft_clicked.emit)
         self.btn_help.clicked.connect(self.help_clicked.emit)

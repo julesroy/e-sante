@@ -427,6 +427,19 @@ class MainView(QMainWindow):
         """)
         self.watershed_area_label.hide()
 
+        # --- SPECTRE FFT (overlay en bas à droite, au-dessus de watershed_area_label / image_info_label) ---
+        self.fft_label = QLabel(self.scroll_area)
+        self.fft_label.setObjectName("FftLabel")
+        self.fft_label.setStyleSheet("""
+            #FftLabel {
+                background-color: rgba(32, 32, 32, 200);
+                border: 1px solid #3c3c3c;
+                border-radius: 4px;
+                padding: 6px;
+            }
+        """)
+        self.fft_label.hide()
+
         content_layout.addWidget(self.scroll_area)
 
         content_layout.setStretchFactor(self.left_toolbar, 0)
@@ -570,19 +583,30 @@ class MainView(QMainWindow):
             y = self.scroll_area.height() - self.image_info_label.height() - 15
             self.image_info_label.move(max(0, x), max(0, y))
 
+            y_current = y
+
             # Positionner aussi self.watershed_area_label juste au-dessus
             if hasattr(self, "watershed_area_label") and self.watershed_area_label.isVisible():
                 self.watershed_area_label.setFixedWidth(self.image_info_label.width())
                 self.watershed_area_label.adjustSize()
-                y_area = y - self.watershed_area_label.height() - 10
-                self.watershed_area_label.move(max(0, x), max(0, y_area))
-        elif hasattr(self, "watershed_area_label") and self.watershed_area_label.isVisible():
-            # Si image_info_label n'est pas visible mais watershed_area_label l'est,
-            # le positionner tout en bas à droite
-            self.watershed_area_label.adjustSize()
-            x = self.scroll_area.width() - self.watershed_area_label.width() - 15
-            y = self.scroll_area.height() - self.watershed_area_label.height() - 15
-            self.watershed_area_label.move(max(0, x), max(0, y))
+                y_current = y_current - self.watershed_area_label.height() - 10
+                self.watershed_area_label.move(max(0, x), max(0, y_current))
+
+            # Positionner aussi self.fft_label encore au-dessus
+            if hasattr(self, "fft_label") and self.fft_label.isVisible():
+                if self.fft_label.pixmap():
+                    # Forcer la largeur du pixmap à correspondre à la largeur de image_info_label
+                    scaled = self.fft_label.pixmap().scaledToWidth(self.image_info_label.width(), Qt.TransformationMode.SmoothTransformation)
+                    self.fft_label.setPixmap(scaled)
+                self.fft_label.adjustSize()
+                y_fft = y_current - self.fft_label.height() - 10
+                self.fft_label.move(max(0, x), max(0, y_fft))
+        elif hasattr(self, "fft_label") and self.fft_label.isVisible():
+            # Si seul le spectre FFT est visible, le positionner tout en bas à droite
+            self.fft_label.adjustSize()
+            x = self.scroll_area.width() - self.fft_label.width() - 15
+            y = self.scroll_area.height() - self.fft_label.height() - 15
+            self.fft_label.move(max(0, x), max(0, y))
 
     def update_image_info(self, file_path: str | None, pixmap: QPixmap | None):
         """Met à jour et affiche le panneau d'information de l'image"""
@@ -591,6 +615,8 @@ class MainView(QMainWindow):
                 self.image_info_label.hide()
             if hasattr(self, "watershed_area_label"):
                 self.watershed_area_label.hide()
+            if hasattr(self, "fft_label"):
+                self.fft_label.hide()
             return
 
         dims = f"{pixmap.width()} x {pixmap.height()} px"
@@ -626,6 +652,21 @@ class MainView(QMainWindow):
         if hasattr(self, "watershed_area_label"):
             self.watershed_area_label.setText(text)
             self.watershed_area_label.show()
+            self._update_image_info_position()
+
+    def display_fft_spectrum(self, pixmap: QPixmap):
+        """Affiche le spectre FFT dans l'overlay avec la même largeur que les infos de l'image"""
+        if hasattr(self, "fft_label"):
+            target_width = self.image_info_label.width() if self.image_info_label.isVisible() else 200
+            scaled_pixmap = pixmap.scaledToWidth(target_width, Qt.TransformationMode.SmoothTransformation)
+            self.fft_label.setPixmap(scaled_pixmap)
+            self.fft_label.show()
+            self._update_image_info_position()
+
+    def hide_fft_spectrum(self):
+        """Masque l'overlay du spectre FFT"""
+        if hasattr(self, "fft_label"):
+            self.fft_label.hide()
             self._update_image_info_position()
 
     def resizeEvent(self, event):

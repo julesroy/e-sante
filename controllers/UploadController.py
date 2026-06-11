@@ -70,6 +70,9 @@ class UploadController:
             self.main_controller.model.watershed_labels = None
             if hasattr(self.view, "watershed_area_label"):
                 self.view.watershed_area_label.hide()
+            self.view.top_toolbar.btn_fft.setChecked(False)
+            if hasattr(self.view, "fft_label"):
+                self.view.fft_label.hide()
 
             # Conversion en numpy array normalisé [0,1] pour les traitements ultérieurs
             self._current_array = ImageConvertie(file_path).convertirEnNumpyArray()

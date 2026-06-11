@@ -38,7 +38,6 @@ class LeftToolbar(QWidget):
     reset_image_clicked = pyqtSignal()
     gaussian_clicked = pyqtSignal()
     sobel_clicked = pyqtSignal()
-    tfd2d_clicked = pyqtSignal()
     low_pass_clicked = pyqtSignal()
     high_pass_clicked = pyqtSignal()
     clahe_clicked = pyqtSignal()
@@ -88,11 +87,6 @@ class LeftToolbar(QWidget):
         self.btn_gaussian.setFixedSize(button_size, button_size)
         self.btn_gaussian.setToolTip("Appliquer un filtre gaussien pour lisser l'image")
 
-        self.btn_tfd2d = QPushButton("\uf1fe")
-        self.btn_tfd2d.setFont(icon_font)
-        self.btn_tfd2d.setFixedSize(button_size, button_size)
-        self.btn_tfd2d.setToolTip("Afficher la Transformée de Fourier 2D de l'image")
-
         self.btn_low_pass = QPushButton("\uf103")
         self.btn_low_pass.setFont(icon_font)
         self.btn_low_pass.setFixedSize(button_size, button_size)
@@ -110,10 +104,9 @@ class LeftToolbar(QWidget):
 
         self.grid_layout.addWidget(self.btn_origin, 0, 0)
         self.grid_layout.addWidget(self.btn_gaussian, 0, 1)
-        self.grid_layout.addWidget(self.btn_tfd2d, 0, 2)
-        self.grid_layout.addWidget(self.btn_low_pass, 1, 0)
-        self.grid_layout.addWidget(self.btn_high_pass, 1, 1)
-        self.grid_layout.addWidget(self.btn_sobel, 1, 2)
+        self.grid_layout.addWidget(self.btn_low_pass, 0, 2)
+        self.grid_layout.addWidget(self.btn_high_pass, 1, 0)
+        self.grid_layout.addWidget(self.btn_sobel, 1, 1)
 
         self.main_layout.addWidget(self.filters_container)
 
@@ -228,7 +221,7 @@ class LeftToolbar(QWidget):
         self.main_layout.addWidget(self.folders_container)
 
         # === CONFIG BTN GRILLE ===
-        self.filter_buttons = [self.btn_origin, self.btn_gaussian, self.btn_tfd2d, self.btn_low_pass, self.btn_high_pass, self.btn_sobel, self.btn_clahe]
+        self.filter_buttons = [self.btn_origin, self.btn_gaussian, self.btn_low_pass, self.btn_high_pass, self.btn_sobel, self.btn_clahe]
         for btn in self.filter_buttons:
             btn.setCheckable(True)
             btn.setAutoExclusive(True)
@@ -247,7 +240,6 @@ class LeftToolbar(QWidget):
         # === CONNEXIONS SIGNAUX ===
         self.btn_origin.clicked.connect(self.reset_image_clicked.emit)
         self.btn_gaussian.clicked.connect(self.gaussian_clicked.emit)
-        self.btn_tfd2d.clicked.connect(self.tfd2d_clicked.emit)
         self.btn_low_pass.clicked.connect(self.low_pass_clicked.emit)
         self.btn_high_pass.clicked.connect(self.high_pass_clicked.emit)
         self.btn_sobel.clicked.connect(self.sobel_clicked.emit)

@@ -55,27 +55,42 @@ class AnalysisController:
     def _display_numpy_array(self, array):
         self.main_controller._display_numpy_array(array)
 
-    def handle_tfd2d(self):
+    def handle_tfd2d(self, checked: bool):
         """
         Applique la Transformée de Fourier Discrète 2D sur l'image courante
-        et affiche le spectre fréquentiel dans la View.
-        Le spectre est normalisé entre 0 et 1 avant affichage.
+        et l'affiche/masque sous forme de vignette (overlay) au-dessus des infos de l'image.
         Nécessite qu'une image soit chargée (_current_array != None).
         """
         try:
             if self._current_array is None:
                 self.error_handler.show_error("Erreur", "Aucune image chargée")
+                self.view.top_toolbar.btn_fft.setChecked(False)
                 return
 
-            # Calcul du spectre fréquentiel via la TFD2D
-            tfd2d = TFD2D(self._current_array)
-            spectre = tfd2d.calculerTFDSpectre()
+            if checked:
+                # Calcul du spectre fréquentiel via la TFD2D
+                tfd2d = TFD2D(self._current_array)
+                spectre = tfd2d.calculerTFDSpectre()
 
-            # Normalisation [0,1] — on évite la division par zéro si le spectre est vide
-            max_val = spectre.max()
-            self._display_numpy_array(spectre / max_val if max_val > 0 else spectre)
+                # Normalisation [0,1] — on évite la division par zéro si le spectre est vide
+                max_val = spectre.max()
+                norm_spectre = spectre / max_val if max_val > 0 else spectre
+
+                # Conversion en QPixmap
+                img_uint8 = (norm_spectre * 255).astype(np.uint8)
+                h, w = img_uint8.shape
+                from PyQt6.QtGui import QImage, QPixmap
+                qimage = QImage(bytes(img_uint8.data), w, h, w, QImage.Format.Format_Grayscale8).copy()
+                pixmap = QPixmap.fromImage(qimage)
+
+                self.view.display_fft_spectrum(pixmap)
+                print("Spectre FFT affiché dans l'overlay.")
+            else:
+                self.view.hide_fft_spectrum()
+                print("Spectre FFT masqué.")
 
         except Exception as e:
+            self.view.top_toolbar.btn_fft.setChecked(False)
             self.error_handler.handle_exception(e)
             return
 
