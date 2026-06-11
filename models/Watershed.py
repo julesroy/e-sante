@@ -11,11 +11,13 @@ class SegmentationWatershed:
     en utilisant l'algorithme géomorphologique du Watershed.
     """
 
-    def __init__(self, min_distance_marqueurs: int = 20):
+    def __init__(self, min_distance_marqueurs: int = 20, supprimer_bordures: bool = True):
         """
         :param min_distance_marqueurs: Distance minimale en pixels séparant deux marqueurs (poumons).
+        :param supprimer_bordures: Si True, élimine les segments qui touchent le bord de l'image.
         """
         self._min_distance = min_distance_marqueurs
+        self._supprimer_bordures = supprimer_bordures
 
     def segmenter(self, masque_binaire: np.ndarray) -> np.ndarray:
         """
@@ -50,7 +52,19 @@ class SegmentationWatershed:
         # On inverse la carte des distances car le watershed cherche à remplir des "vallées" (minima)
         img_relief = -carte_distances
         
-        # Inondation à partir des marqueurs en restant confiné dans le masque des poumons
         labels_segmentes = watershed(img_relief, masque_marqueurs, mask=masque_bool)
+
+        if self._supprimer_bordures:
+            h, w = labels_segmentes.shape
+            bordures = np.concatenate([
+                labels_segmentes[0, :],      # ligne du haut
+                labels_segmentes[-1, :],     # ligne du bas
+                labels_segmentes[:, 0],      # colonne de gauche
+                labels_segmentes[:, -1]      # colonne de droite
+            ])
+            labels_bordure = np.unique(bordures)
+            for label in labels_bordure:
+                if label != 0:
+                    labels_segmentes[labels_segmentes == label] = 0
 
         return labels_segmentes

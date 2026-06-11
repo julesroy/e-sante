@@ -5,6 +5,7 @@ from models.FiltrageSobel import FiltrageSobel
 from models.Seuillage import Seuillage
 from models.TFD2D import TFD2D
 from models.CLAHE import CLAHE
+from models.Watershed import SegmentationWatershed
 
 
 @pytest.fixture
@@ -81,3 +82,22 @@ def test_clahe(dummy_image):
     assert res.dtype == np.float32
     assert res.min() >= 0.0
     assert res.max() <= 1.0
+
+
+def test_watershed():
+    # Crée un masque binaire factice avec un objet au centre et un objet sur le bord
+    masque = np.zeros((128, 128), dtype=np.uint8)
+    masque[40:80, 40:80] = 255  # Objet central
+    masque[0:20, 0:20] = 255    # Objet sur la bordure
+
+    # Test avec la suppression des bordures activée
+    outil = SegmentationWatershed(min_distance_marqueurs=10, supprimer_bordures=True)
+    labels = outil.segmenter(masque)
+
+    assert isinstance(labels, np.ndarray)
+    assert labels.shape == (128, 128)
+    # L'objet touchant la bordure doit être supprimé (valeur 0)
+    assert np.all(labels[0:20, 0:20] == 0)
+    # L'objet au centre doit être segmenté (valeurs > 0)
+    assert np.any(labels[40:80, 40:80] > 0)
+
