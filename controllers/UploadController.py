@@ -67,6 +67,9 @@ class UploadController:
         if file_path:
             self._original_pixmap = None
             self._last_file_path = file_path
+            self.main_controller.model.watershed_labels = None
+            if hasattr(self.view, "watershed_area_label"):
+                self.view.watershed_area_label.hide()
 
             # Conversion en numpy array normalisé [0,1] pour les traitements ultérieurs
             self._current_array = ImageConvertie(file_path).convertirEnNumpyArray()

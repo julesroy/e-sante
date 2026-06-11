@@ -59,6 +59,7 @@ class MainController:
         self.view.left_toolbar.ruler_clicked.connect(self.ruler_ctrl.handle_ruler_toggle)
         self.view.left_toolbar.angle_clicked.connect(self.ruler_ctrl.handle_angle_toggle)
         self.view.left_toolbar.height_comp_clicked.connect(self.ruler_ctrl.handle_height_comp_toggle)
+        self.view.left_toolbar.area_clicked.connect(self.ruler_ctrl.handle_area_calculation)
         self.view.top_toolbar.help_clicked.connect(self.handle_open_help)
     
     @property
@@ -152,6 +153,9 @@ class MainController:
         print("Réaffichage de l'image d'origine...")
         self.view.current_pixmap = self._original_pixmap.copy()
         self._contrast_base_array = None
+        self.model.watershed_labels = None
+        if hasattr(self.view, "watershed_area_label"):
+            self.view.watershed_area_label.hide()
         self.view.left_toolbar.btn_contrast_slider.setChecked(False)
         self.view.left_toolbar.btn_contrast_slider.setChecked(True)
         self.view.update_image_render()

@@ -102,3 +102,55 @@ class RulerController:
             print("Mode Comparateur de hauteur désactivé.")
 
         self.view.image_display.update()
+
+    def handle_area_calculation(self):
+        """Calcule et affiche l'aire des régions de la segmentation Watershed."""
+        try:
+            model = self.main_controller.model
+            # Vérifier si le watershed a été appliqué avant
+            if not hasattr(model, "watershed_labels") or model.watershed_labels is None:
+                self.error_controller.show_error("Erreur", "Veuillez appliquer la segmentation Watershed avant de calculer les aires.")
+                return
+
+            import numpy as np
+            import cv2
+            labels = model.watershed_labels
+            unique_labels = np.unique(labels)
+            unique_labels = unique_labels[unique_labels != 0]
+
+            if len(unique_labels) == 0:
+                self.error_controller.show_error("Erreur", "Aucune zone d'intérêt détectée par le Watershed.")
+                return
+
+            # Régénérer l'image couleur du watershed pour récupérer les couleurs exactes
+            image_affichage = cv2.normalize(labels, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+            image_couleur = cv2.applyColorMap(image_affichage, cv2.COLORMAP_JET)
+
+            html_lines = ["<html><body><p style='margin-top: 0px; margin-bottom: 6px; font-weight: bold;'>Aires du Watershed :</p>"]
+            html_lines.append("<table border='0' cellspacing='0' cellpadding='2'>")
+            for label in unique_labels:
+                # Récupérer la couleur de ce label
+                coords = np.argwhere(labels == label)
+                if len(coords) > 0:
+                    y, x = coords[0]
+                    b, g, r = image_couleur[y, x]
+                    color_hex = f"#{r:02x}{g:02x}{b:02x}"
+                else:
+                    color_hex = "#ffffff"
+
+                area_px = np.sum(labels == label)
+                # Utilisation d'un tableau HTML (pleinement supporté par le moteur de texte riche de Qt)
+                html_lines.append(
+                    f"<tr>"
+                    f"<td bgcolor='{color_hex}' width='12' height='12' style='border: 1px solid #555555;'>&nbsp;</td>"
+                    f"<td style='font-size: 11px; color: #e0e0e0; vertical-align: middle;'>&nbsp;&nbsp;{area_px} px²</td>"
+                    f"</tr>"
+                )
+            html_lines.append("</table></body></html>")
+            text = "".join(html_lines)
+            
+            # Afficher dans la zone de même largeur
+            self.view.display_watershed_areas(text)
+
+        except Exception as e:
+            self.error_controller.handle_exception(e)

@@ -357,6 +357,22 @@ class MainView(QMainWindow):
         """)
         self.image_info_label.hide()
 
+        # --- AIRES WATERSHED (overlay en bas à droite, au-dessus de image_info_label) ---
+        self.watershed_area_label = QLabel(self.scroll_area)
+        self.watershed_area_label.setObjectName("WatershedAreaLabel")
+        self.watershed_area_label.setStyleSheet("""
+            #WatershedAreaLabel {
+                color: #e0e0e0;
+                background-color: rgba(32, 32, 32, 200);
+                border: 1px solid #3c3c3c;
+                border-radius: 4px;
+                padding: 6px 10px;
+                font-size: 11px;
+                font-family: "Segoe UI", Arial, sans-serif;
+            }
+        """)
+        self.watershed_area_label.hide()
+
         content_layout.addWidget(self.scroll_area)
 
         content_layout.setStretchFactor(self.left_toolbar, 0)
@@ -500,11 +516,27 @@ class MainView(QMainWindow):
             y = self.scroll_area.height() - self.image_info_label.height() - 15
             self.image_info_label.move(max(0, x), max(0, y))
 
+            # Positionner aussi self.watershed_area_label juste au-dessus
+            if hasattr(self, "watershed_area_label") and self.watershed_area_label.isVisible():
+                self.watershed_area_label.setFixedWidth(self.image_info_label.width())
+                self.watershed_area_label.adjustSize()
+                y_area = y - self.watershed_area_label.height() - 10
+                self.watershed_area_label.move(max(0, x), max(0, y_area))
+        elif hasattr(self, "watershed_area_label") and self.watershed_area_label.isVisible():
+            # Si image_info_label n'est pas visible mais watershed_area_label l'est,
+            # le positionner tout en bas à droite
+            self.watershed_area_label.adjustSize()
+            x = self.scroll_area.width() - self.watershed_area_label.width() - 15
+            y = self.scroll_area.height() - self.watershed_area_label.height() - 15
+            self.watershed_area_label.move(max(0, x), max(0, y))
+
     def update_image_info(self, file_path: str | None, pixmap: QPixmap | None):
         """Met à jour et affiche le panneau d'information de l'image"""
         if pixmap is None or pixmap.isNull():
             if hasattr(self, "image_info_label"):
                 self.image_info_label.hide()
+            if hasattr(self, "watershed_area_label"):
+                self.watershed_area_label.hide()
             return
 
         dims = f"{pixmap.width()} x {pixmap.height()} px"
@@ -534,6 +566,13 @@ class MainView(QMainWindow):
         self.image_info_label.setText(text)
         self.image_info_label.show()
         self._update_image_info_position()
+
+    def display_watershed_areas(self, text: str):
+        """Met à jour et affiche le panneau d'aires du Watershed"""
+        if hasattr(self, "watershed_area_label"):
+            self.watershed_area_label.setText(text)
+            self.watershed_area_label.show()
+            self._update_image_info_position()
 
     def resizeEvent(self, event):
         super().resizeEvent(event)

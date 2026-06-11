@@ -101,3 +101,18 @@ def test_watershed():
     # L'objet au centre doit être segmenté (valeurs > 0)
     assert np.any(labels[40:80, 40:80] > 0)
 
+
+def test_area_calculation():
+    # Crée un faux masque de labels
+    labels = np.zeros((10, 10), dtype=np.int32)
+    labels[1:3, 1:3] = 1  # Zone 1 de taille 2x2 = 4 pixels
+    labels[5:8, 5:8] = 2  # Zone 2 de taille 3x3 = 9 pixels
+
+    unique_labels = np.unique(labels)
+    unique_labels = unique_labels[unique_labels != 0]
+
+    assert len(unique_labels) == 2
+    assert np.sum(labels == 1) == 4
+    assert np.sum(labels == 2) == 9
+
+

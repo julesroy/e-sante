@@ -47,6 +47,7 @@ class LeftToolbar(QWidget):
     ruler_clicked = pyqtSignal(bool)
     angle_clicked = pyqtSignal(bool)
     height_comp_clicked = pyqtSignal(bool)
+    area_clicked = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -153,10 +154,11 @@ class LeftToolbar(QWidget):
 
         self.measures_container = QWidget()
         self.measures_container.setVisible(False)
-
-        measures_layout = QHBoxLayout(self.measures_container)
-        measures_layout.setContentsMargins(12, 8, 8, 12)
-        measures_layout.setSpacing(6)
+        self.grid_layout_measures = QGridLayout(self.measures_container)
+        self.grid_layout_measures.setContentsMargins(12, 8, 8, 12)
+        self.grid_layout_measures.setSpacing(6)
+        self.grid_layout_measures.setRowMinimumHeight(0, button_size)
+        self.grid_layout_measures.setRowMinimumHeight(1, button_size)
 
         self.btn_ruler = QPushButton()
         ruler_icon_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "icons", "ruler-icon.svg")
@@ -166,7 +168,6 @@ class LeftToolbar(QWidget):
         self.btn_ruler.setFixedSize(button_size, button_size)
         self.btn_ruler.setToolTip("Mesurer la distance entre deux points en cm")
         self.btn_ruler.setCheckable(True)
-        measures_layout.addWidget(self.btn_ruler)
 
         self.btn_angle = QPushButton()
         icon_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "icons", "angle-icon.svg")
@@ -176,16 +177,22 @@ class LeftToolbar(QWidget):
         self.btn_angle.setFixedSize(button_size, button_size)
         self.btn_angle.setToolTip("Mesurer l'angle entre deux droites")
         self.btn_angle.setCheckable(True)
-        measures_layout.addWidget(self.btn_angle)
 
         self.btn_height_comp = QPushButton("\uf07d")
         self.btn_height_comp.setFont(icon_font)
         self.btn_height_comp.setFixedSize(button_size, button_size)
         self.btn_height_comp.setToolTip("Comparer la hauteur entre deux plans")
         self.btn_height_comp.setCheckable(True)
-        measures_layout.addWidget(self.btn_height_comp)
 
-        measures_layout.addStretch()
+        self.btn_area = QPushButton("\uf1ec")
+        self.btn_area.setFont(icon_font)
+        self.btn_area.setFixedSize(button_size, button_size)
+        self.btn_area.setToolTip("Calculer les aires du Watershed")
+
+        self.grid_layout_measures.addWidget(self.btn_ruler, 0, 0)
+        self.grid_layout_measures.addWidget(self.btn_angle, 0, 1)
+        self.grid_layout_measures.addWidget(self.btn_height_comp, 0, 2)
+        self.grid_layout_measures.addWidget(self.btn_area, 1, 0)
 
         self.main_layout.addWidget(self.measures_container)
 
@@ -233,6 +240,7 @@ class LeftToolbar(QWidget):
         self.btn_ruler.clicked.connect(self.ruler_clicked.emit)
         self.btn_angle.clicked.connect(self.angle_clicked.emit)
         self.btn_height_comp.clicked.connect(self.height_comp_clicked.emit)
+        self.btn_area.clicked.connect(self.area_clicked.emit)
 
     def toggle_section(self, button, container, title_text):
         """Masque ou affiche le conteneur et force l'état Checked pour le QSS."""

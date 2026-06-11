@@ -203,6 +203,10 @@ class AnalysisController:
                 self.view.left_toolbar.btn_watershed.setChecked(False)
                 return
             if checked:
+                self.main_controller.model.watershed_labels = None
+                if hasattr(self.view, "watershed_area_label"):
+                    self.view.watershed_area_label.hide()
+
                 dialog = WatershedDialog(self.view)
                 if dialog.exec():
                     sigma, seuil_manuel, kernel_size, min_dist, supprimer_bordures = dialog.get_values()
@@ -239,6 +243,7 @@ class AnalysisController:
                     overlay[mask_roi] = blended[mask_roi]
 
                     self._display_numpy_array(overlay)
+                    self.main_controller.model.watershed_labels = labels
 
                     print(f"Segmentation Watershed appliquée (sigma={sigma}, seuil={seuil_choisi}, noyau={kernel_size}, dist={min_dist}, supprimer_bordures={supprimer_bordures})")
                 else:

@@ -14,3 +14,4 @@ class MainModel:
         self.contrast_base_array: np.ndarray | None = None
         self.current_patient_id: int | None = None
         self.last_file_path: str | None = None
+        self.watershed_labels: np.ndarray | None = None
