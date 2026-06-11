@@ -43,6 +43,7 @@ class LeftToolbar(QWidget):
     high_pass_clicked = pyqtSignal()
     clahe_clicked = pyqtSignal()
     contrast_slider_clicked = pyqtSignal(bool)
+    watershed_clicked = pyqtSignal(bool)
     ruler_clicked = pyqtSignal(bool)
     angle_clicked = pyqtSignal(bool)
     height_comp_clicked = pyqtSignal(bool)
@@ -138,6 +139,12 @@ class LeftToolbar(QWidget):
         self.btn_contrast_slider.clicked.connect(self.contrast_slider_clicked.emit)
         self.grid_layout_contrast.addWidget(self.btn_contrast_slider, 0, 1)
 
+        self.btn_watershed = QPushButton("\uf0b0")
+        self.btn_watershed.setFont(icon_font)
+        self.btn_watershed.setFixedSize(button_size, button_size)
+        self.btn_watershed.setToolTip("Appliquer la segmentation Watershed")
+        self.grid_layout_contrast.addWidget(self.btn_watershed, 0, 2)
+
         self.main_layout.addWidget(self.contrast_container)
 
         # === MESURES ===
@@ -203,7 +210,7 @@ class LeftToolbar(QWidget):
             btn.setCheckable(True)
             btn.setAutoExclusive(True)
 
-        self.contrast_buttons = [self.btn_clahe]
+        self.contrast_buttons = [self.btn_clahe, self.btn_watershed, self.btn_contrast_slider]
         for btn in self.contrast_buttons:
             btn.setCheckable(True)
             btn.setAutoExclusive(True)
@@ -222,6 +229,7 @@ class LeftToolbar(QWidget):
         self.btn_high_pass.clicked.connect(self.high_pass_clicked.emit)
         self.btn_sobel.clicked.connect(self.sobel_clicked.emit)
         self.btn_clahe.clicked.connect(self.clahe_clicked.emit)
+        self.btn_watershed.clicked.connect(self.watershed_clicked.emit)
         self.btn_ruler.clicked.connect(self.ruler_clicked.emit)
         self.btn_angle.clicked.connect(self.angle_clicked.emit)
         self.btn_height_comp.clicked.connect(self.height_comp_clicked.emit)

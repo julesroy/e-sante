@@ -2,6 +2,8 @@
 from __future__ import annotations
 import sys, os
 import numpy as np
+import scipy.ndimage as ndimage
+import cv2
 
 # ===== IMPORTS UNIQUEMENT POUR PYLANCE (jamais exécutés) =====
 from typing import TYPE_CHECKING
@@ -14,8 +16,12 @@ if TYPE_CHECKING:
 from models.TFD2D import TFD2D
 from models.CLAHE import CLAHE
 from models.Seuillage import Seuillage
+from models.MorphologieMathematique import MorphologieMathematique
+from models.Watershed import SegmentationWatershed
+from models.FiltrageGaussien import FiltrageGaussien
 from views.FilterDialog import FilterDialog
 from views.ClaheDialog import ClaheDialog
+from views.WatershedDialog import WatershedDialog
 
 
 class AnalysisController:
@@ -183,5 +189,63 @@ class AnalysisController:
                 print(f"Seuillage appliqué - {mode}")
 
         except Exception as e:
+            self.error_handler.handle_exception(e)
+            return
+        
+    def handle_watershed(self, checked):
+        """
+        Applique la segmentation Watershed sur l'image courante.
+        Nécessite qu'une image soit chargée (_current_array != None).
+        """
+        try:
+            if self._current_array is None:
+                self.error_handler.show_error("Erreur", "Aucune image chargée")
+                self.view.left_toolbar.btn_watershed.setChecked(False)
+                return
+            if checked:
+                dialog = WatershedDialog(self.view)
+                if dialog.exec():
+                    sigma, seuil_manuel, kernel_size, min_dist, supprimer_bordures = dialog.get_values()
+
+                    # 1. Filtrage Gaussien
+                    image_filtree = FiltrageGaussien(sigma, self._current_array).filtrage()
+
+                    # 2. Seuillage (manuel ou Otsu si seuil_manuel est None)
+                    outil_seuillage = Seuillage(seuil_manuel)
+                    masque, seuil_choisi = outil_seuillage.appliquer(image_filtree)
+
+                    # 3. Masque des cavités internes
+                    masque_rempli = ndimage.binary_fill_holes(masque > 0)
+                    masque_poumons = ((masque_rempli * 255).astype(np.uint8) > 0) & (masque == 0)
+                    masque_poumons = (masque_poumons * 255).astype(np.uint8) 
+
+                    # 4. Nettoyage morphologique
+                    masque_propre = MorphologieMathematique(kernel_size).ouverture(masque_poumons)
+
+                    # 5. Segmentation Watershed
+                    labels = SegmentationWatershed(min_dist, supprimer_bordures).segmenter(masque_propre)
+
+                    # 6. Rendu et superposition
+                    image_affichage = cv2.normalize(labels, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+                    image_couleur = cv2.applyColorMap(image_affichage, cv2.COLORMAP_JET)
+
+                    img_8bit = (self._current_array * 255).astype(np.uint8)
+                    img_bgr = cv2.cvtColor(img_8bit, cv2.COLOR_GRAY2BGR)
+
+                    # superposition transparente (overlay) sur les zones segmentées
+                    mask_roi = labels > 0
+                    overlay = img_bgr.copy()
+                    blended = cv2.addWeighted(img_bgr, 0.6, image_couleur, 0.4, 0)
+                    overlay[mask_roi] = blended[mask_roi]
+
+                    self._display_numpy_array(overlay)
+
+                    print(f"Segmentation Watershed appliquée (sigma={sigma}, seuil={seuil_choisi}, noyau={kernel_size}, dist={min_dist}, supprimer_bordures={supprimer_bordures})")
+                else:
+                    # Si l'utilisateur annule le dialogue, désélectionner le bouton
+                    self.view.left_toolbar.btn_watershed.setChecked(False)
+
+        except Exception as e:
+            self.view.left_toolbar.btn_watershed.setChecked(False)
             self.error_handler.handle_exception(e)
             return

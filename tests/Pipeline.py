@@ -34,7 +34,7 @@ masque_poumons = (masque_poumons * 255).astype(np.uint8)
 masque_propre = MorphologieMathematique(3).ouverture(masque_poumons)
 
 # 4. Segmenter le poumon gauche et droit
-labels = SegmentationWatershed(20, False).segmenter(masque_propre)
+labels = SegmentationWatershed(20, True).segmenter(masque_propre)
 
 # 5. Préparer l'affichage en couleur
 image_affichage = cv2.normalize(labels, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U)

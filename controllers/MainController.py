@@ -52,6 +52,7 @@ class MainController:
         self.view.left_toolbar.reset_image_clicked.connect(self.handle_reset_image)
         self.view.left_toolbar.clahe_clicked.connect(self.analysis_ctrl.handle_clahe)
         self.view.left_toolbar.contrast_slider_clicked.connect(self.analysis_ctrl.handle_contrast_slider)
+        self.view.left_toolbar.watershed_clicked.connect(self.analysis_ctrl.handle_watershed)
         self.view.left_toolbar.low_pass_clicked.connect(self.filter_ctrl.handle_passe_bas)
         self.view.left_toolbar.high_pass_clicked.connect(self.filter_ctrl.handle_passe_haut)
         self.view.left_toolbar.sobel_clicked.connect(self.filter_ctrl.handle_sobel)
@@ -120,9 +121,23 @@ class MainController:
             self.error_handler.show_error("Hors-ligne", "Impossible de se connecter à la BDD.")
 
     def _display_numpy_array(self, array: np.ndarray):
-        img_uint8 = (array * 255).astype(np.uint8)
-        h, w = img_uint8.shape
-        qimage = QImage(bytes(img_uint8.data), w, h, w, QImage.Format.Format_Grayscale8).copy()
+        if array.dtype == np.uint8:
+            img_uint8 = array
+        else:
+            img_uint8 = (array * 255).astype(np.uint8)
+
+        if len(img_uint8.shape) == 2:
+            h, w = img_uint8.shape
+            qimage = QImage(bytes(img_uint8.data), w, h, w, QImage.Format.Format_Grayscale8).copy()
+        elif len(img_uint8.shape) == 3 and img_uint8.shape[2] == 3:
+            h, w, c = img_uint8.shape
+            import cv2
+            img_rgb = cv2.cvtColor(img_uint8, cv2.COLOR_BGR2RGB)
+            bytes_per_line = 3 * w
+            qimage = QImage(bytes(img_rgb.data), w, h, bytes_per_line, QImage.Format.Format_RGB888).copy()
+        else:
+            raise ValueError(f"Format d'image non supporté : {img_uint8.shape}")
+
         pixmap = QPixmap.fromImage(qimage)
 
         if self._original_pixmap is None:
