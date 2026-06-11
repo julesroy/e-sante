@@ -12,6 +12,7 @@ from views.RulerOverlay import RulerOverlay
 from views.PatientInfoWidget import PatientInfoWidget
 from views.AngleOverlay import AngleOverlay
 from views.HeightCompOverlay import HeightCompOverlay
+from views.FormsOverlay import FormsOverlay
 
 
 class MedicalImageLabel(QLabel):
@@ -21,6 +22,7 @@ class MedicalImageLabel(QLabel):
         self.ruler_overlay = RulerOverlay(self)
         self.angle_overlay = AngleOverlay(self)
         self.height_comp_overlay = HeightCompOverlay(self)
+        self.forms_overlay = FormsOverlay(self)
 
     def mousePressEvent(self, event):
         """Intercepte les clics pour positionner les points de mesure si la règle, l'angle ou le comparateur de hauteur est actif."""
@@ -53,6 +55,52 @@ class MedicalImageLabel(QLabel):
 
                     if self.height_comp_overlay.handle_mouse_press(event.position().toPoint(), img_rect):
                         self.update()
+            elif self.visualizer.main_view.circle_roi_active or self.visualizer.main_view.square_roi_active:
+                pixmap_displayed = self.pixmap()
+                if pixmap_displayed:
+                    margin_x = (self.width() - pixmap_displayed.width()) // 2
+                    margin_y = (self.height() - pixmap_displayed.height()) // 2
+                    img_rect = QRect(margin_x, margin_y, pixmap_displayed.width(), pixmap_displayed.height())
+
+                    shape = "circle" if self.visualizer.main_view.circle_roi_active else "square"
+                    self.forms_overlay.shape_type = shape
+                    if self.forms_overlay.handle_mouse_press(event.position().toPoint(), img_rect):
+                        self.update()
+
+    def mouseMoveEvent(self, event):
+        """Met à jour le tracé temporaire pour la règle ou l'angle."""
+        super().mouseMoveEvent(event)
+        if self.visualizer and self.visualizer.main_view:
+            if self.visualizer.main_view.ruler_active:
+                pixmap_displayed = self.pixmap()
+                if pixmap_displayed:
+                    margin_x = (self.width() - pixmap_displayed.width()) // 2
+                    margin_y = (self.height() - pixmap_displayed.height()) // 2
+                    img_rect = QRect(margin_x, margin_y, pixmap_displayed.width(), pixmap_displayed.height())
+
+                    if self.ruler_overlay.handle_mouse_move(event.position().toPoint(), img_rect):
+                        self.update()
+            elif self.visualizer.main_view.angle_active:
+                pixmap_displayed = self.pixmap()
+                if pixmap_displayed:
+                    margin_x = (self.width() - pixmap_displayed.width()) // 2
+                    margin_y = (self.height() - pixmap_displayed.height()) // 2
+                    img_rect = QRect(margin_x, margin_y, pixmap_displayed.width(), pixmap_displayed.height())
+
+                    if self.angle_overlay.handle_mouse_move(event.position().toPoint(), img_rect):
+                        self.update()
+            elif self.visualizer.main_view.circle_roi_active or self.visualizer.main_view.square_roi_active:
+                pixmap_displayed = self.pixmap()
+                if pixmap_displayed:
+                    margin_x = (self.width() - pixmap_displayed.width()) // 2
+                    margin_y = (self.height() - pixmap_displayed.height()) // 2
+                    img_rect = QRect(margin_x, margin_y, pixmap_displayed.width(), pixmap_displayed.height())
+
+                    shape = "circle" if self.visualizer.main_view.circle_roi_active else "square"
+                    self.forms_overlay.shape_type = shape
+                    if self.forms_overlay.handle_mouse_move(event.position().toPoint(), img_rect):
+                        self.update()
+        event.ignore()
 
     def paintEvent(self, event):
         """Dessine l'image et force la ligne du slider au premier plan absolu"""
@@ -80,6 +128,10 @@ class MedicalImageLabel(QLabel):
         # --- DESSIN DU COMPARATEUR DE HAUTEUR AU PREMIER PLAN ---
         if self.visualizer and self.visualizer.main_view and self.visualizer.main_view.height_comp_active:
             self.height_comp_overlay.draw_measure(painter, img_rect)
+
+        # --- DESSIN DES FORMES D'ANALYSE (CERCLE / CARRE) AU PREMIER PLAN ---
+        if self.visualizer and self.visualizer.main_view and (self.visualizer.main_view.circle_roi_active or self.visualizer.main_view.square_roi_active):
+            self.forms_overlay.draw_measure(painter, img_rect)
 
         if not self.visualizer or not self.visualizer.main_view or not self.visualizer.main_view.slider_compare_active or not self.visualizer.main_view.current_pixmap:
             painter.end()
@@ -292,6 +344,8 @@ class MainView(QMainWindow):
         self.ruler_active = False
         self.angle_active = False
         self.height_comp_active = False
+        self.circle_roi_active = False
+        self.square_roi_active = False
 
         # --- SLIDER DE CONTRASTE ---
         self.contrast_slider_active = False

@@ -10,6 +10,7 @@ class RulerOverlay:
         # Positions relatives unifiées (en pourcentage de l'image de 0.0 à 1.0)
         self.rel_a = None
         self.rel_b = None
+        self.rel_temp = None  # Position temporaire du curseur pour le tracé en direct
 
         self.pixel_to_cm = 0.14
 
@@ -17,6 +18,7 @@ class RulerOverlay:
         """Réinitialise les points de mesure."""
         self.rel_a = None
         self.rel_b = None
+        self.rel_temp = None
 
     def handle_mouse_press(self, local_pos: QPoint, img_rect: QRect):
         """Calcule et stocke la position du clic en valeurs relatives (0 à 1)."""
@@ -36,10 +38,35 @@ class RulerOverlay:
         if self.rel_a is None or (self.rel_a is not None and self.rel_b is not None):
             self.rel_a = pos_relative
             self.rel_b = None
+            self.rel_temp = None
         elif self.rel_b is None:
             self.rel_b = pos_relative
+            self.rel_temp = None
 
         return True
+
+    def handle_mouse_move(self, local_pos: QPoint, img_rect: QRect) -> bool:
+        """Met à jour le point temporaire pour le tracé en direct."""
+        if self.rel_a is None or self.rel_b is not None:
+            # Aucun tracé en cours
+            if self.rel_temp is not None:
+                self.rel_temp = None
+                return True
+            return False
+
+        # Clamping de la position de la souris pour qu'elle reste dans l'image
+        img_x = max(0, min(local_pos.x() - img_rect.left(), img_rect.width()))
+        img_y = max(0, min(local_pos.y() - img_rect.top(), img_rect.height()))
+
+        rel_x = img_x / img_rect.width()
+        rel_y = img_y / img_rect.height()
+        new_temp = (rel_x, rel_y)
+
+        if self.rel_temp != new_temp:
+            self.rel_temp = new_temp
+            return True
+
+        return False
 
     def draw_measure(self, painter: QPainter, img_rect: QRect):
         """Calcule dynamiquement la distance en se basant sur une largeur physique d'image fixe."""
@@ -52,25 +79,40 @@ class RulerOverlay:
         screen_a = QPoint(screen_ax, screen_ay)
 
         pen_line = QPen(QColor("#00ff00"), 2, Qt.PenStyle.SolidLine)
+        pen_preview_line = QPen(QColor("#00ff00"), 2, Qt.PenStyle.DashLine)
         pen_dots = QPen(QColor("#ffaa00"), 6, Qt.PenStyle.SolidLine)
 
         # Dessiner le premier point
         painter.setPen(pen_dots)
         painter.drawPoint(screen_a)
 
-        # 2. Dessiner la ligne et calculer la vraie distance si le point B existe
+        # Déterminer la cible de la ligne (point final ou point de preview temporaire)
+        target = None
+        is_preview = False
+
         if self.rel_b is not None:
-            screen_bx = int(img_rect.left() + (self.rel_b[0] * img_rect.width()))
-            screen_by = int(img_rect.top() + (self.rel_b[1] * img_rect.height()))
+            target = self.rel_b
+            is_preview = False
+        elif self.rel_temp is not None:
+            target = self.rel_temp
+            is_preview = True
+
+        if target is not None:
+            screen_bx = int(img_rect.left() + (target[0] * img_rect.width()))
+            screen_by = int(img_rect.top() + (target[1] * img_rect.height()))
             screen_b = QPoint(screen_bx, screen_by)
 
-            # Dessin de la ligne écran
-            painter.setPen(pen_line)
+            # Dessin de la ligne écran (style différent si preview)
+            if is_preview:
+                painter.setPen(pen_preview_line)
+            else:
+                painter.setPen(pen_line)
+
             painter.drawLine(screen_a, screen_b)
             painter.setPen(pen_dots)
             painter.drawPoint(screen_b)
 
-            # --- CALCUL DYNAMIQUE ET UNIVERSEL ---
+            # --- CALCUL DYNAMIQUE ---
             main_view = self.label_view.visualizer.main_view
             if main_view and main_view.current_pixmap:
                 orig_w = main_view.current_pixmap.width()
@@ -82,23 +124,26 @@ class RulerOverlay:
 
                 # On projette nos pourcentages directement sur la taille du fichier d'origine
                 orig_ax, orig_ay = self.rel_a[0] * orig_w, self.rel_a[1] * orig_h
-                orig_bx, orig_by = self.rel_b[0] * orig_w, self.rel_b[1] * orig_h
+                orig_bx, orig_by = target[0] * orig_w, target[1] * orig_h
 
                 # Pythagore sur l'image brute de base
                 dx = orig_bx - orig_ax
                 dy = orig_by - orig_ay
                 distance_px_orig = math.sqrt(dx * dx + dy * dy)
 
-                # Conversion finale avec le coefficient dynamique
+                # Conversion finale (cm)
                 distance_cm = distance_px_orig * dynamic_pixel_to_cm
+                # Conversion en mm
+                distance_mm = distance_cm * 10
             else:
-                distance_cm = 0.0
+                distance_mm = 0.0
+                distance_px_orig = 0.0
 
             # Positionnement du texte au milieu de la ligne
             mid_x = (screen_a.x() + screen_b.x()) // 2
             mid_y = (screen_a.y() + screen_b.y()) // 2
 
-            text = f" {distance_cm:.2f} cm "
+            text = f" {distance_px_orig:.1f} px (~ {distance_mm:.1f} mm) "
             font = QFont("Arial", 10, QFont.Weight.Bold)
             painter.setFont(font)
 
@@ -106,5 +151,8 @@ class RulerOverlay:
             text_rect.moveCenter(QPoint(mid_x, mid_y))
 
             painter.fillRect(text_rect, QColor(0, 0, 0, 180))
-            painter.setPen(QColor("#ffffff"))
+            if is_preview:
+                painter.setPen(QColor("#ffaa00"))  # Couleur orange/jaune pour le preview
+            else:
+                painter.setPen(QColor("#ffffff"))
             painter.drawText(text_rect, Qt.AlignmentFlag.AlignCenter, text)

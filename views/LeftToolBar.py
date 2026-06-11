@@ -47,6 +47,8 @@ class LeftToolbar(QWidget):
     ruler_clicked = pyqtSignal(bool)
     angle_clicked = pyqtSignal(bool)
     height_comp_clicked = pyqtSignal(bool)
+    circle_roi_clicked = pyqtSignal(bool)
+    square_roi_clicked = pyqtSignal(bool)
     area_clicked = pyqtSignal()
 
     def __init__(self, parent=None):
@@ -189,10 +191,24 @@ class LeftToolbar(QWidget):
         self.btn_area.setFixedSize(button_size, button_size)
         self.btn_area.setToolTip("Calculer les aires du Watershed")
 
+        self.btn_circle_roi = QPushButton("\uf111")
+        self.btn_circle_roi.setFont(icon_font)
+        self.btn_circle_roi.setFixedSize(button_size, button_size)
+        self.btn_circle_roi.setToolTip("ROI Cercle : Statistiques d'intensité et aire")
+        self.btn_circle_roi.setCheckable(True)
+
+        self.btn_square_roi = QPushButton("\uf0c8")
+        self.btn_square_roi.setFont(icon_font)
+        self.btn_square_roi.setFixedSize(button_size, button_size)
+        self.btn_square_roi.setToolTip("ROI Carré : Statistiques d'intensité et aire")
+        self.btn_square_roi.setCheckable(True)
+
         self.grid_layout_measures.addWidget(self.btn_ruler, 0, 0)
         self.grid_layout_measures.addWidget(self.btn_angle, 0, 1)
         self.grid_layout_measures.addWidget(self.btn_height_comp, 0, 2)
         self.grid_layout_measures.addWidget(self.btn_area, 1, 0)
+        self.grid_layout_measures.addWidget(self.btn_circle_roi, 1, 1)
+        self.grid_layout_measures.addWidget(self.btn_square_roi, 1, 2)
 
         self.main_layout.addWidget(self.measures_container)
 
@@ -240,6 +256,8 @@ class LeftToolbar(QWidget):
         self.btn_ruler.clicked.connect(self.ruler_clicked.emit)
         self.btn_angle.clicked.connect(self.angle_clicked.emit)
         self.btn_height_comp.clicked.connect(self.height_comp_clicked.emit)
+        self.btn_circle_roi.clicked.connect(self.circle_roi_clicked.emit)
+        self.btn_square_roi.clicked.connect(self.square_roi_clicked.emit)
         self.btn_area.clicked.connect(self.area_clicked.emit)
 
     def toggle_section(self, button, container, title_text):

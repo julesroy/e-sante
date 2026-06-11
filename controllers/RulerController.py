@@ -35,6 +35,12 @@ class RulerController:
             if getattr(self.view, "height_comp_active", False):
                 self.view.left_toolbar.btn_height_comp.setChecked(False)
                 self.view.height_comp_active = False
+            if getattr(self.view, "circle_roi_active", False):
+                self.view.left_toolbar.btn_circle_roi.setChecked(False)
+                self.view.circle_roi_active = False
+            if getattr(self.view, "square_roi_active", False):
+                self.view.left_toolbar.btn_square_roi.setChecked(False)
+                self.view.square_roi_active = False
 
             if hasattr(self.view.image_display, "ruler_overlay"):
                 self.view.image_display.ruler_overlay.clear()
@@ -42,6 +48,8 @@ class RulerController:
                 self.view.image_display.angle_overlay.clear()
             if hasattr(self.view.image_display, "height_comp_overlay"):
                 self.view.image_display.height_comp_overlay.clear()
+            if hasattr(self.view.image_display, "forms_overlay"):
+                self.view.image_display.forms_overlay.clear()
         else:
             print("Mode Règle de mesure désactivé.")
 
@@ -63,6 +71,12 @@ class RulerController:
             if getattr(self.view, "height_comp_active", False):
                 self.view.left_toolbar.btn_height_comp.setChecked(False)
                 self.view.height_comp_active = False
+            if getattr(self.view, "circle_roi_active", False):
+                self.view.left_toolbar.btn_circle_roi.setChecked(False)
+                self.view.circle_roi_active = False
+            if getattr(self.view, "square_roi_active", False):
+                self.view.left_toolbar.btn_square_roi.setChecked(False)
+                self.view.square_roi_active = False
 
             if hasattr(self.view.image_display, "angle_overlay"):
                 self.view.image_display.angle_overlay.clear()
@@ -70,6 +84,8 @@ class RulerController:
                 self.view.image_display.ruler_overlay.clear()
             if hasattr(self.view.image_display, "height_comp_overlay"):
                 self.view.image_display.height_comp_overlay.clear()
+            if hasattr(self.view.image_display, "forms_overlay"):
+                self.view.image_display.forms_overlay.clear()
         else:
             print("Mode Angle de mesure désactivé.")
 
@@ -91,6 +107,12 @@ class RulerController:
             if getattr(self.view, "angle_active", False):
                 self.view.left_toolbar.btn_angle.setChecked(False)
                 self.view.angle_active = False
+            if getattr(self.view, "circle_roi_active", False):
+                self.view.left_toolbar.btn_circle_roi.setChecked(False)
+                self.view.circle_roi_active = False
+            if getattr(self.view, "square_roi_active", False):
+                self.view.left_toolbar.btn_square_roi.setChecked(False)
+                self.view.square_roi_active = False
 
             if hasattr(self.view.image_display, "height_comp_overlay"):
                 self.view.image_display.height_comp_overlay.clear()
@@ -98,8 +120,84 @@ class RulerController:
                 self.view.image_display.ruler_overlay.clear()
             if hasattr(self.view.image_display, "angle_overlay"):
                 self.view.image_display.angle_overlay.clear()
+            if hasattr(self.view.image_display, "forms_overlay"):
+                self.view.image_display.forms_overlay.clear()
         else:
             print("Mode Comparateur de hauteur désactivé.")
+
+        self.view.image_display.update()
+
+    def handle_circle_roi_toggle(self, checked: bool):
+        """Gère l'activation du mode ROI Cercle depuis la LeftToolbar."""
+        if self.view.current_pixmap is None:
+            self.view.left_toolbar.btn_circle_roi.setChecked(False)
+            return
+
+        self.view.circle_roi_active = checked
+        if checked:
+            print("Mode ROI Cercle activé.")
+            # Désactiver les autres modes
+            if getattr(self.view, "ruler_active", False):
+                self.view.left_toolbar.btn_ruler.setChecked(False)
+                self.view.ruler_active = False
+            if getattr(self.view, "angle_active", False):
+                self.view.left_toolbar.btn_angle.setChecked(False)
+                self.view.angle_active = False
+            if getattr(self.view, "height_comp_active", False):
+                self.view.left_toolbar.btn_height_comp.setChecked(False)
+                self.view.height_comp_active = False
+            if getattr(self.view, "square_roi_active", False):
+                self.view.left_toolbar.btn_square_roi.setChecked(False)
+                self.view.square_roi_active = False
+
+            if hasattr(self.view.image_display, "forms_overlay"):
+                self.view.image_display.forms_overlay.shape_type = "circle"
+                self.view.image_display.forms_overlay.clear()
+            if hasattr(self.view.image_display, "ruler_overlay"):
+                self.view.image_display.ruler_overlay.clear()
+            if hasattr(self.view.image_display, "angle_overlay"):
+                self.view.image_display.angle_overlay.clear()
+            if hasattr(self.view.image_display, "height_comp_overlay"):
+                self.view.image_display.height_comp_overlay.clear()
+        else:
+            print("Mode ROI Cercle désactivé.")
+
+        self.view.image_display.update()
+
+    def handle_square_roi_toggle(self, checked: bool):
+        """Gère l'activation du mode ROI Carré depuis la LeftToolbar."""
+        if self.view.current_pixmap is None:
+            self.view.left_toolbar.btn_square_roi.setChecked(False)
+            return
+
+        self.view.square_roi_active = checked
+        if checked:
+            print("Mode ROI Carré activé.")
+            # Désactiver les autres modes
+            if getattr(self.view, "ruler_active", False):
+                self.view.left_toolbar.btn_ruler.setChecked(False)
+                self.view.ruler_active = False
+            if getattr(self.view, "angle_active", False):
+                self.view.left_toolbar.btn_angle.setChecked(False)
+                self.view.angle_active = False
+            if getattr(self.view, "height_comp_active", False):
+                self.view.left_toolbar.btn_height_comp.setChecked(False)
+                self.view.height_comp_active = False
+            if getattr(self.view, "circle_roi_active", False):
+                self.view.left_toolbar.btn_circle_roi.setChecked(False)
+                self.view.circle_roi_active = False
+
+            if hasattr(self.view.image_display, "forms_overlay"):
+                self.view.image_display.forms_overlay.shape_type = "square"
+                self.view.image_display.forms_overlay.clear()
+            if hasattr(self.view.image_display, "ruler_overlay"):
+                self.view.image_display.ruler_overlay.clear()
+            if hasattr(self.view.image_display, "angle_overlay"):
+                self.view.image_display.angle_overlay.clear()
+            if hasattr(self.view.image_display, "height_comp_overlay"):
+                self.view.image_display.height_comp_overlay.clear()
+        else:
+            print("Mode ROI Carré désactivé.")
 
         self.view.image_display.update()
 
