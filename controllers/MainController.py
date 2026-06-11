@@ -62,6 +62,7 @@ class MainController:
         self.view.left_toolbar.circle_roi_clicked.connect(self.ruler_ctrl.handle_circle_roi_toggle)
         self.view.left_toolbar.square_roi_clicked.connect(self.ruler_ctrl.handle_square_roi_toggle)
         self.view.left_toolbar.area_clicked.connect(self.ruler_ctrl.handle_area_calculation)
+        self.view.left_toolbar.pipette_clicked.connect(self.ruler_ctrl.handle_pipette_toggle)
         self.view.top_toolbar.help_clicked.connect(self.handle_open_help)
     
     @property
@@ -163,6 +164,7 @@ class MainController:
             self.view.fft_label.hide()
         self.view.left_toolbar.btn_contrast_slider.setChecked(False)
         self.view.left_toolbar.btn_contrast_slider.setChecked(True)
+        self.ruler_ctrl.deactivate_pipette()
         self.view.update_image_render()
 
     def handle_open_help(self):

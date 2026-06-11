@@ -49,6 +49,7 @@ class LeftToolbar(QWidget):
     circle_roi_clicked = pyqtSignal(bool)
     square_roi_clicked = pyqtSignal(bool)
     area_clicked = pyqtSignal()
+    pipette_clicked = pyqtSignal(bool)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -154,6 +155,7 @@ class LeftToolbar(QWidget):
         self.grid_layout_measures.setSpacing(6)
         self.grid_layout_measures.setRowMinimumHeight(0, button_size)
         self.grid_layout_measures.setRowMinimumHeight(1, button_size)
+        self.grid_layout_measures.setRowMinimumHeight(2, button_size)
 
         self.btn_ruler = QPushButton()
         ruler_icon_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "icons", "ruler-icon.svg")
@@ -196,12 +198,19 @@ class LeftToolbar(QWidget):
         self.btn_square_roi.setToolTip("ROI Carré : Statistiques d'intensité et aire")
         self.btn_square_roi.setCheckable(True)
 
+        self.btn_pipette = QPushButton("\uf1fb")
+        self.btn_pipette.setFont(icon_font)
+        self.btn_pipette.setFixedSize(button_size, button_size)
+        self.btn_pipette.setToolTip("Relever le niveau de gris (pipette)")
+        self.btn_pipette.setCheckable(True)
+
         self.grid_layout_measures.addWidget(self.btn_ruler, 0, 0)
         self.grid_layout_measures.addWidget(self.btn_angle, 0, 1)
         self.grid_layout_measures.addWidget(self.btn_height_comp, 0, 2)
         self.grid_layout_measures.addWidget(self.btn_area, 1, 0)
         self.grid_layout_measures.addWidget(self.btn_circle_roi, 1, 1)
         self.grid_layout_measures.addWidget(self.btn_square_roi, 1, 2)
+        self.grid_layout_measures.addWidget(self.btn_pipette, 2, 0)
 
         self.main_layout.addWidget(self.measures_container)
 
@@ -251,6 +260,7 @@ class LeftToolbar(QWidget):
         self.btn_circle_roi.clicked.connect(self.circle_roi_clicked.emit)
         self.btn_square_roi.clicked.connect(self.square_roi_clicked.emit)
         self.btn_area.clicked.connect(self.area_clicked.emit)
+        self.btn_pipette.clicked.connect(self.pipette_clicked.emit)
 
     def toggle_section(self, button, container, title_text):
         """Masque ou affiche le conteneur et force l'état Checked pour le QSS."""

@@ -10,6 +10,7 @@ if TYPE_CHECKING:
 class RulerController:
     def __init__(self, main_controller: MainController):
         self.main_controller = main_controller
+        self.image_before_pipette = None
 
     @property
     def view(self):
@@ -41,6 +42,9 @@ class RulerController:
             if getattr(self.view, "square_roi_active", False):
                 self.view.left_toolbar.btn_square_roi.setChecked(False)
                 self.view.square_roi_active = False
+            if getattr(self.view, "pipette_active", False):
+                self.view.left_toolbar.btn_pipette.setChecked(False)
+                self.handle_pipette_toggle(False)
 
             if hasattr(self.view.image_display, "ruler_overlay"):
                 self.view.image_display.ruler_overlay.clear()
@@ -77,6 +81,9 @@ class RulerController:
             if getattr(self.view, "square_roi_active", False):
                 self.view.left_toolbar.btn_square_roi.setChecked(False)
                 self.view.square_roi_active = False
+            if getattr(self.view, "pipette_active", False):
+                self.view.left_toolbar.btn_pipette.setChecked(False)
+                self.handle_pipette_toggle(False)
 
             if hasattr(self.view.image_display, "angle_overlay"):
                 self.view.image_display.angle_overlay.clear()
@@ -113,6 +120,9 @@ class RulerController:
             if getattr(self.view, "square_roi_active", False):
                 self.view.left_toolbar.btn_square_roi.setChecked(False)
                 self.view.square_roi_active = False
+            if getattr(self.view, "pipette_active", False):
+                self.view.left_toolbar.btn_pipette.setChecked(False)
+                self.handle_pipette_toggle(False)
 
             if hasattr(self.view.image_display, "height_comp_overlay"):
                 self.view.image_display.height_comp_overlay.clear()
@@ -149,6 +159,9 @@ class RulerController:
             if getattr(self.view, "square_roi_active", False):
                 self.view.left_toolbar.btn_square_roi.setChecked(False)
                 self.view.square_roi_active = False
+            if getattr(self.view, "pipette_active", False):
+                self.view.left_toolbar.btn_pipette.setChecked(False)
+                self.handle_pipette_toggle(False)
 
             if hasattr(self.view.image_display, "forms_overlay"):
                 self.view.image_display.forms_overlay.shape_type = "circle"
@@ -186,6 +199,9 @@ class RulerController:
             if getattr(self.view, "circle_roi_active", False):
                 self.view.left_toolbar.btn_circle_roi.setChecked(False)
                 self.view.circle_roi_active = False
+            if getattr(self.view, "pipette_active", False):
+                self.view.left_toolbar.btn_pipette.setChecked(False)
+                self.handle_pipette_toggle(False)
 
             if hasattr(self.view.image_display, "forms_overlay"):
                 self.view.image_display.forms_overlay.shape_type = "square"
@@ -200,6 +216,58 @@ class RulerController:
             print("Mode ROI Carré désactivé.")
 
         self.view.image_display.update()
+
+    def handle_pipette_toggle(self, checked: bool):
+        """Gère l'activation du mode pipette depuis la LeftToolbar."""
+        if self.view.current_pixmap is None:
+            self.view.left_toolbar.btn_pipette.setChecked(False)
+            return
+
+        if checked:
+            print("Mode Pipette de niveau de gris activé.")
+            # Désactiver les autres modes
+            if getattr(self.view, "ruler_active", False):
+                self.view.left_toolbar.btn_ruler.setChecked(False)
+                self.view.ruler_active = False
+            if getattr(self.view, "angle_active", False):
+                self.view.left_toolbar.btn_angle.setChecked(False)
+                self.view.angle_active = False
+            if getattr(self.view, "height_comp_active", False):
+                self.view.left_toolbar.btn_height_comp.setChecked(False)
+                self.view.height_comp_active = False
+            if getattr(self.view, "circle_roi_active", False):
+                self.view.left_toolbar.btn_circle_roi.setChecked(False)
+                self.view.circle_roi_active = False
+            if getattr(self.view, "square_roi_active", False):
+                self.view.left_toolbar.btn_square_roi.setChecked(False)
+                self.view.square_roi_active = False
+
+            if hasattr(self.view.image_display, "ruler_overlay"):
+                self.view.image_display.ruler_overlay.clear()
+            if hasattr(self.view.image_display, "angle_overlay"):
+                self.view.image_display.angle_overlay.clear()
+            if hasattr(self.view.image_display, "height_comp_overlay"):
+                self.view.image_display.height_comp_overlay.clear()
+            if hasattr(self.view.image_display, "forms_overlay"):
+                self.view.image_display.forms_overlay.clear()
+                
+            self.view.toggle_pipette_mode(True)
+            self.image_before_pipette = self.main_controller._current_array.copy() if self.main_controller._current_array is not None else None
+        else:
+            print("Mode Pipette de niveau de gris désactivé.")
+            self.view.toggle_pipette_mode(False)
+            if self.image_before_pipette is not None:
+                self.main_controller._current_array = self.image_before_pipette
+                self.main_controller._display_numpy_array(self.image_before_pipette)
+                self.image_before_pipette = None
+
+        self.view.image_display.update()
+
+    def deactivate_pipette(self):
+        """Désactive proprement la pipette sans restaurer l'image."""
+        self.image_before_pipette = None
+        self.view.left_toolbar.btn_pipette.setChecked(False)
+        self.view.toggle_pipette_mode(False)
 
     def handle_area_calculation(self):
         """Calcule et affiche l'aire des régions de la segmentation Watershed."""

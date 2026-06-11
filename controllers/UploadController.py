@@ -73,6 +73,8 @@ class UploadController:
             self.view.top_toolbar.btn_fft.setChecked(False)
             if hasattr(self.view, "fft_label"):
                 self.view.fft_label.hide()
+            if hasattr(self.main_controller, "ruler_ctrl"):
+                self.main_controller.ruler_ctrl.deactivate_pipette()
 
             # Conversion en numpy array normalisé [0,1] pour les traitements ultérieurs
             self._current_array = ImageConvertie(file_path).convertirEnNumpyArray()

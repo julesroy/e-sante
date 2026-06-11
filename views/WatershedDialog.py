@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QDoubleSp
 from PyQt6.QtCore import Qt
 
 class WatershedDialog(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, default_seuil=None):
         super().__init__(parent)
         self.setWindowTitle("Paramètres Watershed")
         self.setFixedSize(340, 300)
@@ -72,13 +72,20 @@ class WatershedDialog(QDialog):
 
         # 2. Seuillage
         self.otsu_check = QCheckBox("Seuillage Otsu automatique")
-        self.otsu_check.setChecked(True)
+        if default_seuil is not None:
+            self.otsu_check.setChecked(False)
+        else:
+            self.otsu_check.setChecked(True)
         form_layout.addRow(self.otsu_check)
 
         self.seuil_spin = QSpinBox()
         self.seuil_spin.setRange(1, 255)
-        self.seuil_spin.setValue(40)
-        self.seuil_spin.setEnabled(False)  # Désactivé par défaut car Otsu est coché
+        if default_seuil is not None:
+            self.seuil_spin.setValue(default_seuil)
+            self.seuil_spin.setEnabled(True)
+        else:
+            self.seuil_spin.setValue(40)
+            self.seuil_spin.setEnabled(False)  # Désactivé par défaut car Otsu est coché
         form_layout.addRow(QLabel("Seuil manuel :"), self.seuil_spin)
 
         # Connecter la checkbox de seuil Otsu pour activer/désactiver le seuil manuel
@@ -98,11 +105,6 @@ class WatershedDialog(QDialog):
         self.dist_spin.setValue(50)
         form_layout.addRow(QLabel("Min distance marqueurs :"), self.dist_spin)
 
-        # 5. Supprimer les bordures
-        self.border_check = QCheckBox("Supprimer les bordures")
-        self.border_check.setChecked(True)
-        form_layout.addRow(self.border_check)
-
         layout.addLayout(form_layout)
 
         # Bouton Appliquer
@@ -120,5 +122,4 @@ class WatershedDialog(QDialog):
         seuil = None if self.otsu_check.isChecked() else self.seuil_spin.value()
         kernel = self.kernel_spin.value()
         min_dist = self.dist_spin.value()
-        supprimer_bordures = self.border_check.isChecked()
-        return sigma, seuil, kernel, min_dist, supprimer_bordures
+        return sigma, seuil, kernel, min_dist

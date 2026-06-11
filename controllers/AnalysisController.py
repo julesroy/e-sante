@@ -221,10 +221,10 @@ class AnalysisController:
                 self.main_controller.model.watershed_labels = None
                 if hasattr(self.view, "watershed_area_label"):
                     self.view.watershed_area_label.hide()
-
-                dialog = WatershedDialog(self.view)
+                default_seuil = getattr(self.main_controller, "last_pipette_threshold", None)
+                dialog = WatershedDialog(self.view, default_seuil=default_seuil)
                 if dialog.exec():
-                    sigma, seuil_manuel, kernel_size, min_dist, supprimer_bordures = dialog.get_values()
+                    sigma, seuil_manuel, kernel_size, min_dist = dialog.get_values()
 
                     # 1. Filtrage Gaussien
                     image_filtree = FiltrageGaussien(sigma, self._current_array).filtrage()
@@ -235,14 +235,14 @@ class AnalysisController:
 
                     # 3. Masque des cavités internes
                     masque_rempli = ndimage.binary_fill_holes(masque > 0)
-                    masque_poumons = ((masque_rempli * 255).astype(np.uint8) > 0) & (masque == 0)
-                    masque_poumons = (masque_poumons * 255).astype(np.uint8) 
+                    masque_rempli = ((masque_rempli * 255).astype(np.uint8) > 0) & (masque == 0)
+                    masque_rempli = (masque_rempli * 255).astype(np.uint8) 
 
                     # 4. Nettoyage morphologique
-                    masque_propre = MorphologieMathematique(kernel_size).ouverture(masque_poumons)
+                    masque_propre = MorphologieMathematique(kernel_size).ouverture(masque_rempli)
 
                     # 5. Segmentation Watershed
-                    labels = SegmentationWatershed(min_dist, supprimer_bordures).segmenter(masque_propre)
+                    labels = SegmentationWatershed(min_dist).segmenter(masque_propre)
 
                     # 6. Rendu et superposition
                     image_affichage = cv2.normalize(labels, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U)
@@ -260,7 +260,7 @@ class AnalysisController:
                     self._display_numpy_array(overlay)
                     self.main_controller.model.watershed_labels = labels
 
-                    print(f"Segmentation Watershed appliquée (sigma={sigma}, seuil={seuil_choisi}, noyau={kernel_size}, dist={min_dist}, supprimer_bordures={supprimer_bordures})")
+                    print(f"Segmentation Watershed appliquée (sigma={sigma}, seuil={seuil_choisi}, noyau={kernel_size}, dist={min_dist})")
                 else:
                     # Si l'utilisateur annule le dialogue, désélectionner le bouton
                     self.view.left_toolbar.btn_watershed.setChecked(False)

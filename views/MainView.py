@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QScrollArea, QInputDialog, QSlider
 from PyQt6.QtCore import Qt, QPoint, QRect
-from PyQt6.QtGui import QPixmap, QGuiApplication, QIcon, QPainter, QCursor, QPen, QColor
+from PyQt6.QtGui import QPixmap, QGuiApplication, QIcon, QPainter, QCursor, QPen, QColor, QFont
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -23,6 +23,15 @@ class MedicalImageLabel(QLabel):
         self.angle_overlay = AngleOverlay(self)
         self.height_comp_overlay = HeightCompOverlay(self)
         self.forms_overlay = FormsOverlay(self)
+        self.pipette_pos = None
+        self.pipette_val = None
+
+    def leaveEvent(self, event):
+        super().leaveEvent(event)
+        if hasattr(self, "pipette_pos"):
+            self.pipette_pos = None
+            self.pipette_val = None
+            self.update()
 
     def mousePressEvent(self, event):
         """Intercepte les clics pour positionner les points de mesure si la règle, l'angle ou le comparateur de hauteur est actif."""
@@ -66,6 +75,43 @@ class MedicalImageLabel(QLabel):
                     self.forms_overlay.shape_type = shape
                     if self.forms_overlay.handle_mouse_press(event.position().toPoint(), img_rect):
                         self.update()
+            elif self.visualizer.main_view.pipette_active:
+                pixmap_displayed = self.pixmap()
+                if pixmap_displayed:
+                    margin_x = (self.width() - pixmap_displayed.width()) // 2
+                    margin_y = (self.height() - pixmap_displayed.height()) // 2
+                    local_pos = event.position().toPoint()
+                    img_x = local_pos.x() - margin_x
+                    img_y = local_pos.y() - margin_y
+
+                    if 0 <= img_x < pixmap_displayed.width() and 0 <= img_y < pixmap_displayed.height():
+                        controller = getattr(self.visualizer.main_view, "controller", None)
+                        if controller and controller._current_array is not None:
+                            # Lire à partir de l'image de base avant pipette
+                            base_array = None
+                            if hasattr(controller, "ruler_ctrl"):
+                                base_array = getattr(controller.ruler_ctrl, "image_before_pipette", None)
+                            if base_array is None:
+                                base_array = controller._current_array
+
+                            orig_h, orig_w = base_array.shape
+                            orig_x = int(img_x * (orig_w / pixmap_displayed.width()))
+                            orig_y = int(img_y * (orig_h / pixmap_displayed.height()))
+
+                            orig_x = max(0, min(orig_x, orig_w - 1))
+                            orig_y = max(0, min(orig_y, orig_h - 1))
+
+                            val_float = base_array[orig_y, orig_x]
+                            val_255 = int(val_float * 255)
+
+                            # Copier dans le presse-papiers
+                            from PyQt6.QtGui import QGuiApplication
+                            QGuiApplication.clipboard().setText(str(val_255))
+
+                            # Afficher confirmation
+                            from PyQt6.QtWidgets import QToolTip
+                            QToolTip.showText(event.globalPosition().toPoint(), f"Seuil de gris relevé : {val_255} (copié)", self)
+                            print(f"Pipette : seuil de gris sélectionné = {val_255}")
 
     def mouseMoveEvent(self, event):
         """Met à jour le tracé temporaire pour la règle ou l'angle."""
@@ -100,6 +146,41 @@ class MedicalImageLabel(QLabel):
                     self.forms_overlay.shape_type = shape
                     if self.forms_overlay.handle_mouse_move(event.position().toPoint(), img_rect):
                         self.update()
+            elif self.visualizer.main_view.pipette_active:
+                pixmap_displayed = self.pixmap()
+                if pixmap_displayed:
+                    margin_x = (self.width() - pixmap_displayed.width()) // 2
+                    margin_y = (self.height() - pixmap_displayed.height()) // 2
+                    local_pos = event.position().toPoint()
+                    img_x = local_pos.x() - margin_x
+                    img_y = local_pos.y() - margin_y
+
+                    if 0 <= img_x < pixmap_displayed.width() and 0 <= img_y < pixmap_displayed.height():
+                        controller = getattr(self.visualizer.main_view, "controller", None)
+                        if controller and controller._current_array is not None:
+                            base_array = None
+                            if hasattr(controller, "ruler_ctrl"):
+                                base_array = getattr(controller.ruler_ctrl, "image_before_pipette", None)
+                            if base_array is None:
+                                base_array = controller._current_array
+
+                            orig_h, orig_w = base_array.shape
+                            orig_x = int(img_x * (orig_w / pixmap_displayed.width()))
+                            orig_y = int(img_y * (orig_h / pixmap_displayed.height()))
+
+                            orig_x = max(0, min(orig_x, orig_w - 1))
+                            orig_y = max(0, min(orig_y, orig_h - 1))
+
+                            val_float = base_array[orig_y, orig_x]
+                            val_255 = int(val_float * 255)
+
+                            self.pipette_pos = local_pos
+                            self.pipette_val = val_255
+                            self.update()
+                    else:
+                        self.pipette_pos = None
+                        self.pipette_val = None
+                        self.update()
         event.ignore()
 
     def paintEvent(self, event):
@@ -132,6 +213,52 @@ class MedicalImageLabel(QLabel):
         # --- DESSIN DES FORMES D'ANALYSE (CERCLE / CARRE) AU PREMIER PLAN ---
         if self.visualizer and self.visualizer.main_view and (self.visualizer.main_view.circle_roi_active or self.visualizer.main_view.square_roi_active):
             self.forms_overlay.draw_measure(painter, img_rect)
+
+        # --- DESSIN DU RETICULE ET VALEUR PIPETTE AU PREMIER PLAN ---
+        if self.visualizer and self.visualizer.main_view and self.visualizer.main_view.pipette_active and getattr(self, "pipette_pos", None) is not None and getattr(self, "pipette_val", None) is not None:
+            painter.setClipping(False)
+            x, y = self.pipette_pos.x(), self.pipette_pos.y()
+            
+            # Reticule de ciblage
+            painter.setPen(QPen(QColor(255, 255, 255, 200), 1, Qt.PenStyle.SolidLine))
+            painter.drawEllipse(QPoint(x, y), 6, 6)
+            painter.drawLine(x - 10, y, x + 10, y)
+            painter.drawLine(x, y - 10, x, y + 10)
+            
+            # Ombre pour lisibilité
+            painter.setPen(QPen(QColor(0, 0, 0, 150), 1, Qt.PenStyle.DotLine))
+            painter.drawEllipse(QPoint(x, y), 7, 7)
+            
+            # Cartouche d'affichage textuel
+            text = f"Seuil (gris) : {self.pipette_val}"
+            font = QFont("Segoe UI", 10, QFont.Weight.Bold)
+            painter.setFont(font)
+            fm = painter.fontMetrics()
+            text_width = fm.horizontalAdvance(text)
+            text_height = fm.height()
+            
+            padding_x = 8
+            padding_y = 4
+            rect_width = text_width + 2 * padding_x
+            rect_height = text_height + 2 * padding_y
+            
+            offset_x = 12
+            offset_y = 12
+            rect_x = x + offset_x
+            rect_y = y + offset_y
+            
+            if rect_x + rect_width > self.width():
+                rect_x = x - rect_width - offset_x
+            if rect_y + rect_height > self.height():
+                rect_y = y - rect_height - offset_y
+                
+            rect = QRect(rect_x, rect_y, rect_width, rect_height)
+            painter.setBrush(QColor(20, 20, 20, 220))
+            painter.setPen(QPen(QColor(80, 80, 80, 200), 1))
+            painter.drawRoundedRect(rect, 4.0, 4.0)
+            
+            painter.setPen(QColor(240, 240, 240))
+            painter.drawText(rect, Qt.AlignmentFlag.AlignCenter, text)
 
         if not self.visualizer or not self.visualizer.main_view or not self.visualizer.main_view.slider_compare_active or not self.visualizer.main_view.current_pixmap:
             painter.end()
@@ -346,6 +473,7 @@ class MainView(QMainWindow):
         self.height_comp_active = False
         self.circle_roi_active = False
         self.square_roi_active = False
+        self.pipette_active = False
 
         # --- SLIDER DE CONTRASTE ---
         self.contrast_slider_active = False
@@ -567,6 +695,20 @@ class MainView(QMainWindow):
         else:
             print("Mode Règle de mesure désactivé.")
         self.image_display.update()
+
+    def toggle_pipette_mode(self, checked):
+        """Active ou désactive le mode pipette pour relever le niveau de gris"""
+        if self.current_pixmap is None:
+            self.left_toolbar.btn_pipette.setChecked(False)
+            return
+
+        self.pipette_active = checked
+        if checked:
+            print("Mode Pipette de niveau de gris activé.")
+            self.image_display.setCursor(Qt.CursorShape.CrossCursor)
+        else:
+            print("Mode Pipette de niveau de gris désactivé.")
+            self.image_display.setCursor(Qt.CursorShape.ArrowCursor)
 
     def _update_contrast_slider_position(self):
         """Repositionne le slider de contraste en bas à gauche de la scroll_area"""
