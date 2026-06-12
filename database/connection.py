@@ -51,7 +51,7 @@ def get_connection():
             dbname=dbname,
             user=user,
             password=password,
-            connect_timeout=10
+            connect_timeout=5
         )
 
         DB_MODE = "online"
