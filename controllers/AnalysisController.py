@@ -68,6 +68,10 @@ class AnalysisController:
                 return
 
             if checked:
+                # Désactiver l'histogramme si actif
+                self.view.top_toolbar.btn_histo.setChecked(False)
+                self.view.hide_histogram()
+
                 # Calcul du spectre fréquentiel via la TFD2D
                 tfd2d = TFD2D(self._current_array)
                 spectre = tfd2d.calculerTFDSpectre()
@@ -91,6 +95,35 @@ class AnalysisController:
 
         except Exception as e:
             self.view.top_toolbar.btn_fft.setChecked(False)
+            self.error_handler.handle_exception(e)
+            return
+
+    def handle_histogramme(self, checked: bool):
+        """
+        Affiche/masque le widget d'histogramme de l'image courante dans la zone d'overlay.
+        Nécessite qu'une image soit chargée (_current_array != None).
+        """
+        try:
+            if self._current_array is None:
+                self.error_handler.show_error("Erreur", "Aucune image chargée")
+                self.view.top_toolbar.btn_histo.setChecked(False)
+                return
+
+            if checked:
+                # Désactiver la FFT si active
+                self.view.top_toolbar.btn_fft.setChecked(False)
+                self.view.hide_fft_spectrum()
+
+                # Transmettre la matrice de l'image courante et le chemin du fichier d'origine
+                original_file_path = self.main_controller._last_file_path
+                self.view.display_histogram(self._current_array, original_file_path)
+                print("Histogramme affiché dans l'overlay.")
+            else:
+                self.view.hide_histogram()
+                print("Histogramme masqué.")
+
+        except Exception as e:
+            self.view.top_toolbar.btn_histo.setChecked(False)
             self.error_handler.handle_exception(e)
             return
 
@@ -221,6 +254,7 @@ class AnalysisController:
                 self.main_controller.model.watershed_labels = None
                 if hasattr(self.view, "watershed_area_label"):
                     self.view.watershed_area_label.hide()
+                self.view.left_toolbar.btn_area.setChecked(False)
                 default_seuil = getattr(self.main_controller, "last_pipette_threshold", None)
                 dialog = WatershedDialog(self.view, default_seuil=default_seuil)
                 if dialog.exec():

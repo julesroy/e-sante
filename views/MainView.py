@@ -15,6 +15,7 @@ from views.PatientInfoWidget import PatientInfoWidget
 from views.AngleOverlay import AngleOverlay
 from views.HeightCompOverlay import HeightCompOverlay
 from views.FormsOverlay import FormsOverlay
+from views.HistogramWidget import HistogramWidget
 
 # ===== IMPORT HELPER ======
 from utils.paths import resource_path
@@ -571,6 +572,10 @@ class MainView(QMainWindow):
         """)
         self.fft_label.hide()
 
+        # --- HISTOGRAMME (overlay en bas à droite, au-dessus de watershed_area_label / image_info_label) ---
+        self.histo_widget = HistogramWidget(self.scroll_area)
+        self.histo_widget.hide()
+
         content_layout.addWidget(self.scroll_area)
 
         content_layout.setStretchFactor(self.left_toolbar, 0)
@@ -735,23 +740,38 @@ class MainView(QMainWindow):
                 self.watershed_area_label.setFixedWidth(self.image_info_label.width())
                 self.watershed_area_label.adjustSize()
                 y_current = y_current - self.watershed_area_label.height() - 10
-                self.watershed_area_label.move(max(0, x), max(0, y_current))
-
-            # Positionner aussi self.fft_label encore au-dessus
+                   # Positionner aussi self.fft_label encore au-dessus
             if hasattr(self, "fft_label") and self.fft_label.isVisible():
                 if self.fft_label.pixmap():
                     # Forcer la largeur du pixmap à correspondre à la largeur de image_info_label
                     scaled = self.fft_label.pixmap().scaledToWidth(self.image_info_label.width(), Qt.TransformationMode.SmoothTransformation)
                     self.fft_label.setPixmap(scaled)
                 self.fft_label.adjustSize()
+                x_fft = self.scroll_area.width() - self.fft_label.width() - 15
                 y_fft = y_current - self.fft_label.height() - 10
-                self.fft_label.move(max(0, x), max(0, y_fft))
-        elif hasattr(self, "fft_label") and self.fft_label.isVisible():
-            # Si seul le spectre FFT est visible, le positionner tout en bas à droite
-            self.fft_label.adjustSize()
-            x = self.scroll_area.width() - self.fft_label.width() - 15
-            y = self.scroll_area.height() - self.fft_label.height() - 15
-            self.fft_label.move(max(0, x), max(0, y))
+                self.fft_label.move(max(0, x_fft), max(0, y_fft))
+                y_current = y_fft
+
+            # Positionner aussi self.histo_widget encore au-dessus
+            if hasattr(self, "histo_widget") and self.histo_widget.isVisible():
+                self.histo_widget.adjustSize()
+                x_histo = self.scroll_area.width() - self.histo_widget.width() - 15
+                y_histo = y_current - self.histo_widget.height() - 10
+                self.histo_widget.move(max(0, x_histo), max(0, y_histo))
+                y_current = y_histo
+        else:
+            y_current = self.scroll_area.height() - 15
+            if hasattr(self, "fft_label") and self.fft_label.isVisible():
+                self.fft_label.adjustSize()
+                x = self.scroll_area.width() - self.fft_label.width() - 15
+                y = y_current - self.fft_label.height()
+                self.fft_label.move(max(0, x), max(0, y))
+                y_current = y - 10
+            if hasattr(self, "histo_widget") and self.histo_widget.isVisible():
+                self.histo_widget.adjustSize()
+                x = self.scroll_area.width() - self.histo_widget.width() - 15
+                y = y_current - self.histo_widget.height()
+                self.histo_widget.move(max(0, x), max(0, y))
 
     def update_image_info(self, file_path: str | None, pixmap: QPixmap | None):
         """Met à jour et affiche le panneau d'information de l'image"""
@@ -762,6 +782,8 @@ class MainView(QMainWindow):
                 self.watershed_area_label.hide()
             if hasattr(self, "fft_label"):
                 self.fft_label.hide()
+            if hasattr(self, "histo_widget"):
+                self.histo_widget.hide()
             return
 
         dims = f"{pixmap.width()} x {pixmap.height()} px"
@@ -812,6 +834,19 @@ class MainView(QMainWindow):
         """Masque l'overlay du spectre FFT"""
         if hasattr(self, "fft_label"):
             self.fft_label.hide()
+            self._update_image_info_position()
+
+    def display_histogram(self, image_array, file_path):
+        """Met à jour et affiche l'histogramme dans son widget d'overlay"""
+        if hasattr(self, "histo_widget"):
+            self.histo_widget.set_image_data(image_array, file_path)
+            self.histo_widget.show()
+            self._update_image_info_position()
+
+    def hide_histogram(self):
+        """Masque l'overlay de l'histogramme"""
+        if hasattr(self, "histo_widget"):
+            self.histo_widget.hide()
             self._update_image_info_position()
 
     def resizeEvent(self, event):

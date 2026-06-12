@@ -52,6 +52,7 @@ class MainController:
         self.view.top_toolbar.upload_clicked.connect(self.upload_ctrl.handle_upload)
         self.view.left_toolbar.gaussian_clicked.connect(self.filter_ctrl.handle_gaussian)
         self.view.top_toolbar.fft_clicked.connect(self.analysis_ctrl.handle_tfd2d)
+        self.view.top_toolbar.histo_clicked.connect(self.analysis_ctrl.handle_histogramme)
         self.view.left_toolbar.reset_image_clicked.connect(self.handle_reset_image)
         self.view.left_toolbar.clahe_clicked.connect(self.analysis_ctrl.handle_clahe)
         self.view.left_toolbar.contrast_slider_clicked.connect(self.analysis_ctrl.handle_contrast_slider)
@@ -162,9 +163,13 @@ class MainController:
         self.model.watershed_labels = None
         if hasattr(self.view, "watershed_area_label"):
             self.view.watershed_area_label.hide()
+        self.view.left_toolbar.btn_area.setChecked(False)
         self.view.top_toolbar.btn_fft.setChecked(False)
         if hasattr(self.view, "fft_label"):
             self.view.fft_label.hide()
+        self.view.top_toolbar.btn_histo.setChecked(False)
+        if hasattr(self.view, "histo_widget"):
+            self.view.histo_widget.hide()
         self.view.left_toolbar.btn_contrast_slider.setChecked(False)
         self.view.left_toolbar.btn_contrast_slider.setChecked(True)
         self.ruler_ctrl.deactivate_pipette()

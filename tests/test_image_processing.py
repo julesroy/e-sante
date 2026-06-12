@@ -115,3 +115,18 @@ def test_area_calculation():
     assert np.sum(labels == 2) == 9
 
 
+def test_histogramme(dummy_image):
+    from models.Histogramme import Histogramme
+    histo = Histogramme(dummy_image)
+    plot_data, plot_range = histo.obtenir_donnees_tracage()
+
+    assert isinstance(plot_data, np.ndarray)
+    assert len(plot_data) == 128 * 128
+    assert plot_range == (0, 255)
+    assert histo.min_val >= 0.0
+    assert histo.max_val <= 255.0
+    assert isinstance(histo.mean_val, float)
+    assert isinstance(histo.std_val, float)
+
+
+

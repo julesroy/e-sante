@@ -269,13 +269,20 @@ class RulerController:
         self.view.left_toolbar.btn_pipette.setChecked(False)
         self.view.toggle_pipette_mode(False)
 
-    def handle_area_calculation(self):
-        """Calcule et affiche l'aire des régions de la segmentation Watershed."""
+    def handle_area_calculation(self, checked: bool):
+        """Calcule et affiche ou masque l'aire des régions de la segmentation Watershed."""
         try:
+            if not checked:
+                if hasattr(self.view, "watershed_area_label"):
+                    self.view.watershed_area_label.hide()
+                    self.view._update_image_info_position()
+                return
+
             model = self.main_controller.model
             # Vérifier si le watershed a été appliqué avant
             if not hasattr(model, "watershed_labels") or model.watershed_labels is None:
                 self.error_controller.show_error("Erreur", "Veuillez appliquer la segmentation Watershed avant de calculer les aires.")
+                self.view.left_toolbar.btn_area.setChecked(False)
                 return
 
             import numpy as np

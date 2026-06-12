@@ -70,9 +70,13 @@ class UploadController:
             self.main_controller.model.watershed_labels = None
             if hasattr(self.view, "watershed_area_label"):
                 self.view.watershed_area_label.hide()
+            self.view.left_toolbar.btn_area.setChecked(False)
             self.view.top_toolbar.btn_fft.setChecked(False)
             if hasattr(self.view, "fft_label"):
                 self.view.fft_label.hide()
+            self.view.top_toolbar.btn_histo.setChecked(False)
+            if hasattr(self.view, "histo_widget"):
+                self.view.histo_widget.hide()
             if hasattr(self.main_controller, "ruler_ctrl"):
                 self.main_controller.ruler_ctrl.deactivate_pipette()
 

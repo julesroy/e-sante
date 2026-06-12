@@ -51,7 +51,7 @@ class LeftToolbar(QWidget):
     height_comp_clicked = pyqtSignal(bool)
     circle_roi_clicked = pyqtSignal(bool)
     square_roi_clicked = pyqtSignal(bool)
-    area_clicked = pyqtSignal()
+    area_clicked = pyqtSignal(bool)
     pipette_clicked = pyqtSignal(bool)
 
     def __init__(self, parent=None):
@@ -188,6 +188,7 @@ class LeftToolbar(QWidget):
         self.btn_area.setFont(icon_font)
         self.btn_area.setFixedSize(button_size, button_size)
         self.btn_area.setToolTip("Calculer les aires du Watershed")
+        self.btn_area.setCheckable(True)
 
         self.btn_circle_roi = QPushButton("\uf111")
         self.btn_circle_roi.setFont(icon_font)
