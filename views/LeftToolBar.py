@@ -4,6 +4,9 @@ from PyQt6.QtGui import QFont, QIcon
 import os
 from views.PatientManagerWidget import PatientManagerWidget
 
+# ===== IMPORT HELPER ======
+from utils.paths import resource_path
+
 
 class SectionHeaderButton(QPushButton):
     def __init__(self, title, is_expanded=False, parent=None):
@@ -158,7 +161,7 @@ class LeftToolbar(QWidget):
         self.grid_layout_measures.setRowMinimumHeight(2, button_size)
 
         self.btn_ruler = QPushButton()
-        ruler_icon_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "icons", "ruler-icon.svg")
+        ruler_icon_path = resource_path(os.path.join("assets", "icons", "ruler-icon.svg"))
         if os.path.exists(ruler_icon_path):
             self.btn_ruler.setIcon(QIcon(ruler_icon_path))
             self.btn_ruler.setIconSize(QSize(18, 18))
@@ -167,7 +170,7 @@ class LeftToolbar(QWidget):
         self.btn_ruler.setCheckable(True)
 
         self.btn_angle = QPushButton()
-        icon_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "icons", "angle-icon.svg")
+        icon_path = resource_path(os.path.join("assets", "icons", "angle-icon.svg"))
         if os.path.exists(icon_path):
             self.btn_angle.setIcon(QIcon(icon_path))
             self.btn_angle.setIconSize(QSize(18, 18))

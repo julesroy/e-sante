@@ -6,9 +6,10 @@
 
 import os
 from dotenv import load_dotenv
+from utils.paths import find_env_path
 
 #Chargement des variables d'environnement (.env)
-load_dotenv()
+load_dotenv(find_env_path())
 
 #Mode global : "online" si connecté, "offline" sinon
 #Initialisé à "offline", mis à jour par get_connection()

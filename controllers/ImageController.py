@@ -3,8 +3,6 @@ from __future__ import annotations
 import os
 import tempfile
 
-from models.ImageConvertie import ImageConvertie
-
 # ===== IMPORTS UNIQUEMENT POUR PYLANCE (jamais exécutés) =====
 from typing import TYPE_CHECKING
 
@@ -12,6 +10,9 @@ if TYPE_CHECKING:
     import numpy as np
     from views.MainView import MainView
     from controllers.MainController import MainController
+
+# ===== IMPORTS DES MODÈLES =====
+from models.ImageConvertie import ImageConvertie
 
 # ===== IMPORTS PYQT6 =====
 from PyQt6.QtWidgets import QFileDialog

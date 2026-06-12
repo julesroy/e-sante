@@ -3,8 +3,10 @@ from PyQt6.QtCore import Qt, QPoint, QRect
 from PyQt6.QtGui import QPixmap, QGuiApplication, QIcon, QPainter, QCursor, QPen, QColor, QFont
 from typing import TYPE_CHECKING
 
+
 if TYPE_CHECKING:
     from controllers.MainController import MainController
+
 import os
 from views.LeftToolBar import LeftToolbar
 from views.TopToolbar import TopToolbar
@@ -14,6 +16,8 @@ from views.AngleOverlay import AngleOverlay
 from views.HeightCompOverlay import HeightCompOverlay
 from views.FormsOverlay import FormsOverlay
 
+# ===== IMPORT HELPER ======
+from utils.paths import resource_path
 
 class MedicalImageLabel(QLabel):
     def __init__(self, text, parent=None):
@@ -454,8 +458,7 @@ class MainView(QMainWindow):
         self.setWindowTitle("PixelMed")
         self.resize(1024, 680)
 
-        base_dir = os.path.dirname(os.path.dirname(__file__))
-        icon_path = os.path.join(base_dir, "assets", "icons", "app_icon.png")
+        icon_path = resource_path(os.path.join("assets", "icons", "app_icon.png"))
         if os.path.exists(icon_path):
             self.setWindowIcon(QIcon(icon_path))
 

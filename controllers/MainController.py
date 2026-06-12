@@ -2,6 +2,9 @@
 from __future__ import annotations
 import numpy as np
 
+# ===== IMPORT HELPER ======
+from utils.paths import resource_path
+
 # ===== IMPORTS UNIQUEMENT POUR PYLANCE (jamais exécutés) =====
 from typing import TYPE_CHECKING
 
@@ -170,8 +173,7 @@ class MainController:
     def handle_open_help(self):
         import webbrowser
         import os
-        base_dir = os.path.dirname(os.path.dirname(__file__))
-        help_path = os.path.join(base_dir, "manuel", "manuel.html")
+        help_path = resource_path(os.path.join("manuel", "manuel.html"))
         if os.path.exists(help_path):
             webbrowser.open(f"file://{help_path}")
         else:
