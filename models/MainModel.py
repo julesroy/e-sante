@@ -10,6 +10,7 @@ class MainModel:
     def __init__(self):
         # État applicatif (Session)
         self.current_array: np.ndarray | None = None
+        self.original_array: np.ndarray | None = None
         self.original_pixmap: QPixmap | None = None
         self.contrast_base_array: np.ndarray | None = None
         self.current_patient_id: int | None = None

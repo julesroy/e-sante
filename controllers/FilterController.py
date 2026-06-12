@@ -45,7 +45,7 @@ class FilterController:
     def _display_numpy_array(self, array):
         self.main_controller._display_numpy_array(array)
 
-    def handle_gaussian(self):
+    def handle_gaussian(self, checked: bool):
         """
         Applique le filtre gaussien sur l'image courante
         et affiche le résultat dans la View.
@@ -54,21 +54,29 @@ class FilterController:
         try:
             if self._current_array is None:
                 self.error_handler.show_error("Erreur", "Aucune image chargée")
+                self.view.left_toolbar.btn_gaussian.setChecked(False)
                 return
 
-            dialog = GaussianDialog(self.view, default_sigma=self.last_gaussian_sigma)
-            if dialog.exec():
-                sigma = dialog.get_value()
-                self.last_gaussian_sigma = sigma
-                filtre = FiltrageGaussien(sigma, self._current_array)
-                result_array = filtre.filtrage()
-                self._display_numpy_array(result_array)
+            if checked:
+                self.main_controller.handle_reset_image(keep_button=self.view.left_toolbar.btn_gaussian)
+                dialog = GaussianDialog(self.view, default_sigma=self.last_gaussian_sigma)
+                if dialog.exec():
+                    sigma = dialog.get_value()
+                    self.last_gaussian_sigma = sigma
+                    filtre = FiltrageGaussien(sigma, self._current_array)
+                    result_array = filtre.filtrage()
+                    self._display_numpy_array(result_array)
+                else:
+                    self.main_controller.handle_reset_image()
+            else:
+                self.main_controller.handle_reset_image()
 
         except Exception as e:
+            self.view.left_toolbar.btn_gaussian.setChecked(False)
             self.error_handler.handle_exception(e)
             return
 
-    def handle_sobel(self):
+    def handle_sobel(self, checked: bool):
         """
         Applique le filtre de Sobel sur l'image courante
         et affiche le résultat dans la View.
@@ -77,21 +85,27 @@ class FilterController:
         try:
             if self._current_array is None:
                 self.error_handler.show_error("Erreur", "Aucune image chargée")
+                self.view.left_toolbar.btn_sobel.setChecked(False)
                 return
 
-            # on applique le filtre
-            filtreGauss = FiltrageGaussien(2, self._current_array)
-            image_gaussienne = filtreGauss.filtrage()
-            filtre = FiltrageSobel(image_gaussienne)
-            result_array = filtre.filtrage()  # uint8 [0,255]
+            if checked:
+                self.main_controller.handle_reset_image(keep_button=self.view.left_toolbar.btn_sobel)
+                # on applique le filtre
+                filtreGauss = FiltrageGaussien(2, self._current_array)
+                image_gaussienne = filtreGauss.filtrage()
+                filtre = FiltrageSobel(image_gaussienne)
+                result_array = filtre.filtrage()  # uint8 [0,255]
 
-            self._display_numpy_array(result_array)
+                self._display_numpy_array(result_array)
+            else:
+                self.main_controller.handle_reset_image()
 
         except Exception as e:
+            self.view.left_toolbar.btn_sobel.setChecked(False)
             self.error_handler.handle_exception(e)
             return
 
-    def handle_passe_bas(self):
+    def handle_passe_bas(self, checked: bool):
         """
         Ouvre simplement la popup et permet de choisir une fréquence
         via le slider
@@ -99,35 +113,43 @@ class FilterController:
         try:
             if self._current_array is None:
                 self.error_handler.show_error("Erreur", "Aucune image chargée")
+                self.view.left_toolbar.btn_low_pass.setChecked(False)
                 return
 
-            dialog = FilterDialog(self.view, default_val=self.last_passe_bas_cutoff)
-            dialog.setWindowTitle("Filtre Passe-Bas")
+            if checked:
+                self.main_controller.handle_reset_image(keep_button=self.view.left_toolbar.btn_low_pass)
+                dialog = FilterDialog(self.view, default_val=self.last_passe_bas_cutoff)
+                dialog.setWindowTitle("Filtre Passe-Bas")
 
-            if dialog.exec():
-                rayon = dialog.slider.value()
-                self.last_passe_bas_cutoff = rayon
+                if dialog.exec():
+                    rayon = dialog.slider.value()
+                    self.last_passe_bas_cutoff = rayon
 
-                # Calcul TFD + application du masque passe-bas
-                tfd = TFD2D(self._current_array)
-                tfd.calculerTFDSpectre()
-                tfd.filtragePasseBas(rayon)
+                    # Calcul TFD + application du masque passe-bas
+                    tfd = TFD2D(self._current_array)
+                    tfd.calculerTFDSpectre()
+                    tfd.filtragePasseBas(rayon)
 
-                # Reconstruction de l'image depuis la TFD filtree
-                image_reconstruite = tfd.calculerTFDInverse()
+                    # Reconstruction de l'image depuis la TFD filtree
+                    image_reconstruite = tfd.calculerTFDInverse()
 
-                # Normalisation [0,1] avant affichage
-                max_val = image_reconstruite.max()
-                result = (image_reconstruite / max_val).astype(np.float32) if max_val > 0 else image_reconstruite
-                self._display_numpy_array(result)
+                    # Normalisation [0,1] avant affichage
+                    max_val = image_reconstruite.max()
+                    result = (image_reconstruite / max_val).astype(np.float32) if max_val > 0 else image_reconstruite
+                    self._display_numpy_array(result)
 
-                print(f"Popup Passe-Bas fermée. Fréquence sélectionnée : {rayon}")
+                    print(f"Popup Passe-Bas fermée. Fréquence sélectionnée : {rayon}")
+                else:
+                    self.main_controller.handle_reset_image()
+            else:
+                self.main_controller.handle_reset_image()
 
         except Exception as e:
+            self.view.left_toolbar.btn_low_pass.setChecked(False)
             self.error_handler.handle_exception(e)
             return
 
-    def handle_passe_haut(self):
+    def handle_passe_haut(self, checked: bool):
         """
         Ouvre la popup pour le filtre Passe-Haut et permet de choisir
         une fréquence via le slider
@@ -135,30 +157,38 @@ class FilterController:
         try:
             if self._current_array is None:
                 self.error_handler.show_error("Erreur", "Aucune image chargée")
+                self.view.left_toolbar.btn_high_pass.setChecked(False)
                 return
 
-            dialog = FilterDialog(self.view, default_val=self.last_passe_haut_cutoff)
-            dialog.setWindowTitle("Filtre Passe-Haut")
+            if checked:
+                self.main_controller.handle_reset_image(keep_button=self.view.left_toolbar.btn_high_pass)
+                dialog = FilterDialog(self.view, default_val=self.last_passe_haut_cutoff)
+                dialog.setWindowTitle("Filtre Passe-Haut")
 
-            if dialog.exec():
-                rayon = dialog.slider.value()
-                self.last_passe_haut_cutoff = rayon
+                if dialog.exec():
+                    rayon = dialog.slider.value()
+                    self.last_passe_haut_cutoff = rayon
 
-                # Calcul TFD + application du masque passe-haut
-                tfd = TFD2D(self._current_array)
-                tfd.calculerTFDSpectre()
-                tfd.filtragePasseHaut(rayon)
+                    # Calcul TFD + application du masque passe-haut
+                    tfd = TFD2D(self._current_array)
+                    tfd.calculerTFDSpectre()
+                    tfd.filtragePasseHaut(rayon)
 
-                # Reconstruction de l'image depuis la TFD filtrée
-                image_reconstruite = tfd.calculerTFDInverse()
+                    # Reconstruction de l'image depuis la TFD filtrée
+                    image_reconstruite = tfd.calculerTFDInverse()
 
-                # Normalisation [0,1] avant affichage
-                max_val = image_reconstruite.max()
-                result = (image_reconstruite / max_val).astype(np.float32) if max_val > 0 else image_reconstruite
-                self._display_numpy_array(result)
+                    # Normalisation [0,1] avant affichage
+                    max_val = image_reconstruite.max()
+                    result = (image_reconstruite / max_val).astype(np.float32) if max_val > 0 else image_reconstruite
+                    self._display_numpy_array(result)
 
-                print(f"Popup Passe-Haut fermée. Fréquence sélectionnée : {rayon}")
+                    print(f"Popup Passe-Haut fermée. Fréquence sélectionnée : {rayon}")
+                else:
+                    self.main_controller.handle_reset_image()
+            else:
+                self.main_controller.handle_reset_image()
 
         except Exception as e:
+            self.view.left_toolbar.btn_high_pass.setChecked(False)
             self.error_handler.handle_exception(e)
             return

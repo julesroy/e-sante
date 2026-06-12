@@ -82,6 +82,7 @@ class UploadController:
 
             # Conversion en numpy array normalisé [0,1] pour les traitements ultérieurs
             self._current_array = ImageConvertie(file_path).convertirEnNumpyArray()
+            self.main_controller.model.original_array = self._current_array.copy() if self._current_array is not None else None
 
             # Pour les DICOM, afficher via numpy array plutôt que QPixmap directement
             if file_path.lower().endswith(".dcm"):

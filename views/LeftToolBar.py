@@ -39,11 +39,11 @@ class SectionHeaderButton(QPushButton):
 
 class LeftToolbar(QWidget):
     reset_image_clicked = pyqtSignal()
-    gaussian_clicked = pyqtSignal()
-    sobel_clicked = pyqtSignal()
-    low_pass_clicked = pyqtSignal()
-    high_pass_clicked = pyqtSignal()
-    clahe_clicked = pyqtSignal()
+    gaussian_clicked = pyqtSignal(bool)
+    sobel_clicked = pyqtSignal(bool)
+    low_pass_clicked = pyqtSignal(bool)
+    high_pass_clicked = pyqtSignal(bool)
+    clahe_clicked = pyqtSignal(bool)
     contrast_slider_clicked = pyqtSignal(bool)
     watershed_clicked = pyqtSignal(bool)
     ruler_clicked = pyqtSignal(bool)
@@ -234,15 +234,13 @@ class LeftToolbar(QWidget):
         self.main_layout.addWidget(self.folders_container)
 
         # === CONFIG BTN GRILLE ===
-        self.filter_buttons = [self.btn_origin, self.btn_gaussian, self.btn_low_pass, self.btn_high_pass, self.btn_sobel, self.btn_clahe]
+        self.filter_buttons = [self.btn_gaussian, self.btn_low_pass, self.btn_high_pass, self.btn_sobel, self.btn_clahe]
         for btn in self.filter_buttons:
             btn.setCheckable(True)
-            btn.setAutoExclusive(True)
 
         self.contrast_buttons = [self.btn_clahe, self.btn_watershed, self.btn_contrast_slider]
         for btn in self.contrast_buttons:
             btn.setCheckable(True)
-            btn.setAutoExclusive(True)
 
         # === CONNEXIONS ===
         self.section_filters.clicked.connect(lambda: self.toggle_section(self.section_filters, self.filters_container, "Filtres"))
@@ -251,13 +249,13 @@ class LeftToolbar(QWidget):
         self.section_folders.clicked.connect(lambda: self.toggle_section(self.section_folders, self.folders_container, "Dossiers"))
 
         # === CONNEXIONS SIGNAUX ===
-        self.btn_origin.clicked.connect(self.reset_image_clicked.emit)
-        self.btn_gaussian.clicked.connect(self.gaussian_clicked.emit)
-        self.btn_low_pass.clicked.connect(self.low_pass_clicked.emit)
-        self.btn_high_pass.clicked.connect(self.high_pass_clicked.emit)
-        self.btn_sobel.clicked.connect(self.sobel_clicked.emit)
-        self.btn_clahe.clicked.connect(self.clahe_clicked.emit)
-        self.btn_watershed.clicked.connect(self.watershed_clicked.emit)
+        self.btn_origin.clicked.connect(self._handle_origin_clicked)
+        self.btn_gaussian.clicked.connect(lambda: self._on_button_clicked(self.btn_gaussian, self.gaussian_clicked))
+        self.btn_low_pass.clicked.connect(lambda: self._on_button_clicked(self.btn_low_pass, self.low_pass_clicked))
+        self.btn_high_pass.clicked.connect(lambda: self._on_button_clicked(self.btn_high_pass, self.high_pass_clicked))
+        self.btn_sobel.clicked.connect(lambda: self._on_button_clicked(self.btn_sobel, self.sobel_clicked))
+        self.btn_clahe.clicked.connect(lambda: self._on_button_clicked(self.btn_clahe, self.clahe_clicked))
+        self.btn_watershed.clicked.connect(lambda: self._on_button_clicked(self.btn_watershed, self.watershed_clicked))
         self.btn_ruler.clicked.connect(self.ruler_clicked.emit)
         self.btn_angle.clicked.connect(self.angle_clicked.emit)
         self.btn_height_comp.clicked.connect(self.height_comp_clicked.emit)
@@ -273,3 +271,28 @@ class LeftToolbar(QWidget):
         container.setVisible(new_visibility)
         button.setChecked(new_visibility)
         button.set_expanded(new_visibility)
+
+    def uncheck_all_processing_buttons(self, except_btn=None):
+        """Désélectionne tous les boutons de traitement/contraste sauf celui spécifié."""
+        buttons = [
+            self.btn_gaussian,
+            self.btn_low_pass,
+            self.btn_high_pass,
+            self.btn_sobel,
+            self.btn_clahe,
+            self.btn_watershed,
+            self.btn_contrast_slider
+        ]
+        for btn in buttons:
+            if btn != except_btn:
+                btn.setChecked(False)
+
+    def _on_button_clicked(self, button, signal):
+        checked = button.isChecked()
+        if checked:
+            self.uncheck_all_processing_buttons(except_btn=button)
+        signal.emit(checked)
+
+    def _handle_origin_clicked(self):
+        self.uncheck_all_processing_buttons()
+        self.reset_image_clicked.emit()

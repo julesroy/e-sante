@@ -135,7 +135,7 @@ class AnalysisController:
             self.error_handler.handle_exception(e)
             return
 
-    def handle_clahe(self):
+    def handle_clahe(self, checked: bool):
         """
         Applique le CLAHE (Contrast Limited Adaptive Histogram Equalization)
         sur l'image courante et affiche le résultat dans la View.
@@ -144,26 +144,34 @@ class AnalysisController:
         try:
             if self._current_array is None:
                 self.error_handler.show_error("Erreur", "Aucune image chargée")
+                self.view.left_toolbar.btn_clahe.setChecked(False)
                 return
 
-            dialog = ClaheDialog(
-                self.view,
-                default_clip_limit=self.last_clahe_clip_limit,
-                default_grid_size=self.last_clahe_grid_size
-            )
-            if dialog.exec():
-                clip_limit, tile_grid = dialog.get_values()
-                self.last_clahe_clip_limit = clip_limit
-                self.last_clahe_grid_size = tile_grid[0]
+            if checked:
+                self.main_controller.handle_reset_image(keep_button=self.view.left_toolbar.btn_clahe)
+                dialog = ClaheDialog(
+                    self.view,
+                    default_clip_limit=self.last_clahe_clip_limit,
+                    default_grid_size=self.last_clahe_grid_size
+                )
+                if dialog.exec():
+                    clip_limit, tile_grid = dialog.get_values()
+                    self.last_clahe_clip_limit = clip_limit
+                    self.last_clahe_grid_size = tile_grid[0]
 
-                # Application du CLAHE avec les paramètres de la popup
-                clahe = CLAHE(clip_limit, tile_grid, self._current_array)
-                result = clahe.appliquer()
+                    # Application du CLAHE avec les paramètres de la popup
+                    clahe = CLAHE(clip_limit, tile_grid, self._current_array)
+                    result = clahe.appliquer()
 
-                # Affichage du résultat
-                self._display_numpy_array(result)
+                    # Affichage du résultat
+                    self._display_numpy_array(result)
+                else:
+                    self.main_controller.handle_reset_image()
+            else:
+                self.main_controller.handle_reset_image()
 
         except Exception as e:
+            self.view.left_toolbar.btn_clahe.setChecked(False)
             self.error_handler.handle_exception(e)
             return
 
@@ -178,9 +186,11 @@ class AnalysisController:
         try:
             if self._current_array is None:
                 self.error_handler.show_error("Erreur", "Aucune image chargée")
+                self.view.left_toolbar.btn_contrast_slider.setChecked(False)
                 return
 
             if checked:
+                self.main_controller.handle_reset_image(keep_button=self.view.left_toolbar.btn_contrast_slider)
                 # Sauvegarder l'image courante comme référence pour les calculs de contraste
                 self._contrast_base_array = self._current_array.copy()
                 print("Slider de contraste activé - Image de base sauvegardée")
@@ -188,8 +198,10 @@ class AnalysisController:
                 # Réinitialiser
                 self._contrast_base_array = None
                 print("Slider de contraste désactivé")
+                self.main_controller.handle_reset_image()
 
         except Exception as e:
+            self.view.left_toolbar.btn_contrast_slider.setChecked(False)
             self.error_handler.handle_exception(e)
             return
 
@@ -263,6 +275,7 @@ class AnalysisController:
                 self.view.left_toolbar.btn_watershed.setChecked(False)
                 return
             if checked:
+                self.main_controller.handle_reset_image(keep_button=self.view.left_toolbar.btn_watershed)
                 self.main_controller.model.watershed_labels = None
                 if hasattr(self.view, "watershed_area_label"):
                     self.view.watershed_area_label.hide()
@@ -328,8 +341,9 @@ class AnalysisController:
 
                     print(f"Segmentation Watershed appliquée (sigma={sigma}, seuil={seuil_choisi}, noyau={kernel_size}, dist={min_dist})")
                 else:
-                    # Si l'utilisateur annule le dialogue, désélectionner le bouton
-                    self.view.left_toolbar.btn_watershed.setChecked(False)
+                    self.main_controller.handle_reset_image()
+            else:
+                self.main_controller.handle_reset_image()
 
         except Exception as e:
             self.view.left_toolbar.btn_watershed.setChecked(False)

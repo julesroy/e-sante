@@ -156,10 +156,15 @@ class MainController:
         self.view.current_pixmap = pixmap
         self.view.update_image_render()
 
-    def handle_reset_image(self):
+    def handle_reset_image(self, keep_button=None):
         if self._original_pixmap is None: return
         print("Réaffichage de l'image d'origine...")
         self.view.current_pixmap = self._original_pixmap.copy()
+        if self.model.original_array is not None:
+            self._current_array = self.model.original_array.copy()
+        else:
+            self._current_array = None
+
         self._contrast_base_array = None
         self.model.watershed_labels = None
         if hasattr(self.view, "watershed_area_label"):
@@ -171,8 +176,8 @@ class MainController:
         self.view.top_toolbar.btn_histo.setChecked(False)
         if hasattr(self.view, "histo_widget"):
             self.view.histo_widget.hide()
-        self.view.left_toolbar.btn_contrast_slider.setChecked(False)
-        self.view.left_toolbar.btn_contrast_slider.setChecked(True)
+        
+        self.view.left_toolbar.uncheck_all_processing_buttons(except_btn=keep_button)
         self.ruler_ctrl.deactivate_pipette()
         self.view.update_image_render()
 
