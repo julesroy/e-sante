@@ -109,6 +109,9 @@ class MedicalImageLabel(QLabel):
                             val_float = base_array[orig_y, orig_x]
                             val_255 = int(val_float * 255)
 
+                            if controller:
+                                controller.last_pipette_threshold = val_255
+
                             # Copier dans le presse-papiers
                             from PyQt6.QtGui import QGuiApplication
                             QGuiApplication.clipboard().setText(str(val_255))

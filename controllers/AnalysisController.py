@@ -27,6 +27,14 @@ from views.WatershedDialog import WatershedDialog
 class AnalysisController:
     def __init__(self, main_controller: MainController):
         self.main_controller = main_controller
+        self.last_clahe_clip_limit = 5.0
+        self.last_clahe_grid_size = 16
+        self.last_watershed_sigma = 2.0
+        self.last_watershed_otsu = True
+        self.last_watershed_seuil = 40
+        self.last_watershed_kernel = 3
+        self.last_watershed_min_dist = 50
+        self.last_seuillage_val = 0
 
     @property
     def view(self):
@@ -138,9 +146,15 @@ class AnalysisController:
                 self.error_handler.show_error("Erreur", "Aucune image chargée")
                 return
 
-            dialog = ClaheDialog(self.view)
+            dialog = ClaheDialog(
+                self.view,
+                default_clip_limit=self.last_clahe_clip_limit,
+                default_grid_size=self.last_clahe_grid_size
+            )
             if dialog.exec():
                 clip_limit, tile_grid = dialog.get_values()
+                self.last_clahe_clip_limit = clip_limit
+                self.last_clahe_grid_size = tile_grid[0]
 
                 # Application du CLAHE avec les paramètres de la popup
                 clahe = CLAHE(clip_limit, tile_grid, self._current_array)
@@ -215,14 +229,12 @@ class AnalysisController:
                 self.error_handler.show_error("Erreur", "Aucune image chargee")
                 return
 
-            dialog = FilterDialog(self.view)
+            dialog = FilterDialog(self.view, default_val=self.last_seuillage_val, label_prefix="Seuil : ", min_val=0, max_val=255)
             dialog.setWindowTitle("Seuillage (0 = Otsu auto)")
-            dialog.slider.setMinimum(0)
-            dialog.slider.setMaximum(255)
-            dialog.slider.setValue(0)  # Otsu par defaut
 
             if dialog.exec():
                 valeur = dialog.slider.value()
+                self.last_seuillage_val = valeur
 
                 # 0 -> Otsu automatique, sinon seuil automatique
                 seuil_manuel = None if valeur == 0 else valeur
@@ -255,10 +267,30 @@ class AnalysisController:
                 if hasattr(self.view, "watershed_area_label"):
                     self.view.watershed_area_label.hide()
                 self.view.left_toolbar.btn_area.setChecked(False)
-                default_seuil = getattr(self.main_controller, "last_pipette_threshold", None)
-                dialog = WatershedDialog(self.view, default_seuil=default_seuil)
+                pipette_seuil = getattr(self.main_controller, "last_pipette_threshold", None)
+                if pipette_seuil is not None:
+                    seuil_otsu = False
+                    seuil = pipette_seuil
+                    self.main_controller.last_pipette_threshold = None
+                else:
+                    seuil_otsu = self.last_watershed_otsu
+                    seuil = self.last_watershed_seuil
+
+                dialog = WatershedDialog(
+                    self.view,
+                    default_sigma=self.last_watershed_sigma,
+                    default_seuil_otsu=seuil_otsu,
+                    default_seuil=seuil,
+                    default_kernel=self.last_watershed_kernel,
+                    default_min_dist=self.last_watershed_min_dist
+                )
                 if dialog.exec():
                     sigma, seuil_manuel, kernel_size, min_dist = dialog.get_values()
+                    self.last_watershed_sigma = sigma
+                    self.last_watershed_otsu = (seuil_manuel is None)
+                    self.last_watershed_seuil = seuil_manuel if seuil_manuel is not None else 40
+                    self.last_watershed_kernel = kernel_size
+                    self.last_watershed_min_dist = min_dist
 
                     # 1. Filtrage Gaussien
                     image_filtree = FiltrageGaussien(sigma, self._current_array).filtrage()

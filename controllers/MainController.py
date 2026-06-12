@@ -32,6 +32,7 @@ class MainController:
         self.model = model
         self.view: MainView = view
         self.error_handler = ErrorController(parent_window=self.view)
+        self.last_pipette_threshold = None
 
         # Instanciation des sous-contrôleurs par composition
         self.upload_ctrl = UploadController(self)

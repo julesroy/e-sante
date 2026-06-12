@@ -22,6 +22,9 @@ from views.GaussianDialog import GaussianDialog
 class FilterController:
     def __init__(self, main_controller: MainController):
         self.main_controller = main_controller
+        self.last_gaussian_sigma = 1.0
+        self.last_passe_bas_cutoff = 30
+        self.last_passe_haut_cutoff = 30
 
     @property
     def view(self):
@@ -53,9 +56,10 @@ class FilterController:
                 self.error_handler.show_error("Erreur", "Aucune image chargée")
                 return
 
-            dialog = GaussianDialog(self.view)
+            dialog = GaussianDialog(self.view, default_sigma=self.last_gaussian_sigma)
             if dialog.exec():
                 sigma = dialog.get_value()
+                self.last_gaussian_sigma = sigma
                 filtre = FiltrageGaussien(sigma, self._current_array)
                 result_array = filtre.filtrage()
                 self._display_numpy_array(result_array)
@@ -97,11 +101,12 @@ class FilterController:
                 self.error_handler.show_error("Erreur", "Aucune image chargée")
                 return
 
-            dialog = FilterDialog(self.view)
+            dialog = FilterDialog(self.view, default_val=self.last_passe_bas_cutoff)
             dialog.setWindowTitle("Filtre Passe-Bas")
 
             if dialog.exec():
                 rayon = dialog.slider.value()
+                self.last_passe_bas_cutoff = rayon
 
                 # Calcul TFD + application du masque passe-bas
                 tfd = TFD2D(self._current_array)
@@ -132,11 +137,12 @@ class FilterController:
                 self.error_handler.show_error("Erreur", "Aucune image chargée")
                 return
 
-            dialog = FilterDialog(self.view)
+            dialog = FilterDialog(self.view, default_val=self.last_passe_haut_cutoff)
             dialog.setWindowTitle("Filtre Passe-Haut")
 
             if dialog.exec():
                 rayon = dialog.slider.value()
+                self.last_passe_haut_cutoff = rayon
 
                 # Calcul TFD + application du masque passe-haut
                 tfd = TFD2D(self._current_array)
