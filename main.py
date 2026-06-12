@@ -9,7 +9,7 @@ from views.MainView import MainView
 from controllers.MainController import MainController
 from database.db import init_db
 from database.connection import get_connection
-from utils.paths import ressource_path
+from utils.paths import resource_path
 
 if sys.platform == "win32":
     appId = "pixelmed.version_1"
@@ -28,14 +28,14 @@ def main():
     # Tentative de connexion a la BDD, mets DB_MODE a jour
     init_db()
 
-    font_path = ressource_path(os.path.join("assets", "styles", "fonts", "fontawesome-webfont.ttf"))
+    font_path = resource_path(os.path.join("assets", "styles", "fonts", "fontawesome-webfont.ttf"))
     if os.path.exists(font_path):
         # On enregistre la police dans le système de PyQt
         QFontDatabase.addApplicationFont(font_path)
     else:
         print(f"Attention : Police FontAwesome introuvable à {font_path}")
     # chemin absolu vers le fichier QSS (évite les erreurs de chemin relatif)
-    style_path = ressource_path(os.path.join("assets", "styles", "style.qss"))
+    style_path = resource_path(os.path.join("assets", "styles", "style.qss"))
 
     # lecture et application du style
     if os.path.exists(style_path):
