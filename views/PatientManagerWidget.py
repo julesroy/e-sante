@@ -59,14 +59,14 @@ class PatientManagerWidget(QWidget):
     # ----------------------------------------------------------------     
     # LOGIQUE PATIENTS
     # ----------------------------------------------------------------     
+    # PatientManagerWidget.py — méthode refresh_results()
     def refresh_results(self, patients_list):
-        """Remplit la liste des patients à partir des tuples de la BDD."""
         self.patient_list.clear()
         self.image_list.clear()
         for p in patients_list:
-            # Tuple: (id, nom, prenom, ddn, sexe, num)
             item = QListWidgetItem(f"{p[1].upper()} {p[2]} ({p[5]})")
-            item.setData(Qt.ItemDataRole.UserRole, p[0])  # Stocke l'ID masqué
+            item.setData(Qt.ItemDataRole.UserRole, p[0])       # ID
+            item.setData(Qt.ItemDataRole.UserRole + 1, p)      # ← stocker le tuple COMPLET
             self.patient_list.addItem(item)
 
     def on_search_changed(self, text):
@@ -77,23 +77,23 @@ class PatientManagerWidget(QWidget):
     def on_patient_selected(self):
         selected_items = self.patient_list.selectedItems()
         if not selected_items:
-            self.main_view.controller._current_patient_id = None
+            if self.main_view.controller: #Si le controller renvoie None, permet d'eviter le crash
+                self.main_view.controller._current_patient_id = None
             self.image_list.clear()
             # Masquer le volet si plus rien n'est sélectionné
             self.main_view.patient_info_panel.display_patient(None)
             return
 
-        patient_id = selected_items[0].data(Qt.ItemDataRole.UserRole)
+        item = selected_items[0]
+        patient_id = item.data(Qt.ItemDataRole.UserRole)
+        patient_tuple = item.data(Qt.ItemDataRole.UserRole + 1)  # ← récupère le tuple en mémoire
+        
         self.main_view.controller._current_patient_id = patient_id
         
         if self.main_view.controller:
-            # 1. On va chercher la liste complète de tous les patients en cache ou BDD
-            # pour retrouver le tuple correspondant à notre ID
-            tous_les_patients = self.main_view.controller.patient_ctrl.handle_charger_patients()
-            patient_trouve = next((p for p in tous_les_patients if p[0] == patient_id), None)
-            
+
             # 2. On transmet le tuple trouvé au panneau d'affichage à droite de la barre d'outils
-            self.main_view.patient_info_panel.display_patient(patient_trouve)
+            self.main_view.patient_info_panel.display_patient(patient_tuple)
             
             # 3. On charge les images normalement
             images = self.main_view.controller.image_ctrl.handle_charger_images_patient(patient_id)
