@@ -80,6 +80,10 @@ class UploadController:
             if hasattr(self.main_controller, "ruler_ctrl"):
                 self.main_controller.ruler_ctrl.deactivate_pipette()
 
+            # Clear forms overlay ROI shapes
+            if hasattr(self.view.image_display, "forms_overlay"):
+                self.view.image_display.forms_overlay.clear_all()
+
             # Conversion en numpy array normalisé [0,1] pour les traitements ultérieurs
             self._current_array = ImageConvertie(file_path).convertirEnNumpyArray()
             self.main_controller.model.original_array = self._current_array.copy() if self._current_array is not None else None

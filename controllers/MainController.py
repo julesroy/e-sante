@@ -179,6 +179,11 @@ class MainController:
         
         self.view.left_toolbar.uncheck_all_processing_buttons(except_btn=keep_button)
         self.ruler_ctrl.deactivate_pipette()
+        
+        # Clear forms overlay ROI shapes
+        if hasattr(self.view.image_display, "forms_overlay"):
+            self.view.image_display.forms_overlay.clear_all()
+            
         self.view.update_image_render()
 
     def handle_open_help(self):

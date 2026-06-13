@@ -191,6 +191,19 @@ class MedicalImageLabel(QLabel):
                         self.update()
         event.ignore()
 
+    def mouseReleaseEvent(self, event):
+        super().mouseReleaseEvent(event)
+        if self.visualizer and self.visualizer.main_view:
+            if self.visualizer.main_view.circle_roi_active or self.visualizer.main_view.square_roi_active:
+                pixmap_displayed = self.pixmap()
+                if pixmap_displayed:
+                    margin_x = (self.width() - pixmap_displayed.width()) // 2
+                    margin_y = (self.height() - pixmap_displayed.height()) // 2
+                    img_rect = QRect(margin_x, margin_y, pixmap_displayed.width(), pixmap_displayed.height())
+                    if self.forms_overlay.handle_mouse_release(event.position().toPoint(), img_rect):
+                        self.update()
+        event.ignore()
+
     def paintEvent(self, event):
         """Dessine l'image et force la ligne du slider au premier plan absolu"""
         super().paintEvent(event)
@@ -866,3 +879,10 @@ class MainView(QMainWindow):
             x = (screen_geometry.width() - self.width()) // 2
             y = (screen_geometry.height() - self.height()) // 2
             self.move(x, y)
+
+    def keyPressEvent(self, event):
+        super().keyPressEvent(event)
+        if self.image_display and hasattr(self.image_display, "forms_overlay"):
+            if event.key() in (Qt.Key.Key_Delete, Qt.Key.Key_Backspace):
+                if self.image_display.forms_overlay.delete_selected():
+                    self.image_display.update()
