@@ -16,6 +16,7 @@ from models.ImageConvertie import ImageConvertie
 
 # ===== IMPORTS PYQT6 =====
 from PyQt6.QtWidgets import QFileDialog
+from PyQt6.QtCore import QRect, Qt
 
 # ===== IMPORTS BDD =====
 from database.connection import is_online
@@ -230,3 +231,223 @@ class ImageController:
         except Exception as e:
             self.error_handler.handle_exception(e)
             return False
+
+    # ---------------------------------------------------------------
+    # EXPORTER L'IMAGE AVEC ANNOTATIONS
+    # ---------------------------------------------------------------
+    def handle_export_image(self) -> None:
+        """
+        Exporte l'image affichée à l'écran avec ses annotations, règles et formes superposées.
+        Enregistre le résultat sous forme d'image (PNG, JPEG) ou document PDF.
+        """
+        try:
+            # Vérifier qu'une image est bien chargée et affichée
+            if self.main_controller._original_pixmap is None or self.view.current_pixmap is None:
+                self.error_handler.show_error(
+                    "Aucune image chargée", 
+                    "Il n'y a aucune image à exporter."
+                )
+                return
+
+            pixmap_displayed = self.view.image_display.pixmap()
+            if not pixmap_displayed or pixmap_displayed.isNull():
+                self.error_handler.show_error(
+                    "Aucune image affichée", 
+                    "Il n'y a pas d'image affichée à exporter."
+                )
+                return
+
+            # Nom par défaut suggéré
+            nom_defaut = "export_image.png"
+            last_path = self.main_controller._last_file_path
+            if last_path and last_path != "from_controller":
+                base_name = os.path.splitext(os.path.basename(last_path))[0]
+                nom_defaut = f"{base_name}_export.png"
+
+            # Ouvre le dialogue de sauvegarde avec PDF inclus
+            file_path, _ = QFileDialog.getSaveFileName(
+                self.view,
+                "Exporter l'image avec annotations",
+                nom_defaut,
+                "Images PNG (*.png);;Images JPEG (*.jpg *.jpeg);;Documents PDF (*.pdf);;Tous les fichiers (*)"
+            )
+
+            if not file_path:
+                return  # Annulé par l'utilisateur
+
+            # Capture le widget d'affichage (QLabel)
+            full_pixmap = self.view.image_display.grab()
+
+            # Calcul des marges pour ne rogner que la zone de l'image
+            margin_x = (self.view.image_display.width() - pixmap_displayed.width()) // 2
+            margin_y = (self.view.image_display.height() - pixmap_displayed.height()) // 2
+            img_rect = QRect(margin_x, margin_y, pixmap_displayed.width(), pixmap_displayed.height())
+
+            # Rogner pour garder l'image exacte
+            cropped_pixmap = full_pixmap.copy(img_rect)
+
+            success = False
+            # Enregistrement
+            if file_path.lower().endswith(".pdf"):
+                try:
+                    from PyQt6.QtGui import QPdfWriter, QPainter, QPageSize, QPageLayout
+                    
+                    writer = QPdfWriter(file_path)
+                    writer.setPageSize(QPageSize(QPageSize.PageSizeId.A4))
+                    
+                    if cropped_pixmap.width() > cropped_pixmap.height():
+                        writer.setPageOrientation(QPageLayout.Orientation.Landscape)
+                    else:
+                        writer.setPageOrientation(QPageLayout.Orientation.Portrait)
+                        
+                    painter = QPainter(writer)
+                    w = writer.width()
+                    h = writer.height()
+                    scaled = cropped_pixmap.scaled(w, h, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+                    x = (w - scaled.width()) // 2
+                    y = (h - scaled.height()) // 2
+                    painter.drawPixmap(x, y, scaled)
+                    painter.end()
+                    success = True
+                except Exception as pdf_error:
+                    print(f"Erreur lors de la génération du PDF : {pdf_error}")
+                    success = False
+            else:
+                success = cropped_pixmap.save(file_path)
+
+            if success:
+                print(f"[ImageController] Image exportée avec succès : {file_path}")
+                # Demander si l'utilisateur veut aussi l'ajouter au dossier patient
+                from PyQt6.QtWidgets import QMessageBox
+                reply = QMessageBox.question(
+                    self.view,
+                    "Enregistrer dans le dossier patient",
+                    "L'image a été exportée localement.\nVoulez-vous également l'enregistrer dans le dossier médical de ce patient ?",
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+                )
+                if reply == QMessageBox.StandardButton.Yes:
+                    self.handle_save_to_patient_record(cropped_pixmap)
+            else:
+                self.error_handler.show_error(
+                    "Erreur d'exportation", 
+                    "Impossible d'enregistrer l'image ou le document PDF. Vérifiez les permissions."
+                )
+
+        except Exception as e:
+            self.error_handler.handle_exception(e)
+
+    # ---------------------------------------------------------------
+    # ENREGISTRER DANS LE DOSSIER DU PATIENT
+    # ---------------------------------------------------------------
+    def handle_save_to_patient_record(self, cropped_pixmap=None) -> None:
+        """
+        Enregistre l'image annotée courante dans la base de données et sur le serveur
+        pour le patient actuellement sélectionné.
+        """
+        # Guard hors-ligne
+        if not is_online():
+            self.error_handler.show_error("Mode hors-ligne", "Cette fonctionnalité nécessite une connexion Internet.")
+            return
+
+        try:
+            # Vérifier qu'un patient est sélectionné
+            if self._current_patient_id is None:
+                self.error_handler.show_error(
+                    "Aucun patient sélectionné", 
+                    "Veuillez sélectionner un patient avant d'enregistrer l'image dans son dossier."
+                )
+                return
+
+            # Si cropped_pixmap n'est pas fourni, on le capture à la volée
+            if cropped_pixmap is None:
+                if self.main_controller._original_pixmap is None or self.view.current_pixmap is None:
+                    self.error_handler.show_error(
+                        "Aucune image chargée", 
+                        "Il n'y a aucune image à enregistrer."
+                    )
+                    return
+
+                pixmap_displayed = self.view.image_display.pixmap()
+                if not pixmap_displayed or pixmap_displayed.isNull():
+                    self.error_handler.show_error(
+                        "Aucune image affichée", 
+                        "Il n'y a pas d'image affichée à enregistrer."
+                    )
+                    return
+
+                # Capture le widget d'affichage (QLabel)
+                full_pixmap = self.view.image_display.grab()
+
+                # Calcul des marges pour ne rogner que la zone de l'image
+                margin_x = (self.view.image_display.width() - pixmap_displayed.width()) // 2
+                margin_y = (self.view.image_display.height() - pixmap_displayed.height()) // 2
+                img_rect = QRect(margin_x, margin_y, pixmap_displayed.width(), pixmap_displayed.height())
+
+                # Rogner pour garder l'image exacte
+                cropped_pixmap = full_pixmap.copy(img_rect)
+
+            # Demander le nom du fichier à l'utilisateur (ou générer un nom automatique)
+            last_path = self.main_controller._last_file_path
+            nom_defaut = "radio_annotee.png"
+            if last_path and last_path != "from_controller":
+                base_name = os.path.splitext(os.path.basename(last_path))[0]
+                nom_defaut = f"{base_name}_annotee.png"
+
+            # Boîte de dialogue simple pour saisir le nom de l'image dans le dossier
+            from PyQt6.QtWidgets import QInputDialog
+            nom_fichier, ok = QInputDialog.getText(
+                self.view,
+                "Enregistrer dans le dossier",
+                "Nom de la radiographie annotée :",
+                text=nom_defaut
+            )
+            if not ok or not nom_fichier.strip():
+                return  # Annulé
+
+            # S'assurer de l'extension .png par défaut si aucune extension d'image valide n'est saisie
+            _, ext = os.path.splitext(nom_fichier)
+            if not ext.lower() in [".png", ".jpg", ".jpeg"]:
+                nom_fichier += ".png"
+
+            # Sauvegarde temporaire locale du pixmap pour l'upload
+            import tempfile
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+                tmp_path = tmp.name
+
+            cropped_pixmap.save(tmp_path)
+
+            # Upload et sauvegarde BDD
+            chemin_serveur = upload_image(tmp_path, self._current_patient_id)
+
+            # Supprimer le fichier temporaire local
+            try:
+                os.unlink(tmp_path)
+            except:
+                pass
+
+            if chemin_serveur is None:
+                self.error_handler.show_error("Erreur serveur", "Impossible d'envoyer l'image au serveur.")
+                return
+
+            image_id = sauvegarder_image(
+                patient_id=self._current_patient_id,
+                nom_fichier=nom_fichier,
+                chemin=chemin_serveur,
+                modalite="ANNOTATED"
+            )
+
+            print(f"[ImageController] Image annotée '{nom_fichier}' enregistrée en BDD (id={image_id})")
+            
+            # Message de succès
+            self.error_handler.show_info(
+                "Enregistrement réussi", 
+                f"L'image annotée '{nom_fichier}' a été ajoutée avec succès au dossier du patient."
+            )
+
+            # Rafraîchir la liste des images du patient dans la vue
+            p_manager = self.view.left_toolbar.patient_manager
+            images = self.handle_charger_images_patient(self._current_patient_id)
+            p_manager.refresh_images(images)
+
+        except Exception as e:
+            self.error_handler.handle_exception(e)

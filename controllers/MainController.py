@@ -53,6 +53,7 @@ class MainController:
     # --------------------- Connexion des signaux ------------------------
     def _connect_signals(self):
         self.view.top_toolbar.upload_clicked.connect(self.upload_ctrl.handle_upload)
+        self.view.top_toolbar.export_clicked.connect(self.image_ctrl.handle_export_image)
         self.view.left_toolbar.gaussian_clicked.connect(self.filter_ctrl.handle_gaussian)
         self.view.top_toolbar.fft_clicked.connect(self.analysis_ctrl.handle_tfd2d)
         self.view.top_toolbar.histo_clicked.connect(self.analysis_ctrl.handle_histogramme)
@@ -74,6 +75,7 @@ class MainController:
         self.view.left_toolbar.text_clicked.connect(self.annotation_ctrl.handle_text_anno_toggle)
         self.view.left_toolbar.color_clicked.connect(self.annotation_ctrl.handle_color_dialog)
         self.view.left_toolbar.clear_annotations_clicked.connect(self.annotation_ctrl.handle_clear_annotations)
+        self.view.left_toolbar.save_to_patient_clicked.connect(self.image_ctrl.handle_save_to_patient_record)
         self.view.top_toolbar.help_clicked.connect(self.handle_open_help)
     
     @property

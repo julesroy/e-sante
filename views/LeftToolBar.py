@@ -57,6 +57,7 @@ class LeftToolbar(QWidget):
     text_clicked = pyqtSignal(bool)
     color_clicked = pyqtSignal()
     clear_annotations_clicked = pyqtSignal()
+    save_to_patient_clicked = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -256,10 +257,16 @@ class LeftToolbar(QWidget):
         self.btn_clear_annotations.setFixedSize(button_size, button_size)
         self.btn_clear_annotations.setToolTip("Effacer : Supprimer toutes les annotations")
 
+        self.btn_save_to_patient = QPushButton("\uf0c7")
+        self.btn_save_to_patient.setFont(icon_font)
+        self.btn_save_to_patient.setFixedSize(button_size, button_size)
+        self.btn_save_to_patient.setToolTip("Sauvegarder dans le dossier du patient")
+
         self.grid_layout_annotations.addWidget(self.btn_pen, 0, 0)
         self.grid_layout_annotations.addWidget(self.btn_text, 0, 1)
         self.grid_layout_annotations.addWidget(self.btn_color, 0, 2)
         self.grid_layout_annotations.addWidget(self.btn_clear_annotations, 1, 0)
+        self.grid_layout_annotations.addWidget(self.btn_save_to_patient, 1, 1)
 
         self.main_layout.addWidget(self.annotations_container)
 
@@ -313,6 +320,7 @@ class LeftToolbar(QWidget):
         self.btn_text.clicked.connect(lambda: self._on_button_clicked(self.btn_text, self.text_clicked))
         self.btn_color.clicked.connect(self.color_clicked.emit)
         self.btn_clear_annotations.clicked.connect(self.clear_annotations_clicked.emit)
+        self.btn_save_to_patient.clicked.connect(self.save_to_patient_clicked.emit)
 
     def toggle_section(self, button, container, title_text):
         """Masque ou affiche le conteneur et force l'état Checked pour le QSS."""
