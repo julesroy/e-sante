@@ -84,6 +84,10 @@ class UploadController:
             if hasattr(self.view.image_display, "forms_overlay"):
                 self.view.image_display.forms_overlay.clear_all()
 
+            # Clear annotations overlay
+            if hasattr(self.view.image_display, "annotations_overlay"):
+                self.view.image_display.annotations_overlay.clear_all()
+
             # Conversion en numpy array normalisé [0,1] pour les traitements ultérieurs
             self._current_array = ImageConvertie(file_path).convertirEnNumpyArray()
             self.main_controller.model.original_array = self._current_array.copy() if self._current_array is not None else None

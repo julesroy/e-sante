@@ -15,6 +15,7 @@ from views.PatientInfoWidget import PatientInfoWidget
 from views.AngleOverlay import AngleOverlay
 from views.HeightCompOverlay import HeightCompOverlay
 from views.FormsOverlay import FormsOverlay
+from views.AnnotationsOverlay import AnnotationsOverlay
 from views.HistogramWidget import HistogramWidget
 
 # ===== IMPORT HELPER ======
@@ -28,6 +29,7 @@ class MedicalImageLabel(QLabel):
         self.angle_overlay = AngleOverlay(self)
         self.height_comp_overlay = HeightCompOverlay(self)
         self.forms_overlay = FormsOverlay(self)
+        self.annotations_overlay = AnnotationsOverlay(self)
         self.pipette_pos = None
         self.pipette_val = None
 
@@ -79,6 +81,14 @@ class MedicalImageLabel(QLabel):
                     shape = "circle" if self.visualizer.main_view.circle_roi_active else "square"
                     self.forms_overlay.shape_type = shape
                     if self.forms_overlay.handle_mouse_press(event.position().toPoint(), img_rect):
+                        self.update()
+            elif self.visualizer.main_view.pen_active or self.visualizer.main_view.text_anno_active:
+                pixmap_displayed = self.pixmap()
+                if pixmap_displayed:
+                    margin_x = (self.width() - pixmap_displayed.width()) // 2
+                    margin_y = (self.height() - pixmap_displayed.height()) // 2
+                    img_rect = QRect(margin_x, margin_y, pixmap_displayed.width(), pixmap_displayed.height())
+                    if self.annotations_overlay.handle_mouse_press(event.position().toPoint(), img_rect):
                         self.update()
             elif self.visualizer.main_view.pipette_active:
                 pixmap_displayed = self.pixmap()
@@ -154,6 +164,14 @@ class MedicalImageLabel(QLabel):
                     self.forms_overlay.shape_type = shape
                     if self.forms_overlay.handle_mouse_move(event.position().toPoint(), img_rect):
                         self.update()
+            elif self.visualizer.main_view.pen_active or self.visualizer.main_view.text_anno_active:
+                pixmap_displayed = self.pixmap()
+                if pixmap_displayed:
+                    margin_x = (self.width() - pixmap_displayed.width()) // 2
+                    margin_y = (self.height() - pixmap_displayed.height()) // 2
+                    img_rect = QRect(margin_x, margin_y, pixmap_displayed.width(), pixmap_displayed.height())
+                    if self.annotations_overlay.handle_mouse_move(event.position().toPoint(), img_rect):
+                        self.update()
             elif self.visualizer.main_view.pipette_active:
                 pixmap_displayed = self.pixmap()
                 if pixmap_displayed:
@@ -202,6 +220,14 @@ class MedicalImageLabel(QLabel):
                     img_rect = QRect(margin_x, margin_y, pixmap_displayed.width(), pixmap_displayed.height())
                     if self.forms_overlay.handle_mouse_release(event.position().toPoint(), img_rect):
                         self.update()
+            elif self.visualizer.main_view.pen_active or self.visualizer.main_view.text_anno_active:
+                pixmap_displayed = self.pixmap()
+                if pixmap_displayed:
+                    margin_x = (self.width() - pixmap_displayed.width()) // 2
+                    margin_y = (self.height() - pixmap_displayed.height()) // 2
+                    img_rect = QRect(margin_x, margin_y, pixmap_displayed.width(), pixmap_displayed.height())
+                    if self.annotations_overlay.handle_mouse_release(event.position().toPoint(), img_rect):
+                        self.update()
         event.ignore()
 
     def paintEvent(self, event):
@@ -234,6 +260,10 @@ class MedicalImageLabel(QLabel):
         # --- DESSIN DES FORMES D'ANALYSE (CERCLE / CARRE) AU PREMIER PLAN ---
         if self.visualizer and self.visualizer.main_view and (self.visualizer.main_view.circle_roi_active or self.visualizer.main_view.square_roi_active):
             self.forms_overlay.draw_measure(painter, img_rect)
+
+        # --- DESSIN DES ANNOTATIONS (STYLO / TEXTE) AU PREMIER PLAN ---
+        if hasattr(self, "annotations_overlay"):
+            self.annotations_overlay.draw_annotations(painter, img_rect)
 
         # --- DESSIN DU RETICULE ET VALEUR PIPETTE AU PREMIER PLAN ---
         if self.visualizer and self.visualizer.main_view and self.visualizer.main_view.pipette_active and getattr(self, "pipette_pos", None) is not None and getattr(self, "pipette_val", None) is not None:
@@ -494,6 +524,8 @@ class MainView(QMainWindow):
         self.circle_roi_active = False
         self.square_roi_active = False
         self.pipette_active = False
+        self.pen_active = False
+        self.text_anno_active = False
 
         # --- SLIDER DE CONTRASTE ---
         self.contrast_slider_active = False
@@ -885,4 +917,8 @@ class MainView(QMainWindow):
         if self.image_display and hasattr(self.image_display, "forms_overlay"):
             if event.key() in (Qt.Key.Key_Delete, Qt.Key.Key_Backspace):
                 if self.image_display.forms_overlay.delete_selected():
+                    self.image_display.update()
+        if self.image_display and hasattr(self.image_display, "annotations_overlay"):
+            if event.key() in (Qt.Key.Key_Delete, Qt.Key.Key_Backspace):
+                if self.image_display.annotations_overlay.delete_selected():
                     self.image_display.update()

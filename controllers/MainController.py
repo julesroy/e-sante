@@ -22,6 +22,7 @@ from controllers.ErrorController import ErrorController
 from controllers.PatientController import PatientController
 from controllers.ImageController import ImageController
 from controllers.RulerController import RulerController
+from controllers.AnnotationController import AnnotationController
 
 # ===== IMPORTS DE LA CONNEXION A LA BDD =====
 from database.connection import is_online, check_connection
@@ -41,6 +42,7 @@ class MainController:
         self.patient_ctrl = PatientController(self)
         self.image_ctrl = ImageController(self)
         self.ruler_ctrl = RulerController(self)
+        self.annotation_ctrl = AnnotationController(self)
 
         # Rendre le controller accessible à la view
         self.view.controller = self
@@ -68,6 +70,10 @@ class MainController:
         self.view.left_toolbar.square_roi_clicked.connect(self.ruler_ctrl.handle_square_roi_toggle)
         self.view.left_toolbar.area_clicked.connect(self.ruler_ctrl.handle_area_calculation)
         self.view.left_toolbar.pipette_clicked.connect(self.ruler_ctrl.handle_pipette_toggle)
+        self.view.left_toolbar.pen_clicked.connect(self.annotation_ctrl.handle_pen_toggle)
+        self.view.left_toolbar.text_clicked.connect(self.annotation_ctrl.handle_text_anno_toggle)
+        self.view.left_toolbar.color_clicked.connect(self.annotation_ctrl.handle_color_dialog)
+        self.view.left_toolbar.clear_annotations_clicked.connect(self.annotation_ctrl.handle_clear_annotations)
         self.view.top_toolbar.help_clicked.connect(self.handle_open_help)
     
     @property
@@ -183,6 +189,10 @@ class MainController:
         # Clear forms overlay ROI shapes
         if hasattr(self.view.image_display, "forms_overlay"):
             self.view.image_display.forms_overlay.clear_all()
+            
+        # Clear annotations overlay
+        if hasattr(self.view.image_display, "annotations_overlay"):
+            self.view.image_display.annotations_overlay.clear_all()
             
         self.view.update_image_render()
 

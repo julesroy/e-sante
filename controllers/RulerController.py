@@ -2,6 +2,8 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
+from PyQt6.QtCore import Qt
+
 if TYPE_CHECKING:
     from views.MainView import MainView
     from controllers.MainController import MainController
@@ -20,6 +22,102 @@ class RulerController:
     def error_controller(self):
         return self.main_controller.error_handler
 
+    def deactivate_all_modes(self):
+        """Désactive proprement tous les outils de cette section (Mesures)."""
+        # 1. Règle
+        if getattr(self.view, "ruler_active", False):
+            self.view.left_toolbar.btn_ruler.setChecked(False)
+            self.view.ruler_active = False
+            if hasattr(self.view.image_display, "ruler_overlay"):
+                self.view.image_display.ruler_overlay.clear()
+
+        # 2. Angle
+        if getattr(self.view, "angle_active", False):
+            self.view.left_toolbar.btn_angle.setChecked(False)
+            self.view.angle_active = False
+            if hasattr(self.view.image_display, "angle_overlay"):
+                self.view.image_display.angle_overlay.clear()
+
+        # 3. Comparateur hauteur
+        if getattr(self.view, "height_comp_active", False):
+            self.view.left_toolbar.btn_height_comp.setChecked(False)
+            self.view.height_comp_active = False
+            if hasattr(self.view.image_display, "height_comp_overlay"):
+                self.view.image_display.height_comp_overlay.clear()
+
+        # 4. ROI Cercle
+        if getattr(self.view, "circle_roi_active", False):
+            self.view.left_toolbar.btn_circle_roi.setChecked(False)
+            self.view.circle_roi_active = False
+            if hasattr(self.view.image_display, "forms_overlay"):
+                self.view.image_display.forms_overlay.clear()
+
+        # 5. ROI Carré
+        if getattr(self.view, "square_roi_active", False):
+            self.view.left_toolbar.btn_square_roi.setChecked(False)
+            self.view.square_roi_active = False
+            if hasattr(self.view.image_display, "forms_overlay"):
+                self.view.image_display.forms_overlay.clear()
+
+        # 6. Pipette
+        if getattr(self.view, "pipette_active", False):
+            self.view.left_toolbar.btn_pipette.setChecked(False)
+            self.view.toggle_pipette_mode(False)
+            if self.image_before_pipette is not None:
+                self.main_controller._current_array = self.image_before_pipette
+                self.main_controller._display_numpy_array(self.image_before_pipette)
+                self.image_before_pipette = None
+
+    def deactivate_all_modes_except(self, except_mode: str):
+        """Désactive de façon exclusive tous les outils de mesure/analyse sauf celui spécifié."""
+        # Désactiver les outils d'annotations (AnnotationController)
+        if hasattr(self.main_controller, "annotation_ctrl"):
+            self.main_controller.annotation_ctrl.deactivate_all_modes()
+
+        # 1. Règle
+        if except_mode != "ruler" and getattr(self.view, "ruler_active", False):
+            self.view.left_toolbar.btn_ruler.setChecked(False)
+            self.view.ruler_active = False
+            if hasattr(self.view.image_display, "ruler_overlay"):
+                self.view.image_display.ruler_overlay.clear()
+
+        # 2. Angle
+        if except_mode != "angle" and getattr(self.view, "angle_active", False):
+            self.view.left_toolbar.btn_angle.setChecked(False)
+            self.view.angle_active = False
+            if hasattr(self.view.image_display, "angle_overlay"):
+                self.view.image_display.angle_overlay.clear()
+
+        # 3. Comparateur hauteur
+        if except_mode != "height_comp" and getattr(self.view, "height_comp_active", False):
+            self.view.left_toolbar.btn_height_comp.setChecked(False)
+            self.view.height_comp_active = False
+            if hasattr(self.view.image_display, "height_comp_overlay"):
+                self.view.image_display.height_comp_overlay.clear()
+
+        # 4. ROI Cercle
+        if except_mode != "circle_roi" and getattr(self.view, "circle_roi_active", False):
+            self.view.left_toolbar.btn_circle_roi.setChecked(False)
+            self.view.circle_roi_active = False
+            if hasattr(self.view.image_display, "forms_overlay"):
+                self.view.image_display.forms_overlay.clear()
+
+        # 5. ROI Carré
+        if except_mode != "square_roi" and getattr(self.view, "square_roi_active", False):
+            self.view.left_toolbar.btn_square_roi.setChecked(False)
+            self.view.square_roi_active = False
+            if hasattr(self.view.image_display, "forms_overlay"):
+                self.view.image_display.forms_overlay.clear()
+
+        # 6. Pipette
+        if except_mode != "pipette" and getattr(self.view, "pipette_active", False):
+            self.view.left_toolbar.btn_pipette.setChecked(False)
+            self.view.toggle_pipette_mode(False)
+            if self.image_before_pipette is not None:
+                self.main_controller._current_array = self.image_before_pipette
+                self.main_controller._display_numpy_array(self.image_before_pipette)
+                self.image_before_pipette = None
+
     def handle_ruler_toggle(self, checked: bool):
         """Gère l'activation du mode règle depuis la LeftToolbar."""
         if self.view.current_pixmap is None:
@@ -29,31 +127,9 @@ class RulerController:
         self.view.ruler_active = checked
         if checked:
             print("Mode Règle de mesure activé.")
-            # Désactiver les autres modes
-            if getattr(self.view, "angle_active", False):
-                self.view.left_toolbar.btn_angle.setChecked(False)
-                self.view.angle_active = False
-            if getattr(self.view, "height_comp_active", False):
-                self.view.left_toolbar.btn_height_comp.setChecked(False)
-                self.view.height_comp_active = False
-            if getattr(self.view, "circle_roi_active", False):
-                self.view.left_toolbar.btn_circle_roi.setChecked(False)
-                self.view.circle_roi_active = False
-            if getattr(self.view, "square_roi_active", False):
-                self.view.left_toolbar.btn_square_roi.setChecked(False)
-                self.view.square_roi_active = False
-            if getattr(self.view, "pipette_active", False):
-                self.view.left_toolbar.btn_pipette.setChecked(False)
-                self.handle_pipette_toggle(False)
-
+            self.deactivate_all_modes_except("ruler")
             if hasattr(self.view.image_display, "ruler_overlay"):
                 self.view.image_display.ruler_overlay.clear()
-            if hasattr(self.view.image_display, "angle_overlay"):
-                self.view.image_display.angle_overlay.clear()
-            if hasattr(self.view.image_display, "height_comp_overlay"):
-                self.view.image_display.height_comp_overlay.clear()
-            if hasattr(self.view.image_display, "forms_overlay"):
-                self.view.image_display.forms_overlay.clear()
         else:
             print("Mode Règle de mesure désactivé.")
 
@@ -68,31 +144,9 @@ class RulerController:
         self.view.angle_active = checked
         if checked:
             print("Mode Angle de mesure activé.")
-            # Désactiver les autres modes
-            if getattr(self.view, "ruler_active", False):
-                self.view.left_toolbar.btn_ruler.setChecked(False)
-                self.view.ruler_active = False
-            if getattr(self.view, "height_comp_active", False):
-                self.view.left_toolbar.btn_height_comp.setChecked(False)
-                self.view.height_comp_active = False
-            if getattr(self.view, "circle_roi_active", False):
-                self.view.left_toolbar.btn_circle_roi.setChecked(False)
-                self.view.circle_roi_active = False
-            if getattr(self.view, "square_roi_active", False):
-                self.view.left_toolbar.btn_square_roi.setChecked(False)
-                self.view.square_roi_active = False
-            if getattr(self.view, "pipette_active", False):
-                self.view.left_toolbar.btn_pipette.setChecked(False)
-                self.handle_pipette_toggle(False)
-
+            self.deactivate_all_modes_except("angle")
             if hasattr(self.view.image_display, "angle_overlay"):
                 self.view.image_display.angle_overlay.clear()
-            if hasattr(self.view.image_display, "ruler_overlay"):
-                self.view.image_display.ruler_overlay.clear()
-            if hasattr(self.view.image_display, "height_comp_overlay"):
-                self.view.image_display.height_comp_overlay.clear()
-            if hasattr(self.view.image_display, "forms_overlay"):
-                self.view.image_display.forms_overlay.clear()
         else:
             print("Mode Angle de mesure désactivé.")
 
@@ -107,31 +161,9 @@ class RulerController:
         self.view.height_comp_active = checked
         if checked:
             print("Mode Comparateur de hauteur activé.")
-            # Désactiver les autres modes
-            if getattr(self.view, "ruler_active", False):
-                self.view.left_toolbar.btn_ruler.setChecked(False)
-                self.view.ruler_active = False
-            if getattr(self.view, "angle_active", False):
-                self.view.left_toolbar.btn_angle.setChecked(False)
-                self.view.angle_active = False
-            if getattr(self.view, "circle_roi_active", False):
-                self.view.left_toolbar.btn_circle_roi.setChecked(False)
-                self.view.circle_roi_active = False
-            if getattr(self.view, "square_roi_active", False):
-                self.view.left_toolbar.btn_square_roi.setChecked(False)
-                self.view.square_roi_active = False
-            if getattr(self.view, "pipette_active", False):
-                self.view.left_toolbar.btn_pipette.setChecked(False)
-                self.handle_pipette_toggle(False)
-
+            self.deactivate_all_modes_except("height_comp")
             if hasattr(self.view.image_display, "height_comp_overlay"):
                 self.view.image_display.height_comp_overlay.clear()
-            if hasattr(self.view.image_display, "ruler_overlay"):
-                self.view.image_display.ruler_overlay.clear()
-            if hasattr(self.view.image_display, "angle_overlay"):
-                self.view.image_display.angle_overlay.clear()
-            if hasattr(self.view.image_display, "forms_overlay"):
-                self.view.image_display.forms_overlay.clear()
         else:
             print("Mode Comparateur de hauteur désactivé.")
 
@@ -146,32 +178,10 @@ class RulerController:
         self.view.circle_roi_active = checked
         if checked:
             print("Mode ROI Cercle activé.")
-            # Désactiver les autres modes
-            if getattr(self.view, "ruler_active", False):
-                self.view.left_toolbar.btn_ruler.setChecked(False)
-                self.view.ruler_active = False
-            if getattr(self.view, "angle_active", False):
-                self.view.left_toolbar.btn_angle.setChecked(False)
-                self.view.angle_active = False
-            if getattr(self.view, "height_comp_active", False):
-                self.view.left_toolbar.btn_height_comp.setChecked(False)
-                self.view.height_comp_active = False
-            if getattr(self.view, "square_roi_active", False):
-                self.view.left_toolbar.btn_square_roi.setChecked(False)
-                self.view.square_roi_active = False
-            if getattr(self.view, "pipette_active", False):
-                self.view.left_toolbar.btn_pipette.setChecked(False)
-                self.handle_pipette_toggle(False)
-
+            self.deactivate_all_modes_except("circle_roi")
             if hasattr(self.view.image_display, "forms_overlay"):
                 self.view.image_display.forms_overlay.shape_type = "circle"
                 self.view.image_display.forms_overlay.clear()
-            if hasattr(self.view.image_display, "ruler_overlay"):
-                self.view.image_display.ruler_overlay.clear()
-            if hasattr(self.view.image_display, "angle_overlay"):
-                self.view.image_display.angle_overlay.clear()
-            if hasattr(self.view.image_display, "height_comp_overlay"):
-                self.view.image_display.height_comp_overlay.clear()
         else:
             print("Mode ROI Cercle désactivé.")
 
@@ -186,32 +196,10 @@ class RulerController:
         self.view.square_roi_active = checked
         if checked:
             print("Mode ROI Carré activé.")
-            # Désactiver les autres modes
-            if getattr(self.view, "ruler_active", False):
-                self.view.left_toolbar.btn_ruler.setChecked(False)
-                self.view.ruler_active = False
-            if getattr(self.view, "angle_active", False):
-                self.view.left_toolbar.btn_angle.setChecked(False)
-                self.view.angle_active = False
-            if getattr(self.view, "height_comp_active", False):
-                self.view.left_toolbar.btn_height_comp.setChecked(False)
-                self.view.height_comp_active = False
-            if getattr(self.view, "circle_roi_active", False):
-                self.view.left_toolbar.btn_circle_roi.setChecked(False)
-                self.view.circle_roi_active = False
-            if getattr(self.view, "pipette_active", False):
-                self.view.left_toolbar.btn_pipette.setChecked(False)
-                self.handle_pipette_toggle(False)
-
+            self.deactivate_all_modes_except("square_roi")
             if hasattr(self.view.image_display, "forms_overlay"):
                 self.view.image_display.forms_overlay.shape_type = "square"
                 self.view.image_display.forms_overlay.clear()
-            if hasattr(self.view.image_display, "ruler_overlay"):
-                self.view.image_display.ruler_overlay.clear()
-            if hasattr(self.view.image_display, "angle_overlay"):
-                self.view.image_display.angle_overlay.clear()
-            if hasattr(self.view.image_display, "height_comp_overlay"):
-                self.view.image_display.height_comp_overlay.clear()
         else:
             print("Mode ROI Carré désactivé.")
 
@@ -225,32 +213,7 @@ class RulerController:
 
         if checked:
             print("Mode Pipette de niveau de gris activé.")
-            # Désactiver les autres modes
-            if getattr(self.view, "ruler_active", False):
-                self.view.left_toolbar.btn_ruler.setChecked(False)
-                self.view.ruler_active = False
-            if getattr(self.view, "angle_active", False):
-                self.view.left_toolbar.btn_angle.setChecked(False)
-                self.view.angle_active = False
-            if getattr(self.view, "height_comp_active", False):
-                self.view.left_toolbar.btn_height_comp.setChecked(False)
-                self.view.height_comp_active = False
-            if getattr(self.view, "circle_roi_active", False):
-                self.view.left_toolbar.btn_circle_roi.setChecked(False)
-                self.view.circle_roi_active = False
-            if getattr(self.view, "square_roi_active", False):
-                self.view.left_toolbar.btn_square_roi.setChecked(False)
-                self.view.square_roi_active = False
-
-            if hasattr(self.view.image_display, "ruler_overlay"):
-                self.view.image_display.ruler_overlay.clear()
-            if hasattr(self.view.image_display, "angle_overlay"):
-                self.view.image_display.angle_overlay.clear()
-            if hasattr(self.view.image_display, "height_comp_overlay"):
-                self.view.image_display.height_comp_overlay.clear()
-            if hasattr(self.view.image_display, "forms_overlay"):
-                self.view.image_display.forms_overlay.clear()
-                
+            self.deactivate_all_modes_except("pipette")
             self.view.toggle_pipette_mode(True)
             self.image_before_pipette = self.main_controller._current_array.copy() if self.main_controller._current_array is not None else None
         else:
@@ -262,6 +225,8 @@ class RulerController:
                 self.image_before_pipette = None
 
         self.view.image_display.update()
+
+
 
     def deactivate_pipette(self):
         """Désactive proprement la pipette sans restaurer l'image."""

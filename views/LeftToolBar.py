@@ -53,6 +53,10 @@ class LeftToolbar(QWidget):
     square_roi_clicked = pyqtSignal(bool)
     area_clicked = pyqtSignal(bool)
     pipette_clicked = pyqtSignal(bool)
+    pen_clicked = pyqtSignal(bool)
+    text_clicked = pyqtSignal(bool)
+    color_clicked = pyqtSignal()
+    clear_annotations_clicked = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -218,6 +222,47 @@ class LeftToolbar(QWidget):
 
         self.main_layout.addWidget(self.measures_container)
 
+        # === ANNOTATIONS ===
+        self.section_annotations = SectionHeaderButton("Annotations", is_expanded=False)
+        self.main_layout.addWidget(self.section_annotations)
+
+        self.annotations_container = QWidget()
+        self.annotations_container.setVisible(False)
+        self.grid_layout_annotations = QGridLayout(self.annotations_container)
+        self.grid_layout_annotations.setContentsMargins(12, 8, 8, 12)
+        self.grid_layout_annotations.setSpacing(6)
+        self.grid_layout_annotations.setRowMinimumHeight(0, button_size)
+
+        self.btn_pen = QPushButton("\uf040")
+        self.btn_pen.setFont(icon_font)
+        self.btn_pen.setFixedSize(button_size, button_size)
+        self.btn_pen.setToolTip("Stylo : Annoter l'image à main levée")
+        self.btn_pen.setCheckable(True)
+
+        self.btn_text = QPushButton("\uf031")
+        self.btn_text.setFont(icon_font)
+        self.btn_text.setFixedSize(button_size, button_size)
+        self.btn_text.setToolTip("Texte : Ajouter une annotation textuelle")
+        self.btn_text.setCheckable(True)
+
+        self.btn_color = QPushButton("\uf1fc")
+        self.btn_color.setFont(icon_font)
+        self.btn_color.setFixedSize(button_size, button_size)
+        self.btn_color.setToolTip("Couleur : Choisir la couleur active")
+        self.btn_color.setStyleSheet("background-color: #ff0000; border: 2px solid white; border-radius: 4px; color: white;")
+
+        self.btn_clear_annotations = QPushButton("\uf1f8")
+        self.btn_clear_annotations.setFont(icon_font)
+        self.btn_clear_annotations.setFixedSize(button_size, button_size)
+        self.btn_clear_annotations.setToolTip("Effacer : Supprimer toutes les annotations")
+
+        self.grid_layout_annotations.addWidget(self.btn_pen, 0, 0)
+        self.grid_layout_annotations.addWidget(self.btn_text, 0, 1)
+        self.grid_layout_annotations.addWidget(self.btn_color, 0, 2)
+        self.grid_layout_annotations.addWidget(self.btn_clear_annotations, 1, 0)
+
+        self.main_layout.addWidget(self.annotations_container)
+
         # === DOSSIERS (PATIENTS BDD) ===
         self.section_folders = SectionHeaderButton("Dossiers", is_expanded=False)
         self.main_layout.addWidget(self.section_folders)
@@ -246,6 +291,7 @@ class LeftToolbar(QWidget):
         self.section_filters.clicked.connect(lambda: self.toggle_section(self.section_filters, self.filters_container, "Filtres"))
         self.section_contrast.clicked.connect(lambda: self.toggle_section(self.section_contrast, self.contrast_container, "Contraste"))
         self.section_measures.clicked.connect(lambda: self.toggle_section(self.section_measures, self.measures_container, "Mesures"))
+        self.section_annotations.clicked.connect(lambda: self.toggle_section(self.section_annotations, self.annotations_container, "Annotations"))
         self.section_folders.clicked.connect(lambda: self.toggle_section(self.section_folders, self.folders_container, "Dossiers"))
 
         # === CONNEXIONS SIGNAUX ===
@@ -263,6 +309,10 @@ class LeftToolbar(QWidget):
         self.btn_square_roi.clicked.connect(self.square_roi_clicked.emit)
         self.btn_area.clicked.connect(self.area_clicked.emit)
         self.btn_pipette.clicked.connect(self.pipette_clicked.emit)
+        self.btn_pen.clicked.connect(lambda: self._on_button_clicked(self.btn_pen, self.pen_clicked))
+        self.btn_text.clicked.connect(lambda: self._on_button_clicked(self.btn_text, self.text_clicked))
+        self.btn_color.clicked.connect(self.color_clicked.emit)
+        self.btn_clear_annotations.clicked.connect(self.clear_annotations_clicked.emit)
 
     def toggle_section(self, button, container, title_text):
         """Masque ou affiche le conteneur et force l'état Checked pour le QSS."""
