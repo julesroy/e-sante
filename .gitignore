@@ -6,3 +6,6 @@ merge.sh
 error.log
 dldicom.py
 donnees_covid/
+build/
+dist/
+
