@@ -14,7 +14,7 @@ class PatientManagerWidget(QWidget):
     def init_ui(self):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(5, 5, 5, 5)
-        layout.setSpacing(8)
+        layout.setSpacing(5)
 
         # 🔍 BARRE DE RECHERCHE
         self.search_bar = QLineEdit()
@@ -25,6 +25,7 @@ class PatientManagerWidget(QWidget):
         # 👥 LISTE DES PATIENTS
         layout.addWidget(QLabel("Patients :"))
         self.patient_list = QListWidget()
+        self.patient_list.setMaximumHeight(110)
         self.patient_list.itemSelectionChanged.connect(self.on_patient_selected)
         layout.addWidget(self.patient_list)
 
@@ -42,6 +43,7 @@ class PatientManagerWidget(QWidget):
         # 📷 LISTE DES IMAGES DU PATIENT SÉLECTIONNÉ
         layout.addWidget(QLabel("Radiographies :"))
         self.image_list = QListWidget()
+        self.image_list.setMaximumHeight(110)
         self.image_list.itemDoubleClicked.connect(self.on_image_double_clicked)
         layout.addWidget(self.image_list)
 
@@ -55,6 +57,9 @@ class PatientManagerWidget(QWidget):
         btn_image_layout.addWidget(self.btn_upload_img)
         btn_image_layout.addWidget(self.btn_del_img)
         layout.addLayout(btn_image_layout)
+
+        # Ajouter un stretch pour compacter tous les éléments vers le haut de la fenêtre
+        layout.addStretch(1)
 
     # ----------------------------------------------------------------     
     # LOGIQUE PATIENTS

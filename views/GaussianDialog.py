@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QDoubleSp
 from PyQt6.QtCore import Qt
 
 class GaussianDialog(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, default_sigma=1.0):
         super().__init__(parent)
         self.setWindowTitle("Filtre Gaussien")
         self.setFixedSize(300, 140)
@@ -62,7 +62,7 @@ class GaussianDialog(QDialog):
         self.sigma_spin = QDoubleSpinBox()
         self.sigma_spin.setRange(0.1, 100.0)
         self.sigma_spin.setSingleStep(0.5)
-        self.sigma_spin.setValue(1.0)
+        self.sigma_spin.setValue(default_sigma)
 
         form_layout.addRow(self.sigma_label, self.sigma_spin)
         layout.addLayout(form_layout)

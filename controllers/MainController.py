@@ -22,6 +22,7 @@ from controllers.ErrorController import ErrorController
 from controllers.PatientController import PatientController
 from controllers.ImageController import ImageController
 from controllers.RulerController import RulerController
+from controllers.AnnotationController import AnnotationController
 
 # ===== IMPORTS DE LA CONNEXION A LA BDD =====
 from database.connection import is_online, check_connection
@@ -32,6 +33,7 @@ class MainController:
         self.model = model
         self.view: MainView = view
         self.error_handler = ErrorController(parent_window=self.view)
+        self.last_pipette_threshold = None
 
         # Instanciation des sous-contrôleurs par composition
         self.upload_ctrl = UploadController(self)
@@ -40,6 +42,7 @@ class MainController:
         self.patient_ctrl = PatientController(self)
         self.image_ctrl = ImageController(self)
         self.ruler_ctrl = RulerController(self)
+        self.annotation_ctrl = AnnotationController(self)
 
         # Rendre le controller accessible à la view
         self.view.controller = self
@@ -50,8 +53,10 @@ class MainController:
     # --------------------- Connexion des signaux ------------------------
     def _connect_signals(self):
         self.view.top_toolbar.upload_clicked.connect(self.upload_ctrl.handle_upload)
+        self.view.top_toolbar.export_clicked.connect(self.image_ctrl.handle_export_image)
         self.view.left_toolbar.gaussian_clicked.connect(self.filter_ctrl.handle_gaussian)
         self.view.top_toolbar.fft_clicked.connect(self.analysis_ctrl.handle_tfd2d)
+        self.view.top_toolbar.histo_clicked.connect(self.analysis_ctrl.handle_histogramme)
         self.view.left_toolbar.reset_image_clicked.connect(self.handle_reset_image)
         self.view.left_toolbar.clahe_clicked.connect(self.analysis_ctrl.handle_clahe)
         self.view.left_toolbar.contrast_slider_clicked.connect(self.analysis_ctrl.handle_contrast_slider)
@@ -66,6 +71,11 @@ class MainController:
         self.view.left_toolbar.square_roi_clicked.connect(self.ruler_ctrl.handle_square_roi_toggle)
         self.view.left_toolbar.area_clicked.connect(self.ruler_ctrl.handle_area_calculation)
         self.view.left_toolbar.pipette_clicked.connect(self.ruler_ctrl.handle_pipette_toggle)
+        self.view.left_toolbar.pen_clicked.connect(self.annotation_ctrl.handle_pen_toggle)
+        self.view.left_toolbar.text_clicked.connect(self.annotation_ctrl.handle_text_anno_toggle)
+        self.view.left_toolbar.color_clicked.connect(self.annotation_ctrl.handle_color_dialog)
+        self.view.left_toolbar.clear_annotations_clicked.connect(self.annotation_ctrl.handle_clear_annotations)
+        self.view.left_toolbar.save_to_patient_clicked.connect(self.image_ctrl.handle_save_to_patient_record)
         self.view.top_toolbar.help_clicked.connect(self.handle_open_help)
     
     @property
@@ -154,20 +164,38 @@ class MainController:
         self.view.current_pixmap = pixmap
         self.view.update_image_render()
 
-    def handle_reset_image(self):
+    def handle_reset_image(self, keep_button=None):
         if self._original_pixmap is None: return
         print("Réaffichage de l'image d'origine...")
         self.view.current_pixmap = self._original_pixmap.copy()
+        if self.model.original_array is not None:
+            self._current_array = self.model.original_array.copy()
+        else:
+            self._current_array = None
+
         self._contrast_base_array = None
         self.model.watershed_labels = None
         if hasattr(self.view, "watershed_area_label"):
             self.view.watershed_area_label.hide()
+        self.view.left_toolbar.btn_area.setChecked(False)
         self.view.top_toolbar.btn_fft.setChecked(False)
         if hasattr(self.view, "fft_label"):
             self.view.fft_label.hide()
-        self.view.left_toolbar.btn_contrast_slider.setChecked(False)
-        self.view.left_toolbar.btn_contrast_slider.setChecked(True)
+        self.view.top_toolbar.btn_histo.setChecked(False)
+        if hasattr(self.view, "histo_widget"):
+            self.view.histo_widget.hide()
+        
+        self.view.left_toolbar.uncheck_all_processing_buttons(except_btn=keep_button)
         self.ruler_ctrl.deactivate_pipette()
+        
+        # Clear forms overlay ROI shapes
+        if hasattr(self.view.image_display, "forms_overlay"):
+            self.view.image_display.forms_overlay.clear_all()
+            
+        # Clear annotations overlay
+        if hasattr(self.view.image_display, "annotations_overlay"):
+            self.view.image_display.annotations_overlay.clear_all()
+            
         self.view.update_image_render()
 
     def handle_open_help(self):

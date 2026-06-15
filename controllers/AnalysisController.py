@@ -27,6 +27,14 @@ from views.WatershedDialog import WatershedDialog
 class AnalysisController:
     def __init__(self, main_controller: MainController):
         self.main_controller = main_controller
+        self.last_clahe_clip_limit = 5.0
+        self.last_clahe_grid_size = 16
+        self.last_watershed_sigma = 2.0
+        self.last_watershed_otsu = True
+        self.last_watershed_seuil = 40
+        self.last_watershed_kernel = 3
+        self.last_watershed_min_dist = 50
+        self.last_seuillage_val = 0
 
     @property
     def view(self):
@@ -68,6 +76,10 @@ class AnalysisController:
                 return
 
             if checked:
+                # Désactiver l'histogramme si actif
+                self.view.top_toolbar.btn_histo.setChecked(False)
+                self.view.hide_histogram()
+
                 # Calcul du spectre fréquentiel via la TFD2D
                 tfd2d = TFD2D(self._current_array)
                 spectre = tfd2d.calculerTFDSpectre()
@@ -94,7 +106,36 @@ class AnalysisController:
             self.error_handler.handle_exception(e)
             return
 
-    def handle_clahe(self):
+    def handle_histogramme(self, checked: bool):
+        """
+        Affiche/masque le widget d'histogramme de l'image courante dans la zone d'overlay.
+        Nécessite qu'une image soit chargée (_current_array != None).
+        """
+        try:
+            if self._current_array is None:
+                self.error_handler.show_error("Erreur", "Aucune image chargée")
+                self.view.top_toolbar.btn_histo.setChecked(False)
+                return
+
+            if checked:
+                # Désactiver la FFT si active
+                self.view.top_toolbar.btn_fft.setChecked(False)
+                self.view.hide_fft_spectrum()
+
+                # Transmettre la matrice de l'image courante et le chemin du fichier d'origine
+                original_file_path = self.main_controller._last_file_path
+                self.view.display_histogram(self._current_array, original_file_path)
+                print("Histogramme affiché dans l'overlay.")
+            else:
+                self.view.hide_histogram()
+                print("Histogramme masqué.")
+
+        except Exception as e:
+            self.view.top_toolbar.btn_histo.setChecked(False)
+            self.error_handler.handle_exception(e)
+            return
+
+    def handle_clahe(self, checked: bool):
         """
         Applique le CLAHE (Contrast Limited Adaptive Histogram Equalization)
         sur l'image courante et affiche le résultat dans la View.
@@ -103,20 +144,34 @@ class AnalysisController:
         try:
             if self._current_array is None:
                 self.error_handler.show_error("Erreur", "Aucune image chargée")
+                self.view.left_toolbar.btn_clahe.setChecked(False)
                 return
 
-            dialog = ClaheDialog(self.view)
-            if dialog.exec():
-                clip_limit, tile_grid = dialog.get_values()
+            if checked:
+                self.main_controller.handle_reset_image(keep_button=self.view.left_toolbar.btn_clahe)
+                dialog = ClaheDialog(
+                    self.view,
+                    default_clip_limit=self.last_clahe_clip_limit,
+                    default_grid_size=self.last_clahe_grid_size
+                )
+                if dialog.exec():
+                    clip_limit, tile_grid = dialog.get_values()
+                    self.last_clahe_clip_limit = clip_limit
+                    self.last_clahe_grid_size = tile_grid[0]
 
-                # Application du CLAHE avec les paramètres de la popup
-                clahe = CLAHE(clip_limit, tile_grid, self._current_array)
-                result = clahe.appliquer()
+                    # Application du CLAHE avec les paramètres de la popup
+                    clahe = CLAHE(clip_limit, tile_grid, self._current_array)
+                    result = clahe.appliquer()
 
-                # Affichage du résultat
-                self._display_numpy_array(result)
+                    # Affichage du résultat
+                    self._display_numpy_array(result)
+                else:
+                    self.main_controller.handle_reset_image()
+            else:
+                self.main_controller.handle_reset_image()
 
         except Exception as e:
+            self.view.left_toolbar.btn_clahe.setChecked(False)
             self.error_handler.handle_exception(e)
             return
 
@@ -131,9 +186,11 @@ class AnalysisController:
         try:
             if self._current_array is None:
                 self.error_handler.show_error("Erreur", "Aucune image chargée")
+                self.view.left_toolbar.btn_contrast_slider.setChecked(False)
                 return
 
             if checked:
+                self.main_controller.handle_reset_image(keep_button=self.view.left_toolbar.btn_contrast_slider)
                 # Sauvegarder l'image courante comme référence pour les calculs de contraste
                 self._contrast_base_array = self._current_array.copy()
                 print("Slider de contraste activé - Image de base sauvegardée")
@@ -141,8 +198,10 @@ class AnalysisController:
                 # Réinitialiser
                 self._contrast_base_array = None
                 print("Slider de contraste désactivé")
+                self.main_controller.handle_reset_image()
 
         except Exception as e:
+            self.view.left_toolbar.btn_contrast_slider.setChecked(False)
             self.error_handler.handle_exception(e)
             return
 
@@ -182,14 +241,12 @@ class AnalysisController:
                 self.error_handler.show_error("Erreur", "Aucune image chargee")
                 return
 
-            dialog = FilterDialog(self.view)
+            dialog = FilterDialog(self.view, default_val=self.last_seuillage_val, label_prefix="Seuil : ", min_val=0, max_val=255)
             dialog.setWindowTitle("Seuillage (0 = Otsu auto)")
-            dialog.slider.setMinimum(0)
-            dialog.slider.setMaximum(255)
-            dialog.slider.setValue(0)  # Otsu par defaut
 
             if dialog.exec():
                 valeur = dialog.slider.value()
+                self.last_seuillage_val = valeur
 
                 # 0 -> Otsu automatique, sinon seuil automatique
                 seuil_manuel = None if valeur == 0 else valeur
@@ -218,13 +275,35 @@ class AnalysisController:
                 self.view.left_toolbar.btn_watershed.setChecked(False)
                 return
             if checked:
+                self.main_controller.handle_reset_image(keep_button=self.view.left_toolbar.btn_watershed)
                 self.main_controller.model.watershed_labels = None
                 if hasattr(self.view, "watershed_area_label"):
                     self.view.watershed_area_label.hide()
-                default_seuil = getattr(self.main_controller, "last_pipette_threshold", None)
-                dialog = WatershedDialog(self.view, default_seuil=default_seuil)
+                self.view.left_toolbar.btn_area.setChecked(False)
+                pipette_seuil = getattr(self.main_controller, "last_pipette_threshold", None)
+                if pipette_seuil is not None:
+                    seuil_otsu = False
+                    seuil = pipette_seuil
+                    self.main_controller.last_pipette_threshold = None
+                else:
+                    seuil_otsu = self.last_watershed_otsu
+                    seuil = self.last_watershed_seuil
+
+                dialog = WatershedDialog(
+                    self.view,
+                    default_sigma=self.last_watershed_sigma,
+                    default_seuil_otsu=seuil_otsu,
+                    default_seuil=seuil,
+                    default_kernel=self.last_watershed_kernel,
+                    default_min_dist=self.last_watershed_min_dist
+                )
                 if dialog.exec():
                     sigma, seuil_manuel, kernel_size, min_dist = dialog.get_values()
+                    self.last_watershed_sigma = sigma
+                    self.last_watershed_otsu = (seuil_manuel is None)
+                    self.last_watershed_seuil = seuil_manuel if seuil_manuel is not None else 40
+                    self.last_watershed_kernel = kernel_size
+                    self.last_watershed_min_dist = min_dist
 
                     # 1. Filtrage Gaussien
                     image_filtree = FiltrageGaussien(sigma, self._current_array).filtrage()
@@ -262,8 +341,9 @@ class AnalysisController:
 
                     print(f"Segmentation Watershed appliquée (sigma={sigma}, seuil={seuil_choisi}, noyau={kernel_size}, dist={min_dist})")
                 else:
-                    # Si l'utilisateur annule le dialogue, désélectionner le bouton
-                    self.view.left_toolbar.btn_watershed.setChecked(False)
+                    self.main_controller.handle_reset_image()
+            else:
+                self.main_controller.handle_reset_image()
 
         except Exception as e:
             self.view.left_toolbar.btn_watershed.setChecked(False)

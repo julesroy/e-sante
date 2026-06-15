@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QDoubleSp
 from PyQt6.QtCore import Qt
 
 class WatershedDialog(QDialog):
-    def __init__(self, parent=None, default_seuil=None):
+    def __init__(self, parent=None, default_sigma=2.0, default_seuil_otsu=True, default_seuil=40, default_kernel=3, default_min_dist=50):
         super().__init__(parent)
         self.setWindowTitle("Paramètres Watershed")
         self.setFixedSize(340, 300)
@@ -67,25 +67,18 @@ class WatershedDialog(QDialog):
         self.sigma_spin = QDoubleSpinBox()
         self.sigma_spin.setRange(0.1, 50.0)
         self.sigma_spin.setSingleStep(0.5)
-        self.sigma_spin.setValue(2.0)
+        self.sigma_spin.setValue(default_sigma)
         form_layout.addRow(QLabel("Sigma Gaussien :"), self.sigma_spin)
 
         # 2. Seuillage
         self.otsu_check = QCheckBox("Seuillage Otsu automatique")
-        if default_seuil is not None:
-            self.otsu_check.setChecked(False)
-        else:
-            self.otsu_check.setChecked(True)
+        self.otsu_check.setChecked(default_seuil_otsu)
         form_layout.addRow(self.otsu_check)
 
         self.seuil_spin = QSpinBox()
         self.seuil_spin.setRange(1, 255)
-        if default_seuil is not None:
-            self.seuil_spin.setValue(default_seuil)
-            self.seuil_spin.setEnabled(True)
-        else:
-            self.seuil_spin.setValue(40)
-            self.seuil_spin.setEnabled(False)  # Désactivé par défaut car Otsu est coché
+        self.seuil_spin.setValue(default_seuil)
+        self.seuil_spin.setEnabled(not default_seuil_otsu)
         form_layout.addRow(QLabel("Seuil manuel :"), self.seuil_spin)
 
         # Connecter la checkbox de seuil Otsu pour activer/désactiver le seuil manuel
@@ -95,14 +88,14 @@ class WatershedDialog(QDialog):
         self.kernel_spin = QSpinBox()
         self.kernel_spin.setRange(1, 99)
         self.kernel_spin.setSingleStep(2)
-        self.kernel_spin.setValue(3)
+        self.kernel_spin.setValue(default_kernel)
         self.kernel_spin.editingFinished.connect(self._adjust_kernel_odd)
         form_layout.addRow(QLabel("Taille noyau morpho. (impair) :"), self.kernel_spin)
 
         # 4. Min distance marqueurs
         self.dist_spin = QSpinBox()
         self.dist_spin.setRange(1, 500)
-        self.dist_spin.setValue(50)
+        self.dist_spin.setValue(default_min_dist)
         form_layout.addRow(QLabel("Min distance marqueurs :"), self.dist_spin)
 
         layout.addLayout(form_layout)

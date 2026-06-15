@@ -39,11 +39,11 @@ class SectionHeaderButton(QPushButton):
 
 class LeftToolbar(QWidget):
     reset_image_clicked = pyqtSignal()
-    gaussian_clicked = pyqtSignal()
-    sobel_clicked = pyqtSignal()
-    low_pass_clicked = pyqtSignal()
-    high_pass_clicked = pyqtSignal()
-    clahe_clicked = pyqtSignal()
+    gaussian_clicked = pyqtSignal(bool)
+    sobel_clicked = pyqtSignal(bool)
+    low_pass_clicked = pyqtSignal(bool)
+    high_pass_clicked = pyqtSignal(bool)
+    clahe_clicked = pyqtSignal(bool)
     contrast_slider_clicked = pyqtSignal(bool)
     watershed_clicked = pyqtSignal(bool)
     ruler_clicked = pyqtSignal(bool)
@@ -51,8 +51,13 @@ class LeftToolbar(QWidget):
     height_comp_clicked = pyqtSignal(bool)
     circle_roi_clicked = pyqtSignal(bool)
     square_roi_clicked = pyqtSignal(bool)
-    area_clicked = pyqtSignal()
+    area_clicked = pyqtSignal(bool)
     pipette_clicked = pyqtSignal(bool)
+    pen_clicked = pyqtSignal(bool)
+    text_clicked = pyqtSignal(bool)
+    color_clicked = pyqtSignal()
+    clear_annotations_clicked = pyqtSignal()
+    save_to_patient_clicked = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -188,6 +193,7 @@ class LeftToolbar(QWidget):
         self.btn_area.setFont(icon_font)
         self.btn_area.setFixedSize(button_size, button_size)
         self.btn_area.setToolTip("Calculer les aires du Watershed")
+        self.btn_area.setCheckable(True)
 
         self.btn_circle_roi = QPushButton("\uf111")
         self.btn_circle_roi.setFont(icon_font)
@@ -217,6 +223,53 @@ class LeftToolbar(QWidget):
 
         self.main_layout.addWidget(self.measures_container)
 
+        # === ANNOTATIONS ===
+        self.section_annotations = SectionHeaderButton("Annotations", is_expanded=False)
+        self.main_layout.addWidget(self.section_annotations)
+
+        self.annotations_container = QWidget()
+        self.annotations_container.setVisible(False)
+        self.grid_layout_annotations = QGridLayout(self.annotations_container)
+        self.grid_layout_annotations.setContentsMargins(12, 8, 8, 12)
+        self.grid_layout_annotations.setSpacing(6)
+        self.grid_layout_annotations.setRowMinimumHeight(0, button_size)
+
+        self.btn_pen = QPushButton("\uf040")
+        self.btn_pen.setFont(icon_font)
+        self.btn_pen.setFixedSize(button_size, button_size)
+        self.btn_pen.setToolTip("Stylo : Annoter l'image à main levée")
+        self.btn_pen.setCheckable(True)
+
+        self.btn_text = QPushButton("\uf031")
+        self.btn_text.setFont(icon_font)
+        self.btn_text.setFixedSize(button_size, button_size)
+        self.btn_text.setToolTip("Texte : Ajouter une annotation textuelle")
+        self.btn_text.setCheckable(True)
+
+        self.btn_color = QPushButton("\uf1fc")
+        self.btn_color.setFont(icon_font)
+        self.btn_color.setFixedSize(button_size, button_size)
+        self.btn_color.setToolTip("Couleur : Choisir la couleur active")
+        self.btn_color.setStyleSheet("background-color: #ff0000; border: 2px solid white; border-radius: 4px; color: white;")
+
+        self.btn_clear_annotations = QPushButton("\uf1f8")
+        self.btn_clear_annotations.setFont(icon_font)
+        self.btn_clear_annotations.setFixedSize(button_size, button_size)
+        self.btn_clear_annotations.setToolTip("Effacer : Supprimer toutes les annotations")
+
+        self.btn_save_to_patient = QPushButton("\uf0c7")
+        self.btn_save_to_patient.setFont(icon_font)
+        self.btn_save_to_patient.setFixedSize(button_size, button_size)
+        self.btn_save_to_patient.setToolTip("Sauvegarder dans le dossier du patient")
+
+        self.grid_layout_annotations.addWidget(self.btn_pen, 0, 0)
+        self.grid_layout_annotations.addWidget(self.btn_text, 0, 1)
+        self.grid_layout_annotations.addWidget(self.btn_color, 0, 2)
+        self.grid_layout_annotations.addWidget(self.btn_clear_annotations, 1, 0)
+        self.grid_layout_annotations.addWidget(self.btn_save_to_patient, 1, 1)
+
+        self.main_layout.addWidget(self.annotations_container)
+
         # === DOSSIERS (PATIENTS BDD) ===
         self.section_folders = SectionHeaderButton("Dossiers", is_expanded=False)
         self.main_layout.addWidget(self.section_folders)
@@ -233,30 +286,29 @@ class LeftToolbar(QWidget):
         self.main_layout.addWidget(self.folders_container)
 
         # === CONFIG BTN GRILLE ===
-        self.filter_buttons = [self.btn_origin, self.btn_gaussian, self.btn_low_pass, self.btn_high_pass, self.btn_sobel, self.btn_clahe]
+        self.filter_buttons = [self.btn_gaussian, self.btn_low_pass, self.btn_high_pass, self.btn_sobel, self.btn_clahe]
         for btn in self.filter_buttons:
             btn.setCheckable(True)
-            btn.setAutoExclusive(True)
 
         self.contrast_buttons = [self.btn_clahe, self.btn_watershed, self.btn_contrast_slider]
         for btn in self.contrast_buttons:
             btn.setCheckable(True)
-            btn.setAutoExclusive(True)
 
         # === CONNEXIONS ===
         self.section_filters.clicked.connect(lambda: self.toggle_section(self.section_filters, self.filters_container, "Filtres"))
         self.section_contrast.clicked.connect(lambda: self.toggle_section(self.section_contrast, self.contrast_container, "Contraste"))
         self.section_measures.clicked.connect(lambda: self.toggle_section(self.section_measures, self.measures_container, "Mesures"))
+        self.section_annotations.clicked.connect(lambda: self.toggle_section(self.section_annotations, self.annotations_container, "Annotations"))
         self.section_folders.clicked.connect(lambda: self.toggle_section(self.section_folders, self.folders_container, "Dossiers"))
 
         # === CONNEXIONS SIGNAUX ===
-        self.btn_origin.clicked.connect(self.reset_image_clicked.emit)
-        self.btn_gaussian.clicked.connect(self.gaussian_clicked.emit)
-        self.btn_low_pass.clicked.connect(self.low_pass_clicked.emit)
-        self.btn_high_pass.clicked.connect(self.high_pass_clicked.emit)
-        self.btn_sobel.clicked.connect(self.sobel_clicked.emit)
-        self.btn_clahe.clicked.connect(self.clahe_clicked.emit)
-        self.btn_watershed.clicked.connect(self.watershed_clicked.emit)
+        self.btn_origin.clicked.connect(self._handle_origin_clicked)
+        self.btn_gaussian.clicked.connect(lambda: self._on_button_clicked(self.btn_gaussian, self.gaussian_clicked))
+        self.btn_low_pass.clicked.connect(lambda: self._on_button_clicked(self.btn_low_pass, self.low_pass_clicked))
+        self.btn_high_pass.clicked.connect(lambda: self._on_button_clicked(self.btn_high_pass, self.high_pass_clicked))
+        self.btn_sobel.clicked.connect(lambda: self._on_button_clicked(self.btn_sobel, self.sobel_clicked))
+        self.btn_clahe.clicked.connect(lambda: self._on_button_clicked(self.btn_clahe, self.clahe_clicked))
+        self.btn_watershed.clicked.connect(lambda: self._on_button_clicked(self.btn_watershed, self.watershed_clicked))
         self.btn_ruler.clicked.connect(self.ruler_clicked.emit)
         self.btn_angle.clicked.connect(self.angle_clicked.emit)
         self.btn_height_comp.clicked.connect(self.height_comp_clicked.emit)
@@ -264,6 +316,11 @@ class LeftToolbar(QWidget):
         self.btn_square_roi.clicked.connect(self.square_roi_clicked.emit)
         self.btn_area.clicked.connect(self.area_clicked.emit)
         self.btn_pipette.clicked.connect(self.pipette_clicked.emit)
+        self.btn_pen.clicked.connect(lambda: self._on_button_clicked(self.btn_pen, self.pen_clicked))
+        self.btn_text.clicked.connect(lambda: self._on_button_clicked(self.btn_text, self.text_clicked))
+        self.btn_color.clicked.connect(self.color_clicked.emit)
+        self.btn_clear_annotations.clicked.connect(self.clear_annotations_clicked.emit)
+        self.btn_save_to_patient.clicked.connect(self.save_to_patient_clicked.emit)
 
     def toggle_section(self, button, container, title_text):
         """Masque ou affiche le conteneur et force l'état Checked pour le QSS."""
@@ -272,3 +329,28 @@ class LeftToolbar(QWidget):
         container.setVisible(new_visibility)
         button.setChecked(new_visibility)
         button.set_expanded(new_visibility)
+
+    def uncheck_all_processing_buttons(self, except_btn=None):
+        """Désélectionne tous les boutons de traitement/contraste sauf celui spécifié."""
+        buttons = [
+            self.btn_gaussian,
+            self.btn_low_pass,
+            self.btn_high_pass,
+            self.btn_sobel,
+            self.btn_clahe,
+            self.btn_watershed,
+            self.btn_contrast_slider
+        ]
+        for btn in buttons:
+            if btn != except_btn:
+                btn.setChecked(False)
+
+    def _on_button_clicked(self, button, signal):
+        checked = button.isChecked()
+        if checked:
+            self.uncheck_all_processing_buttons(except_btn=button)
+        signal.emit(checked)
+
+    def _handle_origin_clicked(self):
+        self.uncheck_all_processing_buttons()
+        self.reset_image_clicked.emit()

@@ -5,8 +5,10 @@ from PyQt6.QtGui import QFont
 
 class TopToolbar(QWidget):
     upload_clicked = pyqtSignal()
+    export_clicked = pyqtSignal()
     loupe_clicked = pyqtSignal()
     fft_clicked = pyqtSignal(bool)
+    histo_clicked = pyqtSignal(bool)
     help_clicked = pyqtSignal()
 
     def __init__(self, parent=None):
@@ -25,6 +27,12 @@ class TopToolbar(QWidget):
         self.btn_upload.setFont(icon_font)
         self.btn_upload.setFixedSize(42, 42)
         self.btn_upload.setToolTip("Ouvrir une nouvelle radiographie")
+
+        # Btn Export
+        self.btn_export = QPushButton("\uf0c7")
+        self.btn_export.setFont(icon_font)
+        self.btn_export.setFixedSize(42, 42)
+        self.btn_export.setToolTip("Exporter/Sauvegarder l'image annotée à l'écran")
 
         # Btn Loupe
         self.btn_loupe = QPushButton("\uf002")
@@ -45,6 +53,13 @@ class TopToolbar(QWidget):
         self.btn_fft.setToolTip("Afficher la Transformée de Fourier 2D (FFT)")
         self.btn_fft.setCheckable(True)
 
+        # Btn Histogramme
+        self.btn_histo = QPushButton("\uf080")
+        self.btn_histo.setFont(icon_font)
+        self.btn_histo.setFixedSize(42, 42)
+        self.btn_histo.setToolTip("Afficher l'histogramme de l'image")
+        self.btn_histo.setCheckable(True)
+
         # Btn Help
         self.btn_help = QPushButton("\uf059")
         self.btn_help.setFont(icon_font)
@@ -52,13 +67,17 @@ class TopToolbar(QWidget):
         self.btn_help.setToolTip("Ouvrir le guide d'utilisation (manuel.html)")
 
         toolbar_layout.addWidget(self.btn_upload)
+        toolbar_layout.addWidget(self.btn_export)
         toolbar_layout.addWidget(self.btn_loupe)
         toolbar_layout.addWidget(self.btn_slider_compare)
         toolbar_layout.addWidget(self.btn_fft)
+        toolbar_layout.addWidget(self.btn_histo)
         toolbar_layout.addStretch()
         toolbar_layout.addWidget(self.btn_help)
         # self.setFixedHeight(80)
 
         self.btn_upload.clicked.connect(self.upload_clicked.emit)
+        self.btn_export.clicked.connect(self.export_clicked.emit)
         self.btn_fft.clicked.connect(self.fft_clicked.emit)
+        self.btn_histo.clicked.connect(self.histo_clicked.emit)
         self.btn_help.clicked.connect(self.help_clicked.emit)
