@@ -110,3 +110,16 @@ Pour tester le code, on utilise `pytest`, il suffit de lancer la commande suivan
 ```bash
 pytest
 ```
+
+## 7. Compiler le projet :
+Pour compiler le projet en un exécutable, on utilise `pyinstaller`, il suffit de lancer la commande suivante dans le terminal à la racine du projet :
+
+**Windows** :
+```bash
+python -m PyInstaller esante.spec --clean --noconfirm 
+```
+
+**MacOS/Linux** :
+```bash
+python3 -m PyInstaller esante.spec --clean --noconfirm 
+```
