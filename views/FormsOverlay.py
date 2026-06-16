@@ -515,18 +515,18 @@ class FormsOverlay:
         else:
             mean_val = max_val = min_val = sd_val = num_pixels = 0
 
-        # Aire physique en cm²
-        largeur_physique_totale_cm = 45.0
-        dynamic_pixel_to_cm = largeur_physique_totale_cm / orig_w
-        pixel_area_cm2 = dynamic_pixel_to_cm ** 2
-        area_cm2 = num_pixels * pixel_area_cm2
+        # Aire physique en mm²
+        largeur_physique_totale_mm = 450.0
+        dynamic_pixel_to_mm = largeur_physique_totale_mm / orig_w
+        pixel_area_mm2 = dynamic_pixel_to_mm ** 2
+        area_mm2 = num_pixels * pixel_area_mm2
 
         unit_str = f" {unit}" if unit else ""
         text_lines = [
             f"Moy: {mean_val:.2f}{unit_str}",
             f"Max: {max_val:.2f} / Min: {min_val:.2f}",
             f"SD: {sd_val:.2f}",
-            f"Aire: {num_pixels} px² (~ {area_cm2:.2f} cm²)"
+            f"Aire: {num_pixels} px² (~ {area_mm2:.2f} mm²)"
         ]
 
         font = QFont("Arial", 10, QFont.Weight.Bold)
