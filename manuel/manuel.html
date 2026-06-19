@@ -186,6 +186,7 @@
           <a class="nav-link" onclick="scrollToSection('barre-outils', this)">Barre supérieure</a>
           <a class="nav-link" onclick="scrollToSection('traitements', this)">Filtres &amp; Contraste</a>
           <a class="nav-link" onclick="scrollToSection('mesures', this)">Outils de mesure</a>
+          <a class="nav-link" onclick="scrollToSection('annotations', this)">Annotations</a>
           <a class="nav-link" onclick="scrollToSection('dossiers', this)">Dossiers &amp; Patients</a>
         </div>
       </div>
@@ -293,49 +294,148 @@
                 <tr>
                   <th style="width: 25%;">Filtre</th>
                   <th>Description technique</th>
-                  <th style="width: 20%;">Paramètres</th>
+                  <th style="width: 30%;">Interface &amp; Dialogue</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
                   <td><strong>Image d'origine</strong></td>
                   <td>Réinitialise l'affichage. Annule tous les filtres actifs pour restituer la matrice d'image initiale.</td>
-                  <td>—</td>
+                  <td>— (Application instantanée)</td>
                 </tr>
                 <tr>
                   <td><strong>Filtre Gaussien</strong></td>
                   <td>Lissage spatial réduisant le bruit haute fréquence. Recommandé avant la détection de contours.</td>
-                  <td>Sigma fixe (<code>σ = 8</code>)</td>
+                  <td>Popup <code>Filtre Gaussien</code> (Écart-type <code>σ</code>)</td>
                 </tr>
                 <tr>
                   <td><strong>Sobel (Contours)</strong></td>
                   <td>Détection de contours en calculant la magnitude des gradients horizontaux et verticaux. Filtre au préalable l'image avec un flou gaussien (<code>σ = 2</code>) pour éliminer le bruit. Normalise les gradients à 99%.</td>
-                  <td>Automatique</td>
+                  <td>Automatique (Application directe)</td>
                 </tr>
                 <tr>
                   <td><strong>TFD 2D (Spectre)</strong></td>
                   <td>Calcule la Transformée de Fourier Discrète 2D de l'image. Affiche son spectre de magnitude en échelle logarithmique <code>20 * log(|TFD| + 1)</code> centré sur l'origine.</td>
-                  <td>Normalisé [0, 1]</td>
+                  <td>Automatique (Activable en haut)</td>
                 </tr>
                 <tr>
                   <td><strong>Filtre Passe-Bas</strong></td>
                   <td>Filtre fréquentiel idéal circulaire. Supprime les hautes fréquences au-delà du rayon spécifié, provoquant un flou uniforme.</td>
-                  <td>Rayon de coupure [1 à 150px]</td>
+                  <td>Popup <code>Filtre Passe-Bas</code> (Rayon de coupure)</td>
                 </tr>
                 <tr>
                   <td><strong>Filtre Passe-Haut</strong></td>
                   <td>Filtre fréquentiel idéal circulaire inversé. Supprime les basses fréquences à l'intérieur du rayon spécifié, mettant en valeur les micro-textures et contours abrupts.</td>
-                  <td>Rayon de coupure [1 à 150px]</td>
+                  <td>Popup <code>Filtre Passe-Haut</code> (Rayon de coupure)</td>
                 </tr>
               </tbody>
             </table>
 
-            <h3>Module : Contraste</h3>
-            <p>Indispensable pour faire ressortir les variations de densité tissulaire sur les clichés sombres ou peu contrastés :</p>
-            <ul class="list-disc list-inside mb-4 pl-4 text-sm text-muted">
-              <li><strong style="color: #d4d4d4;">CLAHE (Histogramme adaptatif) :</strong> Égalise localement l'histogramme de l'image sur une grille de tuiles 16x16 avec une limitation du contraste réglée à 5.0 pour éviter le bruit d'amplification.</li>
-              <li><strong style="color: #d4d4d4;">Slider de contraste manuel :</strong> Fait apparaître un curseur en bas de l'écran. Ajuste en temps réel le gain de contraste de l'image par rapport à un point gris moyen via la formule : <code>Pixel_final = 0.5 + Facteur * (Pixel_base - 0.5)</code> avec un facteur ajustable de 1 à 10.</li>
-            </ul>
+            <h3>Module : Contraste &amp; Segmentation</h3>
+            <p>Indispensable pour faire ressortir les variations de densité tissulaire ou délimiter les structures anatomiques :</p>
+            <table class="mb-6">
+              <thead>
+                <tr>
+                  <th style="width: 25%;">Traitement</th>
+                  <th>Description technique</th>
+                  <th style="width: 30%;">Interface &amp; Dialogue</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>CLAHE (Histogramme adaptatif)</strong></td>
+                  <td>Égalise localement l'histogramme de l'image sur une grille de tuiles pour rééquilibrer le contraste.</td>
+                  <td>Popup <code>Paramètres CLAHE</code> (Clip Limit et Grille)</td>
+                </tr>
+                <tr>
+                  <td><strong>Contraste Manuel</strong></td>
+                  <td>Ajuste le gain de contraste par rapport à un gris moyen : <code>Pixel = 0.5 + Facteur * (Pixel_base - 0.5)</code>.</td>
+                  <td>Slider en bas de l'écran (Facteur 1 à 10)</td>
+                </tr>
+                <tr>
+                  <td><strong>Seuillage (Binarisation)</strong></td>
+                  <td>Convertit le cliché en noir et blanc (binarisation) en fonction d'un seuil.</td>
+                  <td>Popup <code>Seuillage</code> (Seuil, 0 = Otsu auto)</td>
+                </tr>
+                <tr>
+                  <td><strong>Segmentation Watershed</strong></td>
+                  <td>Sépare les régions connectées (ex: poumons) par algorithme géomorphologique de ligne de partage des eaux.</td>
+                  <td>Popup <code>Paramètres Watershed</code> (Sigma, Seuil, Noyau, Dist)</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h3>Impact détaillé des paramètres de réglage (Popups)</h3>
+            <p>Voici l'explication physique et clinique des paramètres réglables via les fenêtres de dialogue :</p>
+
+            <div class="space-y-4">
+              <!-- Gaussien -->
+              <div class="border border-border p-4 bg-surface rounded">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="badge badge-blue">Filtre Gaussien</span>
+                  <strong class="text-text">Écart-type (Sigma &sigma;)</strong>
+                </div>
+                <p class="text-xs text-muted mb-0">
+                  Gère la dimension du noyau de convolution pour le lissage spatial (0.1 à 100.0).
+                  <br>• <strong class="text-text">Valeur faible (ex: 0.5 - 1.5) :</strong> Élimine le bruit à très haute fréquence (micro-bruit) tout en gardant les contours et les détails fins des structures osseuses bien nets.
+                  <br>• <strong class="text-text">Valeur élevée (ex: 3.0 - 10.0+) :</strong> Floute fortement l'image. Utile pour éliminer le bruit important ou préparer l'image avant des segmentations complexes, au prix d'une perte des micro-structures.
+                </p>
+              </div>
+
+              <!-- Filtres fréquentiels -->
+              <div class="border border-border p-4 bg-surface rounded">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="badge badge-blue">Filtres Fréquentiels</span>
+                  <strong class="text-text">Fréquence de coupure (Rayon en pixels)</strong>
+                </div>
+                <p class="text-xs text-muted mb-0">
+                  Définit la taille de la zone de masque circulaire dans l'espace de Fourier (TFD 2D).
+                  <br>• <strong class="text-text">Passe-Bas (Low-Pass) :</strong> Supprime le bruit au-delà du rayon. Un <strong>petit rayon</strong> produit un flou très important (seules les grandes structures subsistent). Un <strong>grand rayon</strong> préserve la netteté et la texture d'origine.
+                  <br>• <strong class="text-text">Passe-Haut (High-Pass) :</strong> Supprime les basses fréquences à l'intérieur du rayon. Un <strong>petit rayon</strong> conserve l'allure générale en accentuant légèrement les contours. Un <strong>grand rayon</strong> élimine tout le fond homogène pour ne laisser apparaître que les transitions de forte intensité (rebords osseux abrupts).
+                </p>
+              </div>
+
+              <!-- CLAHE -->
+              <div class="border border-border p-4 bg-surface rounded">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="badge badge-yellow">CLAHE</span>
+                  <strong class="text-text">Limitation contraste (Clip Limit) &amp; Taille de grille locale</strong>
+                </div>
+                <p class="text-xs text-muted mb-0">
+                  Ajuste l'égalisation adaptative de l'histogramme par blocs.
+                  <br>• <strong class="text-text">Limitation contraste (Clip Limit, 0.1 à 40.0) :</strong> Borne l'amplification. Une <strong>limitation forte</strong> fait ressortir des contrastes tissulaires infimes (ex: tissus mous vs air) mais peut fortement amplifier le bruit de fond. Une <strong>limitation faible</strong> produit un rendu plus doux et homogène.
+                  <br>• <strong class="text-text">Taille de grille (Tile Grid, 2 à 128) :</strong> Divise l'image en $n \times n$ tuiles. Une <strong>grille fine (ex: 32x32, 64x64)</strong> améliore les détails très locaux mais peut générer des démarcations de blocs. Une <strong>grille plus large (ex: 8x8)</strong> homogénéise le contraste sur de grandes zones.
+                </p>
+              </div>
+
+              <!-- Seuillage -->
+              <div class="border border-border p-4 bg-surface rounded">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="badge badge-yellow">Seuillage</span>
+                  <strong class="text-text">Seuil (Value)</strong>
+                </div>
+                <p class="text-xs text-muted mb-0">
+                  Binarise l'image pour séparer le fond des objets cliniques.
+                  <br>• <strong class="text-text">Seuil = 0 :</strong> Active l'algorithme d'<strong>Otsu automatique</strong>, qui calcule dynamiquement le seuil optimal pour séparer l'histogramme de manière bimodale.
+                  <br>• <strong class="text-text">Seuil > 0 :</strong> Applique le seuil fixe choisi. Un <strong>seuil trop bas</strong> fusionne l'arrière-plan avec les objets d'intérêt (surestimation de la taille). Un <strong>seuil trop élevé</strong> omet des régions d'intérêt ou fragmente les formes (sous-estimation).
+                </p>
+              </div>
+
+              <!-- Watershed -->
+              <div class="border border-border p-4 bg-surface rounded">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="badge badge-red">Segmentation Watershed</span>
+                  <strong class="text-text">Sigma, Seuillage, Noyau morpho. &amp; Distance minimale</strong>
+                </div>
+                <p class="text-xs text-muted mb-0">
+                  Permet de séparer les structures anatomiques connectées ou superposées.
+                  <br>• <strong class="text-text">Sigma Gaussien :</strong> Prédébruite le gradient de relief. Un sigma élevé évite d'avoir une multitude de petites régions segmentées (sur-segmentation) mais atténue les bords.
+                  <br>• <strong class="text-text">Seuil (Otsu ou manuel) :</strong> Définit le masque d'inondation global (les régions hors masque ne seront pas segmentées).
+                  <br>• <strong class="text-text">Taille noyau morpho. :</strong> Dimension de l'élément structurant. Un noyau plus grand élimine les petites imperfections ou les isolements indésirables avant inondation.
+                  <br>• <strong class="text-text">Min distance marqueurs :</strong> Distance minimale entre les germes de départ (sources d'inondation). Une <strong>distance trop faible</strong> divise les structures d'un seul bloc (sur-segmentation). Une <strong>distance trop grande</strong> peut fusionner deux objets distincts (ex: deux vertèbres ou deux poumons) en un unique label.
+                </p>
+              </div>
+            </div>
           </section>
 
           <!-- OUTILS DE MESURE -->
@@ -378,6 +478,58 @@
                 </tr>
               </tbody>
             </table>
+          </section>
+
+          <!-- ANNOTATIONS -->
+          <section class="content-section mt-10" id="annotations">
+            <div class="flex items-center gap-3 mb-5">
+              <h1>Annotations d'images</h1>
+            </div>
+            <p>Le module d'annotations permet aux cliniciens de dessiner, d'ajouter des étiquettes textuelles et de marquer directement l'image médicale active pour documenter des observations cliniques ou des zones d'intérêt. Ce module est disponible dans le panneau latéral sous l'onglet <strong>Annotations</strong> :</p>
+
+            <table class="mb-6">
+              <thead>
+                <tr>
+                  <th style="width: 15%;">Outil</th>
+                  <th style="width: 25%;">Action / Rôle</th>
+                  <th>Fonctionnement détaillé &amp; Raccourcis</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>✏️ Stylo</code></td>
+                  <td><strong>Tracé libre à main levée</strong></td>
+                  <td>Permet de dessiner des traits sur l'image en maintenant le clic gauche enfoncé. Utile pour entourer une anomalie, souligner une zone pathologique ou tracer des schémas explicatifs. Le tracé s'adapte dynamiquement à la résolution de l'image.</td>
+                </tr>
+                <tr>
+                  <td><code>🔤 Texte</code></td>
+                  <td><strong>Ajout de texte dynamique</strong></td>
+                  <td>Cliquez sur l'image pour ouvrir une invite de saisie de texte. Le texte apparaît centré sur le point cliqué.
+                  <br>• <strong>Déplacement :</strong> En mode texte, survolez un texte existant (le curseur se change en flèches multidirectionnelles) pour le déplacer par glisser-déposer.
+                  <br>• <strong>Sélection :</strong> Cliquer sur un texte l'entoure d'un cadre en pointillé bleu.
+                  <br>• <strong>Suppression :</strong> Appuyez sur la touche <kbd class="px-1 bg-surface border border-border rounded text-[11px]">Suppr</kbd> ou <kbd class="px-1 bg-surface border border-border rounded text-[11px]">Retour arrière</kbd> pour effacer le texte sélectionné.</td>
+                </tr>
+                <tr>
+                  <td><code>🎨 Couleur</code></td>
+                  <td><strong>Nuancier d'annotation</strong></td>
+                  <td>Ouvre le sélecteur de couleurs standard du système (<code>QColorDialog</code>). Permet de définir la couleur des nouveaux tracés libres et des nouvelles annotations de texte. La couleur actuelle s'affiche en fond du bouton.</td>
+                </tr>
+                <tr>
+                  <td><code>🗑️ Effacer</code></td>
+                  <td><strong>Suppression globale</strong></td>
+                  <td>Supprime instantanément tous les tracés au stylo et les zones de texte présents sur l'image pour réinitialiser le plan d'annotation.</td>
+                </tr>
+                <tr>
+                  <td><code>💾 Exporter</code></td>
+                  <td><strong>Sauvegarde des tracés</strong></td>
+                  <td>Permet d'exporter l'image contenant l'ensemble de ses annotations superposées sous forme de cliché fusionné. Peut être sauvegardé localement (PNG/JPEG) ou rattaché directement à la fiche du patient actif dans la base de données PostgreSQL.</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="callout callout-info mt-2 mb-6">
+              <strong>Astuce ergonomique</strong> — Les annotations textuelles s'affichent sur un fond noir semi-transparent de façon à garantir une lisibilité optimale, quel que soit le niveau de gris de la radiographie sous-jacente.
+            </div>
           </section>
 
           <!-- DOSSIERS ET PATIENTS -->
@@ -666,8 +818,8 @@ DB_PASSWORD=votre_mot_de_passe</code></pre>
         id: 'traitements',
         title: 'Filtres & Traitements d\'image',
         category: "Guide d'utilisation",
-        content: "Filtres spatiaux et fréquentiels : Image d'origine, Filtre Gaussien, Sobel (Contours), TFD 2D (Spectre), Filtre Passe-Bas, Filtre Passe-Haut, CLAHE, Contraste.",
-        tags: "contours fourier fft passe-bas passe-haut histogramme clahe"
+        content: "Filtres spatiaux et fréquentiels : Image d'origine, Filtre Gaussien (sigma), Sobel (Contours), TFD 2D (Spectre), Filtre Passe-Bas (rayon), Filtre Passe-Haut (rayon), CLAHE (clip limit, tile grid size), Seuillage (seuil, Otsu), Segmentation Watershed.",
+        tags: "contours fourier fft passe-bas passe-haut histogramme clahe seuil otsu binarisation watershed sigma distance"
       },
       {
         id: 'mesures',
@@ -675,6 +827,13 @@ DB_PASSWORD=votre_mot_de_passe</code></pre>
         category: "Guide d'utilisation",
         content: "Dessin de repères cliniques : Règle de distance (cm, calibrage 45cm), Rapporteur d'angle (degrés), Comparateur de hauteur (Δy).",
         tags: "distance angle hauteur pelvis bassin calibrage clic points"
+      },
+      {
+        id: 'annotations',
+        title: 'Annotations',
+        category: "Guide d'utilisation",
+        content: "Module d'annotations : Dessin libre au Stylo, texte dynamique (déplacement, sélection), choix de la Couleur active, bouton Effacer, Sauvegarde et Export du cliché annoté.",
+        tags: "stylo texte couleur effacer sauvegarder exporter pinceau dessin suppr backspace"
       },
       {
         id: 'dossiers',
