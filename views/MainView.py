@@ -3,7 +3,6 @@ from PyQt6.QtCore import Qt, QPoint, QRect
 from PyQt6.QtGui import QPixmap, QGuiApplication, QIcon, QPainter, QCursor, QPen, QColor, QFont
 from typing import TYPE_CHECKING
 
-
 if TYPE_CHECKING:
     from controllers.MainController import MainController
 
@@ -20,6 +19,7 @@ from views.HistogramWidget import HistogramWidget
 
 # ===== IMPORT HELPER ======
 from utils.paths import resource_path
+
 
 class MedicalImageLabel(QLabel):
     def __init__(self, text, parent=None):
@@ -124,10 +124,12 @@ class MedicalImageLabel(QLabel):
 
                             # Copier dans le presse-papiers
                             from PyQt6.QtGui import QGuiApplication
+
                             QGuiApplication.clipboard().setText(str(val_255))
 
                             # Afficher confirmation
                             from PyQt6.QtWidgets import QToolTip
+
                             QToolTip.showText(event.globalPosition().toPoint(), f"Seuil de gris relevé : {val_255} (copié)", self)
                             print(f"Pipette : seuil de gris sélectionné = {val_255}")
 
@@ -266,20 +268,26 @@ class MedicalImageLabel(QLabel):
             self.annotations_overlay.draw_annotations(painter, img_rect)
 
         # --- DESSIN DU RETICULE ET VALEUR PIPETTE AU PREMIER PLAN ---
-        if self.visualizer and self.visualizer.main_view and self.visualizer.main_view.pipette_active and getattr(self, "pipette_pos", None) is not None and getattr(self, "pipette_val", None) is not None:
+        if (
+            self.visualizer
+            and self.visualizer.main_view
+            and self.visualizer.main_view.pipette_active
+            and getattr(self, "pipette_pos", None) is not None
+            and getattr(self, "pipette_val", None) is not None
+        ):
             painter.setClipping(False)
             x, y = self.pipette_pos.x(), self.pipette_pos.y()
-            
+
             # Reticule de ciblage
             painter.setPen(QPen(QColor(255, 255, 255, 200), 1, Qt.PenStyle.SolidLine))
             painter.drawEllipse(QPoint(x, y), 6, 6)
             painter.drawLine(x - 10, y, x + 10, y)
             painter.drawLine(x, y - 10, x, y + 10)
-            
+
             # Ombre pour lisibilité
             painter.setPen(QPen(QColor(0, 0, 0, 150), 1, Qt.PenStyle.DotLine))
             painter.drawEllipse(QPoint(x, y), 7, 7)
-            
+
             # Cartouche d'affichage textuel
             text = f"Seuil (gris) : {self.pipette_val}"
             font = QFont("Segoe UI", 10, QFont.Weight.Bold)
@@ -287,27 +295,27 @@ class MedicalImageLabel(QLabel):
             fm = painter.fontMetrics()
             text_width = fm.horizontalAdvance(text)
             text_height = fm.height()
-            
+
             padding_x = 8
             padding_y = 4
             rect_width = text_width + 2 * padding_x
             rect_height = text_height + 2 * padding_y
-            
+
             offset_x = 12
             offset_y = 12
             rect_x = x + offset_x
             rect_y = y + offset_y
-            
+
             if rect_x + rect_width > self.width():
                 rect_x = x - rect_width - offset_x
             if rect_y + rect_height > self.height():
                 rect_y = y - rect_height - offset_y
-                
+
             rect = QRect(rect_x, rect_y, rect_width, rect_height)
             painter.setBrush(QColor(20, 20, 20, 220))
             painter.setPen(QPen(QColor(80, 80, 80, 200), 1))
             painter.drawRoundedRect(rect, 4.0, 4.0)
-            
+
             painter.setPen(QColor(240, 240, 240))
             painter.drawText(rect, Qt.AlignmentFlag.AlignCenter, text)
 
@@ -788,7 +796,7 @@ class MainView(QMainWindow):
                 self.watershed_area_label.setFixedWidth(self.image_info_label.width())
                 self.watershed_area_label.adjustSize()
                 y_current = y_current - self.watershed_area_label.height() - 10
-                   # Positionner aussi self.fft_label encore au-dessus
+                # Positionner aussi self.fft_label encore au-dessus
             if hasattr(self, "fft_label") and self.fft_label.isVisible():
                 if self.fft_label.pixmap():
                     # Forcer la largeur du pixmap à correspondre à la largeur de image_info_label
@@ -842,9 +850,9 @@ class MainView(QMainWindow):
                 size_bytes = os.path.getsize(file_path)
                 size_mb = size_bytes / (1024 * 1024)
                 self.original_image_size_str = f"{size_mb:.2f} Mo"
-                
+
                 _, ext = os.path.splitext(file_path)
-                fmt_str = ext.lstrip('.').upper()
+                fmt_str = ext.lstrip(".").upper()
                 if fmt_str == "DCM":
                     self.original_image_format = "DICOM (dcm)"
                 else:

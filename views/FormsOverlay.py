@@ -4,14 +4,15 @@ import numpy as np
 from PyQt6.QtCore import Qt, QPoint, QRect, QRectF, QPointF
 from PyQt6.QtGui import QPainter, QPen, QColor, QFont
 
+
 class Shape:
     def __init__(self, shape_type, cx, cy, w, h, rotation=0.0):
         self.shape_type = shape_type  # "circle" ou "square"
-        self.cx = cx                  # centre relatif x (0.0 à 1.0)
-        self.cy = cy                  # centre relatif y (0.0 à 1.0)
-        self.w = w                    # largeur relative (0.0 à 1.0)
-        self.h = h                    # hauteur relative (0.0 à 1.0)
-        self.rotation = rotation      # angle en degrés
+        self.cx = cx  # centre relatif x (0.0 à 1.0)
+        self.cy = cy  # centre relatif y (0.0 à 1.0)
+        self.w = w  # largeur relative (0.0 à 1.0)
+        self.h = h  # hauteur relative (0.0 à 1.0)
+        self.rotation = rotation  # angle en degrés
         self.selected = False
 
 
@@ -29,7 +30,7 @@ class FormsOverlay:
         # État d'interaction
         self.selected_shape = None
         self.interaction_mode = None  # None, "creating", "moving", "resizing", "rotating"
-        self.active_handle = None     # "tl", "tr", "bl", "br"
+        self.active_handle = None  # "tl", "tr", "bl", "br"
         self.drag_offset_x = 0.0
         self.drag_offset_y = 0.0
         self.initial_rotation = 0.0
@@ -58,7 +59,7 @@ class FormsOverlay:
         return rx, ry
 
     def dist(self, p1, p2):
-        return math.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
+        return math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
 
     def clear(self):
         """Réinitialise l'état du tracé temporaire en cours."""
@@ -91,7 +92,7 @@ class FormsOverlay:
             rad = math.radians(shape.rotation)
 
             # Poignée de rotation (0, -sh/2 - 25)
-            rx_rot, ry_rot = self.rotate_point(0, -sh/2 - 25, rad)
+            rx_rot, ry_rot = self.rotate_point(0, -sh / 2 - 25, rad)
             rot_handle_pos = (scx + rx_rot, scy + ry_rot)
             if self.dist((sx, sy), rot_handle_pos) < 10:
                 self.interaction_mode = "rotating"
@@ -100,12 +101,7 @@ class FormsOverlay:
                 return True
 
             # Poignées de redimensionnement aux coins
-            corners = [
-                ("tl", (-sw/2, -sh/2)),
-                ("tr", (sw/2, -sh/2)),
-                ("bl", (-sw/2, sh/2)),
-                ("br", (sw/2, sh/2))
-            ]
+            corners = [("tl", (-sw / 2, -sh / 2)), ("tr", (sw / 2, -sh / 2)), ("bl", (-sw / 2, sh / 2)), ("br", (sw / 2, sh / 2))]
             for name, (lx, ly) in corners:
                 rx_c, ry_c = self.rotate_point(lx, ly, rad)
                 corner_pos = (scx + rx_c, scy + ry_c)
@@ -127,9 +123,9 @@ class FormsOverlay:
 
             inside = False
             if shape.shape_type == "circle":
-                inside = (lx / (sw/2))**2 + (ly / (sh/2))**2 <= 1.0
+                inside = (lx / (sw / 2)) ** 2 + (ly / (sh / 2)) ** 2 <= 1.0
             else:
-                inside = abs(lx) <= sw/2 and abs(ly) <= sh/2
+                inside = abs(lx) <= sw / 2 and abs(ly) <= sh / 2
 
             if inside:
                 if self.selected_shape:
@@ -150,7 +146,7 @@ class FormsOverlay:
                 if self.shape_type == "circle":
                     cx = self.rel_a[0]
                     cy = self.rel_a[1]
-                    r = math.sqrt((self.rel_b[0] - self.rel_a[0])**2 + (self.rel_b[1] - self.rel_a[1])**2)
+                    r = math.sqrt((self.rel_b[0] - self.rel_a[0]) ** 2 + (self.rel_b[1] - self.rel_a[1]) ** 2)
                     w = h = 2.0 * r
                 else:
                     cx = (self.rel_a[0] + self.rel_b[0]) / 2.0
@@ -264,19 +260,14 @@ class FormsOverlay:
         rad = math.radians(shape.rotation)
 
         # 1. Survol de la poignée de rotation
-        rx_rot, ry_rot = self.rotate_point(0, -sh/2 - 25, rad)
+        rx_rot, ry_rot = self.rotate_point(0, -sh / 2 - 25, rad)
         rot_handle_pos = (scx + rx_rot, scy + ry_rot)
         if self.dist((sx, sy), rot_handle_pos) < 10:
             self.label_view.setCursor(Qt.CursorShape.PointingHandCursor)
             return
 
         # 2. Survol des poignées de redimensionnement
-        corners = [
-            ("tl", (-sw/2, -sh/2)),
-            ("tr", (sw/2, -sh/2)),
-            ("bl", (-sw/2, sh/2)),
-            ("br", (sw/2, sh/2))
-        ]
+        corners = [("tl", (-sw / 2, -sh / 2)), ("tr", (sw / 2, -sh / 2)), ("bl", (-sw / 2, sh / 2)), ("br", (sw / 2, sh / 2))]
         for name, (lx, ly) in corners:
             rx_c, ry_c = self.rotate_point(lx, ly, rad)
             corner_pos = (scx + rx_c, scy + ry_c)
@@ -294,9 +285,9 @@ class FormsOverlay:
 
         inside = False
         if shape.shape_type == "circle":
-            inside = (lx / (sw/2))**2 + (ly / (sh/2))**2 <= 1.0
+            inside = (lx / (sw / 2)) ** 2 + (ly / (sh / 2)) ** 2 <= 1.0
         else:
-            inside = abs(lx) <= sw/2 and abs(ly) <= sh/2
+            inside = abs(lx) <= sw / 2 and abs(ly) <= sh / 2
 
         if inside:
             self.label_view.setCursor(Qt.CursorShape.SizeAllCursor)
@@ -329,6 +320,7 @@ class FormsOverlay:
             try:
                 if file_path.lower().endswith(".dcm"):
                     import pydicom
+
                     dicom_image = pydicom.dcmread(file_path)
                     pixel_array = dicom_image.pixel_array.astype(np.float32)
                     slope = getattr(dicom_image, "RescaleSlope", 1.0)
@@ -337,6 +329,7 @@ class FormsOverlay:
                     self.cached_unit = "HU"
                 else:
                     from PIL import Image
+
                     img = Image.open(file_path).convert("L")
                     self.cached_raw_pixels = np.array(img).astype(np.float32)
                     self.cached_unit = ""
@@ -386,9 +379,9 @@ class FormsOverlay:
         painter.setBrush(Qt.BrushStyle.NoBrush)
 
         if shape.shape_type == "circle":
-            painter.drawEllipse(QRectF(-sw/2, -sh/2, sw, sh))
+            painter.drawEllipse(QRectF(-sw / 2, -sh / 2, sw, sh))
         else:
-            painter.drawRect(QRectF(-sw/2, -sh/2, sw, sh))
+            painter.drawRect(QRectF(-sw / 2, -sh / 2, sw, sh))
 
         painter.restore()
 
@@ -410,23 +403,23 @@ class FormsOverlay:
         # Dessiner le cadre de sélection en tirets bleus
         pen_bbox = QPen(QColor("#00a2ed"), 1, Qt.PenStyle.DashLine)
         painter.setPen(pen_bbox)
-        painter.drawRect(QRectF(-sw/2, -sh/2, sw, sh))
+        painter.drawRect(QRectF(-sw / 2, -sh / 2, sw, sh))
 
         # Ligne de liaison vers la poignée de rotation
-        painter.drawLine(QPointF(0, -sh/2), QPointF(0, -sh/2 - 25))
+        painter.drawLine(QPointF(0, -sh / 2), QPointF(0, -sh / 2 - 25))
 
         # Dessiner les poignées d'angle
         painter.setPen(QPen(QColor("#00a2ed"), 1, Qt.PenStyle.SolidLine))
         painter.setBrush(QColor("#ffffff"))
         handle_size = 8
-        painter.drawRect(QRectF(-sw/2 - handle_size/2, -sh/2 - handle_size/2, handle_size, handle_size))
-        painter.drawRect(QRectF(sw/2 - handle_size/2, -sh/2 - handle_size/2, handle_size, handle_size))
-        painter.drawRect(QRectF(-sw/2 - handle_size/2, sh/2 - handle_size/2, handle_size, handle_size))
-        painter.drawRect(QRectF(sw/2 - handle_size/2, sh/2 - handle_size/2, handle_size, handle_size))
+        painter.drawRect(QRectF(-sw / 2 - handle_size / 2, -sh / 2 - handle_size / 2, handle_size, handle_size))
+        painter.drawRect(QRectF(sw / 2 - handle_size / 2, -sh / 2 - handle_size / 2, handle_size, handle_size))
+        painter.drawRect(QRectF(-sw / 2 - handle_size / 2, sh / 2 - handle_size / 2, handle_size, handle_size))
+        painter.drawRect(QRectF(sw / 2 - handle_size / 2, sh / 2 - handle_size / 2, handle_size, handle_size))
 
         # Poignée de rotation
         painter.setBrush(QColor("#00a2ed"))
-        painter.drawEllipse(QPointF(0, -sh/2 - 25), handle_size/2, handle_size/2)
+        painter.drawEllipse(QPointF(0, -sh / 2 - 25), handle_size / 2, handle_size / 2)
 
         painter.restore()
 
@@ -441,7 +434,7 @@ class FormsOverlay:
         painter.setPen(pen_preview)
 
         if shape_type == "circle":
-            screen_r = int(math.sqrt((screen_bx - screen_ax)**2 + (screen_by - screen_ay)**2))
+            screen_r = int(math.sqrt((screen_bx - screen_ax) ** 2 + (screen_by - screen_ay) ** 2))
             painter.drawEllipse(QPoint(int(screen_ax), int(screen_ay)), screen_r, screen_r)
             painter.setPen(pen_dots)
             painter.drawPoint(QPoint(int(screen_ax), int(screen_ay)))
@@ -472,10 +465,10 @@ class FormsOverlay:
         # Calculer le AABB (Axis-Aligned Bounding Box) pour limiter la zone de scan
         orig_rad = math.radians(shape.rotation)
         orig_corners = [
-            self.rotate_point(-orig_rw/2, -orig_rh/2, orig_rad),
-            self.rotate_point(orig_rw/2, -orig_rh/2, orig_rad),
-            self.rotate_point(-orig_rw/2, orig_rh/2, orig_rad),
-            self.rotate_point(orig_rw/2, orig_rh/2, orig_rad)
+            self.rotate_point(-orig_rw / 2, -orig_rh / 2, orig_rad),
+            self.rotate_point(orig_rw / 2, -orig_rh / 2, orig_rad),
+            self.rotate_point(-orig_rw / 2, orig_rh / 2, orig_rad),
+            self.rotate_point(orig_rw / 2, orig_rh / 2, orig_rad),
         ]
         orig_xs = [orig_cx + dx for dx, dy in orig_corners]
         orig_ys = [orig_cy + dy for dx, dy in orig_corners]
@@ -487,21 +480,21 @@ class FormsOverlay:
 
         # Extraction vectorisée NumPy avec rotation inverse pour le calcul du masque
         if xmax >= xmin and ymax >= ymin:
-            Y, X = np.ogrid[ymin:ymax+1, xmin:xmax+1]
+            Y, X = np.ogrid[ymin : ymax + 1, xmin : xmax + 1]
             cos_a = math.cos(orig_rad)
             sin_a = math.sin(orig_rad)
-            
+
             # Transformation inverse vers le repère local de la ROI
             local_X = (X - orig_cx) * cos_a + (Y - orig_cy) * sin_a
             local_Y = -(X - orig_cx) * sin_a + (Y - orig_cy) * cos_a
 
             if shape.shape_type == "circle":
                 # Le cercle utilise orig_rw comme diamètre (équivalent à sw à l'échelle d'origine)
-                mask = (local_X**2 + local_Y**2) <= (orig_rw / 2.0)**2
+                mask = (local_X**2 + local_Y**2) <= (orig_rw / 2.0) ** 2
             else:
                 mask = (np.abs(local_X) <= orig_rw / 2.0) & (np.abs(local_Y) <= orig_rh / 2.0)
 
-            sub_pixels = raw_pixels[ymin:ymax+1, xmin:xmax+1]
+            sub_pixels = raw_pixels[ymin : ymax + 1, xmin : xmax + 1]
             values = sub_pixels[mask]
         else:
             values = np.array([])
@@ -518,16 +511,11 @@ class FormsOverlay:
         # Aire physique en mm²
         largeur_physique_totale_mm = 450.0
         dynamic_pixel_to_mm = largeur_physique_totale_mm / orig_w
-        pixel_area_mm2 = dynamic_pixel_to_mm ** 2
+        pixel_area_mm2 = dynamic_pixel_to_mm**2
         area_mm2 = num_pixels * pixel_area_mm2
 
         unit_str = f" {unit}" if unit else ""
-        text_lines = [
-            f"Moy: {mean_val:.2f}{unit_str}",
-            f"Max: {max_val:.2f} / Min: {min_val:.2f}",
-            f"SD: {sd_val:.2f}",
-            f"Aire: {num_pixels} px² (~ {area_mm2:.2f} mm²)"
-        ]
+        text_lines = [f"Moy: {mean_val:.2f}{unit_str}", f"Max: {max_val:.2f} / Min: {min_val:.2f}", f"SD: {sd_val:.2f}", f"Aire: {num_pixels} px² (~ {area_mm2:.2f} mm²)"]
 
         font = QFont("Arial", 10, QFont.Weight.Bold)
         painter.save()
@@ -548,10 +536,10 @@ class FormsOverlay:
         sw = shape.w * img_rect.width()
         sh = shape.h * img_rect.height()
         screen_corners = [
-            self.rotate_point(-sw/2, -sh/2, orig_rad),
-            self.rotate_point(sw/2, -sh/2, orig_rad),
-            self.rotate_point(-sw/2, sh/2, orig_rad),
-            self.rotate_point(sw/2, sh/2, orig_rad)
+            self.rotate_point(-sw / 2, -sh / 2, orig_rad),
+            self.rotate_point(sw / 2, -sh / 2, orig_rad),
+            self.rotate_point(-sw / 2, sh / 2, orig_rad),
+            self.rotate_point(sw / 2, sh / 2, orig_rad),
         ]
         scx, scy = self.to_screen(shape.cx, shape.cy, img_rect)
         xs = [scx + dx for dx, dy in screen_corners]

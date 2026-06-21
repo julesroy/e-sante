@@ -21,7 +21,7 @@ class SectionHeaderButton(QPushButton):
 
         self.title_label = QLabel(title)
         self.title_label.setStyleSheet("color: white; font-weight: bold; background-color: transparent;")
-        
+
         self.arrow_label = QLabel("▼" if is_expanded else "▶")
         self.arrow_label.setStyleSheet("color: white; font-weight: bold; background-color: transparent;")
 
@@ -332,15 +332,7 @@ class LeftToolbar(QWidget):
 
     def uncheck_all_processing_buttons(self, except_btn=None):
         """Désélectionne tous les boutons de traitement/contraste sauf celui spécifié."""
-        buttons = [
-            self.btn_gaussian,
-            self.btn_low_pass,
-            self.btn_high_pass,
-            self.btn_sobel,
-            self.btn_clahe,
-            self.btn_watershed,
-            self.btn_contrast_slider
-        ]
+        buttons = [self.btn_gaussian, self.btn_low_pass, self.btn_high_pass, self.btn_sobel, self.btn_clahe, self.btn_watershed, self.btn_contrast_slider]
         for btn in buttons:
             if btn != except_btn:
                 btn.setChecked(False)

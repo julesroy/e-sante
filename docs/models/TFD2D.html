@@ -42,6 +42,18 @@
                         <li>
                                 <a class="function" href="#TFD2D.afficher_spectre">afficher_spectre</a>
                         </li>
+                        <li>
+                                <a class="function" href="#TFD2D.calculerTFDInverse">calculerTFDInverse</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#TFD2D.afficher_image_reconstruite">afficher_image_reconstruite</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#TFD2D.filtragePasseBas">filtragePasseBas</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#TFD2D.filtragePasseHaut">filtragePasseHaut</a>
+                        </li>
                 </ul>
 
             </li>
@@ -66,62 +78,144 @@
 
                         <label class="view-source-button" for="mod-TFD2D-view-source"><span>View Source</span></label>
 
-                        <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos"> 1</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-</span><span id="L-2"><a href="#L-2"><span class="linenos"> 2</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-</span><span id="L-3"><a href="#L-3"><span class="linenos"> 3</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">models.FiltrageGaussien</span><span class="w"> </span><span class="kn">import</span> <span class="n">FiltrageGaussien</span>
-</span><span id="L-4"><a href="#L-4"><span class="linenos"> 4</span></a>
-</span><span id="L-5"><a href="#L-5"><span class="linenos"> 5</span></a>
-</span><span id="L-6"><a href="#L-6"><span class="linenos"> 6</span></a><span class="k">class</span><span class="w"> </span><span class="nc">TFD2D</span><span class="p">:</span>
-</span><span id="L-7"><a href="#L-7"><span class="linenos"> 7</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-8"><a href="#L-8"><span class="linenos"> 8</span></a><span class="sd">    Classe pour calculer la TFD 2D d&#39;une image et visualiser le spectre.</span>
-</span><span id="L-9"><a href="#L-9"><span class="linenos"> 9</span></a><span class="sd">    Exemple d&#39;instanciation :</span>
-</span><span id="L-10"><a href="#L-10"><span class="linenos">10</span></a><span class="sd">    testTFD2D = TFD2D(&#39;COVID-1024.png&#39;)</span>
-</span><span id="L-11"><a href="#L-11"><span class="linenos">11</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="L-12"><a href="#L-12"><span class="linenos">12</span></a>
-</span><span id="L-13"><a href="#L-13"><span class="linenos">13</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">imagePath</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-</span><span id="L-14"><a href="#L-14"><span class="linenos">14</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-15"><a href="#L-15"><span class="linenos">15</span></a><span class="sd">        Initialise les paramètres pour la FFT 2D.</span>
-</span><span id="L-16"><a href="#L-16"><span class="linenos">16</span></a><span class="sd">        :param imagePath: Chemin de l&#39;image d&#39;entrée.</span>
-</span><span id="L-17"><a href="#L-17"><span class="linenos">17</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="L-18"><a href="#L-18"><span class="linenos">18</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_imagePath</span> <span class="o">=</span> <span class="n">imagePath</span>
-</span><span id="L-19"><a href="#L-19"><span class="linenos">19</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_spectre</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span id="L-20"><a href="#L-20"><span class="linenos">20</span></a>
-</span><span id="L-21"><a href="#L-21"><span class="linenos">21</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">calculerTFDSpectre</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="L-22"><a href="#L-22"><span class="linenos">22</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-23"><a href="#L-23"><span class="linenos">23</span></a><span class="sd">        Permet de calculer la TFD 2D de l&#39;image spécifiée et de retourner le spectre.</span>
-</span><span id="L-24"><a href="#L-24"><span class="linenos">24</span></a><span class="sd">        Pour la magnitude du spectre, on utilise une échelle logarithmique pour une meilleure visualisation.</span>
-</span><span id="L-25"><a href="#L-25"><span class="linenos">25</span></a><span class="sd">        La formule est : Spectre = 20 * log(|TFD| + 1) pour éviter les problèmes de log(0).</span>
-</span><span id="L-26"><a href="#L-26"><span class="linenos">26</span></a><span class="sd">        :return: Matrice du spectre de la TFD 2D (Numpy 2D array).</span>
-</span><span id="L-27"><a href="#L-27"><span class="linenos">27</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="L-28"><a href="#L-28"><span class="linenos">28</span></a>        <span class="c1"># on applique un filtrage gaussien à l&#39;image pour réduire le bruit avant de calculer la TFD</span>
-</span><span id="L-29"><a href="#L-29"><span class="linenos">29</span></a>        <span class="n">matrice</span> <span class="o">=</span> <span class="n">FiltrageGaussien</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_imagePath</span><span class="p">)</span>
-</span><span id="L-30"><a href="#L-30"><span class="linenos">30</span></a>        <span class="n">matriceFiltree</span> <span class="o">=</span> <span class="n">matrice</span><span class="o">.</span><span class="n">filtrage</span><span class="p">()</span>  <span class="c1"># la matrice filtrée est une matrice 2D de type numpy.ndarray, représentant l&#39;image filtrée en niveaux de gris (hauteur x largeur)</span>
-</span><span id="L-31"><a href="#L-31"><span class="linenos">31</span></a>
-</span><span id="L-32"><a href="#L-32"><span class="linenos">32</span></a>        <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft2</span><span class="p">(</span><span class="n">matriceFiltree</span><span class="p">)</span>  <span class="c1"># on applique la TFD 2D à la matrice filtrée</span>
-</span><span id="L-33"><a href="#L-33"><span class="linenos">33</span></a>        <span class="n">fshift</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftshift</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>  <span class="c1"># on déplace la fréquence zéro (les basses fréquences) au centre du spectre</span>
-</span><span id="L-34"><a href="#L-34"><span class="linenos">34</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_spectre</span> <span class="o">=</span> <span class="mi">20</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">fshift</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># on calcule la magnitude (le spectre) et on utilise l&#39;échelle logarithmique pour la visualisation</span>
-</span><span id="L-35"><a href="#L-35"><span class="linenos">35</span></a>
-</span><span id="L-36"><a href="#L-36"><span class="linenos">36</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spectre</span>
-</span><span id="L-37"><a href="#L-37"><span class="linenos">37</span></a>
-</span><span id="L-38"><a href="#L-38"><span class="linenos">38</span></a>    <span class="c1"># pas utile directement mais je voulais voir si ça ressemblait bien à une TFD et pas autre chose ahaha</span>
-</span><span id="L-39"><a href="#L-39"><span class="linenos">39</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">afficher_spectre</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="L-40"><a href="#L-40"><span class="linenos">40</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-41"><a href="#L-41"><span class="linenos">41</span></a><span class="sd">        Affiche le spectre calculé.</span>
-</span><span id="L-42"><a href="#L-42"><span class="linenos">42</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="L-43"><a href="#L-43"><span class="linenos">43</span></a>        <span class="c1"># paramètres pour l&#39;affichage du spectre</span>
-</span><span id="L-44"><a href="#L-44"><span class="linenos">44</span></a>        <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
-</span><span id="L-45"><a href="#L-45"><span class="linenos">45</span></a>        <span class="n">axes</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_spectre</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;gray&quot;</span><span class="p">)</span>
-</span><span id="L-46"><a href="#L-46"><span class="linenos">46</span></a>        <span class="n">axes</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Spectre FFT 2D (Echelle Log)&quot;</span><span class="p">)</span>
-</span><span id="L-47"><a href="#L-47"><span class="linenos">47</span></a>        <span class="n">axes</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
-</span><span id="L-48"><a href="#L-48"><span class="linenos">48</span></a>
-</span><span id="L-49"><a href="#L-49"><span class="linenos">49</span></a>        <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>  <span class="c1"># ajuste automatiquement la disposition</span>
-</span><span id="L-50"><a href="#L-50"><span class="linenos">50</span></a>        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>  <span class="c1"># affiche</span>
-</span><span id="L-51"><a href="#L-51"><span class="linenos">51</span></a>
-</span><span id="L-52"><a href="#L-52"><span class="linenos">52</span></a>
-</span><span id="L-53"><a href="#L-53"><span class="linenos">53</span></a><span class="c1"># testTFD2D = TFD2D(&#39;COVID-1024.png&#39;)</span>
-</span><span id="L-54"><a href="#L-54"><span class="linenos">54</span></a><span class="c1"># matriceTFD2D = testTFD2D.calculerTFDSpectre()</span>
-</span><span id="L-55"><a href="#L-55"><span class="linenos">55</span></a><span class="c1"># print(type(matriceTFD2D)) # type de la matrice du spectre</span>
-</span><span id="L-56"><a href="#L-56"><span class="linenos">56</span></a><span class="c1"># testTFD2D.afficher_spectre() # à utiliser uniquement pour visualiser le spectre</span>
+                        <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos">  1</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span id="L-2"><a href="#L-2"><span class="linenos">  2</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+</span><span id="L-3"><a href="#L-3"><span class="linenos">  3</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">.FiltrageGaussien</span><span class="w"> </span><span class="kn">import</span> <span class="n">FiltrageGaussien</span>
+</span><span id="L-4"><a href="#L-4"><span class="linenos">  4</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">.ImageConvertie</span><span class="w"> </span><span class="kn">import</span> <span class="n">ImageConvertie</span>
+</span><span id="L-5"><a href="#L-5"><span class="linenos">  5</span></a>
+</span><span id="L-6"><a href="#L-6"><span class="linenos">  6</span></a>
+</span><span id="L-7"><a href="#L-7"><span class="linenos">  7</span></a><span class="k">class</span><span class="w"> </span><span class="nc">TFD2D</span><span class="p">:</span>
+</span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a><span class="sd">    Classe pour calculer la TFD 2D d&#39;une image et visualiser le spectre.</span>
+</span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a><span class="sd">    L&#39;image d&#39;entrée doit être une matrice Numpy 2D normalisée entre 0 et 1 (niveaux de gris).</span>
+</span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a><span class="sd">    Exemple d&#39;utilisation :</span>
+</span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a><span class="sd">    imageConvertie = ImageConvertie(&#39;COVID-1024.png&#39;).convertirEnNumpyArray()</span>
+</span><span id="L-13"><a href="#L-13"><span class="linenos"> 13</span></a><span class="sd">    testTFD2D = TFD2D(imageConvertie)</span>
+</span><span id="L-14"><a href="#L-14"><span class="linenos"> 14</span></a><span class="sd">    spectre = testTFD2D.calculerTFDSpectre()</span>
+</span><span id="L-15"><a href="#L-15"><span class="linenos"> 15</span></a><span class="sd">    testTFD2D.afficher_spectre()</span>
+</span><span id="L-16"><a href="#L-16"><span class="linenos"> 16</span></a><span class="sd">    image_reconstruite = testTFD2D.calculerTFDInverse()</span>
+</span><span id="L-17"><a href="#L-17"><span class="linenos"> 17</span></a><span class="sd">    testTFD2D.afficher_image_reconstruite(image_reconstruite)</span>
+</span><span id="L-18"><a href="#L-18"><span class="linenos"> 18</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-19"><a href="#L-19"><span class="linenos"> 19</span></a>
+</span><span id="L-20"><a href="#L-20"><span class="linenos"> 20</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">imageNpArray</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+</span><span id="L-21"><a href="#L-21"><span class="linenos"> 21</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-22"><a href="#L-22"><span class="linenos"> 22</span></a><span class="sd">        Initialise les paramètres pour la FFT 2D.</span>
+</span><span id="L-23"><a href="#L-23"><span class="linenos"> 23</span></a><span class="sd">        :param imageNpArray: Matrice Numpy de l&#39;image.</span>
+</span><span id="L-24"><a href="#L-24"><span class="linenos"> 24</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-25"><a href="#L-25"><span class="linenos"> 25</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_imageNpArray</span> <span class="o">=</span> <span class="n">imageNpArray</span>
+</span><span id="L-26"><a href="#L-26"><span class="linenos"> 26</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_spectre</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span id="L-27"><a href="#L-27"><span class="linenos"> 27</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span id="L-28"><a href="#L-28"><span class="linenos"> 28</span></a>
+</span><span id="L-29"><a href="#L-29"><span class="linenos"> 29</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">calculerTFDSpectre</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="L-30"><a href="#L-30"><span class="linenos"> 30</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-31"><a href="#L-31"><span class="linenos"> 31</span></a><span class="sd">        Permet de calculer la TFD 2D de l&#39;image spécifiée et de retourner le spectre.</span>
+</span><span id="L-32"><a href="#L-32"><span class="linenos"> 32</span></a><span class="sd">        Pour la magnitude du spectre, on utilise une échelle logarithmique pour une meilleure visualisation.</span>
+</span><span id="L-33"><a href="#L-33"><span class="linenos"> 33</span></a><span class="sd">        La formule est : Spectre = 20 * log(|TFD| + 1) pour éviter les problèmes de log(0).</span>
+</span><span id="L-34"><a href="#L-34"><span class="linenos"> 34</span></a><span class="sd">        :return: Matrice du spectre de la TFD 2D (Numpy 2D array).</span>
+</span><span id="L-35"><a href="#L-35"><span class="linenos"> 35</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-36"><a href="#L-36"><span class="linenos"> 36</span></a>        <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_imageNpArray</span><span class="p">)</span>  <span class="c1"># on applique la TFD 2D à la matrice filtrée</span>
+</span><span id="L-37"><a href="#L-37"><span class="linenos"> 37</span></a>        <span class="n">fshift</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftshift</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>  <span class="c1"># on déplace la fréquence zéro (les basses fréquences) au centre du spectre</span>
+</span><span id="L-38"><a href="#L-38"><span class="linenos"> 38</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span> <span class="o">=</span> <span class="n">fshift</span>  <span class="c1"># on stocke la TFD complexe pour pouvoir faire la TFD inverse plus tard</span>
+</span><span id="L-39"><a href="#L-39"><span class="linenos"> 39</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_spectre</span> <span class="o">=</span> <span class="mi">20</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">fshift</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># on calcule la magnitude (le spectre) et on utilise l&#39;échelle logarithmique pour la visualisation</span>
+</span><span id="L-40"><a href="#L-40"><span class="linenos"> 40</span></a>
+</span><span id="L-41"><a href="#L-41"><span class="linenos"> 41</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spectre</span>
+</span><span id="L-42"><a href="#L-42"><span class="linenos"> 42</span></a>
+</span><span id="L-43"><a href="#L-43"><span class="linenos"> 43</span></a>    <span class="c1"># pas utile directement mais je voulais voir si ça ressemblait bien à une TFD et pas autre chose ahaha</span>
+</span><span id="L-44"><a href="#L-44"><span class="linenos"> 44</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">afficher_spectre</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="L-45"><a href="#L-45"><span class="linenos"> 45</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-46"><a href="#L-46"><span class="linenos"> 46</span></a><span class="sd">        Affiche le spectre calculé.</span>
+</span><span id="L-47"><a href="#L-47"><span class="linenos"> 47</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-48"><a href="#L-48"><span class="linenos"> 48</span></a>        <span class="c1"># paramètres pour l&#39;affichage du spectre</span>
+</span><span id="L-49"><a href="#L-49"><span class="linenos"> 49</span></a>        <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+</span><span id="L-50"><a href="#L-50"><span class="linenos"> 50</span></a>        <span class="n">axes</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_spectre</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;gray&quot;</span><span class="p">)</span>
+</span><span id="L-51"><a href="#L-51"><span class="linenos"> 51</span></a>        <span class="n">axes</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Spectre TFD2D (Echelle Log)&quot;</span><span class="p">)</span>
+</span><span id="L-52"><a href="#L-52"><span class="linenos"> 52</span></a>        <span class="n">axes</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+</span><span id="L-53"><a href="#L-53"><span class="linenos"> 53</span></a>
+</span><span id="L-54"><a href="#L-54"><span class="linenos"> 54</span></a>        <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>  <span class="c1"># ajuste automatiquement la disposition</span>
+</span><span id="L-55"><a href="#L-55"><span class="linenos"> 55</span></a>        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>  <span class="c1"># affiche</span>
+</span><span id="L-56"><a href="#L-56"><span class="linenos"> 56</span></a>
+</span><span id="L-57"><a href="#L-57"><span class="linenos"> 57</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">calculerTFDInverse</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="L-58"><a href="#L-58"><span class="linenos"> 58</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-59"><a href="#L-59"><span class="linenos"> 59</span></a><span class="sd">        Permet de calculer la TFD inverse à partir de la TFD complexe stockée précédemment.</span>
+</span><span id="L-60"><a href="#L-60"><span class="linenos"> 60</span></a><span class="sd">        :return: Matrice de l&#39;image reconstruite à partir de la TFD inverse (Numpy 2D array).</span>
+</span><span id="L-61"><a href="#L-61"><span class="linenos"> 61</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-62"><a href="#L-62"><span class="linenos"> 62</span></a>        <span class="n">f_ishift</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifftshift</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span><span class="p">)</span>  <span class="c1"># on inverse le décalage pour remettre les basses fréquences à leur position d&#39;origine</span>
+</span><span id="L-63"><a href="#L-63"><span class="linenos"> 63</span></a>        <span class="n">img_complexe</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifft2</span><span class="p">(</span><span class="n">f_ishift</span><span class="p">)</span>  <span class="c1"># on applique la TFD inverse pour reconstruire l&#39;image à partir de la TFD complexe</span>
+</span><span id="L-64"><a href="#L-64"><span class="linenos"> 64</span></a>        <span class="n">img_reconstruite</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">img_complexe</span><span class="p">)</span>  <span class="c1"># on prend la partie réelle de l&#39;image reconstruite</span>
+</span><span id="L-65"><a href="#L-65"><span class="linenos"> 65</span></a>
+</span><span id="L-66"><a href="#L-66"><span class="linenos"> 66</span></a>        <span class="k">return</span> <span class="n">img_reconstruite</span>
+</span><span id="L-67"><a href="#L-67"><span class="linenos"> 67</span></a>
+</span><span id="L-68"><a href="#L-68"><span class="linenos"> 68</span></a>    <span class="c1"># pareil pas utile directement mais je voulais voir si l&#39;image reconstruite ressemblait bien à l&#39;image d&#39;origine</span>
+</span><span id="L-69"><a href="#L-69"><span class="linenos"> 69</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">afficher_image_reconstruite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image_reconstruite</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+</span><span id="L-70"><a href="#L-70"><span class="linenos"> 70</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-71"><a href="#L-71"><span class="linenos"> 71</span></a><span class="sd">        Affiche l&#39;image reconstruite après la TFD Inverse.</span>
+</span><span id="L-72"><a href="#L-72"><span class="linenos"> 72</span></a><span class="sd">        :param image_reconstruite: Matrice Numpy 2D retournée par calculerTFDInverse().</span>
+</span><span id="L-73"><a href="#L-73"><span class="linenos"> 73</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a>        <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+</span><span id="L-75"><a href="#L-75"><span class="linenos"> 75</span></a>
+</span><span id="L-76"><a href="#L-76"><span class="linenos"> 76</span></a>        <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_imageNpArray</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;gray&quot;</span><span class="p">)</span>
+</span><span id="L-77"><a href="#L-77"><span class="linenos"> 77</span></a>        <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Image d&#39;Origine&quot;</span><span class="p">)</span>
+</span><span id="L-78"><a href="#L-78"><span class="linenos"> 78</span></a>        <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+</span><span id="L-79"><a href="#L-79"><span class="linenos"> 79</span></a>
+</span><span id="L-80"><a href="#L-80"><span class="linenos"> 80</span></a>        <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image_reconstruite</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;gray&quot;</span><span class="p">)</span>
+</span><span id="L-81"><a href="#L-81"><span class="linenos"> 81</span></a>        <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Image Reconstruite (TFDI)&quot;</span><span class="p">)</span>
+</span><span id="L-82"><a href="#L-82"><span class="linenos"> 82</span></a>        <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+</span><span id="L-83"><a href="#L-83"><span class="linenos"> 83</span></a>
+</span><span id="L-84"><a href="#L-84"><span class="linenos"> 84</span></a>        <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</span><span id="L-85"><a href="#L-85"><span class="linenos"> 85</span></a>        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</span><span id="L-86"><a href="#L-86"><span class="linenos"> 86</span></a>
+</span><span id="L-87"><a href="#L-87"><span class="linenos"> 87</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">filtragePasseBas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rayon_coupure</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+</span><span id="L-88"><a href="#L-88"><span class="linenos"> 88</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-89"><a href="#L-89"><span class="linenos"> 89</span></a><span class="sd">        Applique un filtre passe-bas dit &#39;idéal&#39; en ne gardant que les fréquences</span>
+</span><span id="L-90"><a href="#L-90"><span class="linenos"> 90</span></a><span class="sd">        situées dans un cercle central de rayon &#39;rayon_coupure&#39;.</span>
+</span><span id="L-91"><a href="#L-91"><span class="linenos"> 91</span></a><span class="sd">        :param rayon_coupure: Rayon du cercle en pixels (plus il est petit, plus le flou est fort).</span>
+</span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a><span class="sd">        :return: Matrice de l&#39;image filtrée.</span>
+</span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Le spectre doit être calculé avec calculerTFDSpectre().&quot;</span><span class="p">)</span>
+</span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a>
+</span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a>        <span class="n">hauteur</span><span class="p">,</span> <span class="n">largeur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span><span class="o">.</span><span class="n">shape</span>  <span class="c1"># on récupère les dimensions de la TFD pour créer le masque</span>
+</span><span id="L-98"><a href="#L-98"><span class="linenos"> 98</span></a>        <span class="n">centre_y</span><span class="p">,</span> <span class="n">centre_x</span> <span class="o">=</span> <span class="p">(</span>
+</span><span id="L-99"><a href="#L-99"><span class="linenos"> 99</span></a>            <span class="n">hauteur</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
+</span><span id="L-100"><a href="#L-100"><span class="linenos">100</span></a>            <span class="n">largeur</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
+</span><span id="L-101"><a href="#L-101"><span class="linenos">101</span></a>        <span class="p">)</span>  <span class="c1"># on calcule les coordonnées du centre du spectre (où se trouvent les basses fréquences) pour centrer notre cercle de filtrage autour de ce point</span>
+</span><span id="L-102"><a href="#L-102"><span class="linenos">102</span></a>
+</span><span id="L-103"><a href="#L-103"><span class="linenos">103</span></a>        <span class="n">y</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ogrid</span><span class="p">[</span>
+</span><span id="L-104"><a href="#L-104"><span class="linenos">104</span></a>            <span class="p">:</span><span class="n">hauteur</span><span class="p">,</span> <span class="p">:</span><span class="n">largeur</span>
+</span><span id="L-105"><a href="#L-105"><span class="linenos">105</span></a>        <span class="p">]</span>  <span class="c1"># on crée des grilles de coordonnées pour chaque pixel du spectre, ce qui nous permettra de calculer la distance de chaque pixel au centre du spectre et de déterminer s&#39;il est à l&#39;intérieur ou à l&#39;extérieur du cercle de filtrage</span>
+</span><span id="L-106"><a href="#L-106"><span class="linenos">106</span></a>
+</span><span id="L-107"><a href="#L-107"><span class="linenos">107</span></a>        <span class="c1"># équation d&#39;un cercle : (x - x0)^2 + (y - y0)^2 &lt;= R^2</span>
+</span><span id="L-108"><a href="#L-108"><span class="linenos">108</span></a>        <span class="n">masque_circulaire</span> <span class="o">=</span> <span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="n">centre_x</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">centre_y</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">&lt;=</span> <span class="n">rayon_coupure</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span>
+</span><span id="L-109"><a href="#L-109"><span class="linenos">109</span></a>            <span class="nb">float</span>
+</span><span id="L-110"><a href="#L-110"><span class="linenos">110</span></a>        <span class="p">)</span>  <span class="c1"># on crée un masque binaire où les pixels à l&#39;intérieur du cercle de rayon &#39;rayon_coupure&#39; sont égaux à 1 (conservés) et les pixels à l&#39;extérieur sont égaux à 0 (filtrés)</span>
+</span><span id="L-111"><a href="#L-111"><span class="linenos">111</span></a>
+</span><span id="L-112"><a href="#L-112"><span class="linenos">112</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span> <span class="o">=</span> <span class="p">(</span>
+</span><span id="L-113"><a href="#L-113"><span class="linenos">113</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span> <span class="o">*</span> <span class="n">masque_circulaire</span>
+</span><span id="L-114"><a href="#L-114"><span class="linenos">114</span></a>        <span class="p">)</span>  <span class="c1"># on applique le masque de filtrage à la TFD complexe en multipliant élément par élément, ce qui conserve les fréquences à l&#39;intérieur du cercle et supprime les fréquences à l&#39;extérieur</span>
+</span><span id="L-115"><a href="#L-115"><span class="linenos">115</span></a>
+</span><span id="L-116"><a href="#L-116"><span class="linenos">116</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span>
+</span><span id="L-117"><a href="#L-117"><span class="linenos">117</span></a>
+</span><span id="L-118"><a href="#L-118"><span class="linenos">118</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">filtragePasseHaut</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rayon_coupure</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+</span><span id="L-119"><a href="#L-119"><span class="linenos">119</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-120"><a href="#L-120"><span class="linenos">120</span></a><span class="sd">        Applique un filtre passe-haut en ne gardant que les fréquences situées à l&#39;extérieur d&#39;un cercle de rayon &#39;rayon_coupure&#39;.</span>
+</span><span id="L-121"><a href="#L-121"><span class="linenos">121</span></a><span class="sd">        :param rayon_coupure: Rayon du cercle en pixels (plus il est grand, plus le filtrage est fort).</span>
+</span><span id="L-122"><a href="#L-122"><span class="linenos">122</span></a><span class="sd">        :return: Matrice de l&#39;image filtrée.</span>
+</span><span id="L-123"><a href="#L-123"><span class="linenos">123</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Le spectre doit être calculé avec calculerTFDSpectre().&quot;</span><span class="p">)</span>
+</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a>
+</span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a>        <span class="n">hauteur</span><span class="p">,</span> <span class="n">largeur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span><span class="o">.</span><span class="n">shape</span>
+</span><span id="L-128"><a href="#L-128"><span class="linenos">128</span></a>        <span class="n">centre_y</span><span class="p">,</span> <span class="n">centre_x</span> <span class="o">=</span> <span class="n">hauteur</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">largeur</span> <span class="o">//</span> <span class="mi">2</span>
+</span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a>
+</span><span id="L-130"><a href="#L-130"><span class="linenos">130</span></a>        <span class="n">y</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ogrid</span><span class="p">[:</span><span class="n">hauteur</span><span class="p">,</span> <span class="p">:</span><span class="n">largeur</span><span class="p">]</span>
+</span><span id="L-131"><a href="#L-131"><span class="linenos">131</span></a>
+</span><span id="L-132"><a href="#L-132"><span class="linenos">132</span></a>        <span class="n">masque_circulaire</span> <span class="o">=</span> <span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="n">centre_x</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">centre_y</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">&gt;=</span> <span class="n">rayon_coupure</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span>
+</span><span id="L-133"><a href="#L-133"><span class="linenos">133</span></a>            <span class="nb">float</span>
+</span><span id="L-134"><a href="#L-134"><span class="linenos">134</span></a>        <span class="p">)</span>  <span class="c1"># on inverse la condition pour créer un masque qui conserve les fréquences à l&#39;extérieur du cercle et supprime les fréquences à l&#39;intérieur</span>
+</span><span id="L-135"><a href="#L-135"><span class="linenos">135</span></a>
+</span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span> <span class="o">*</span> <span class="n">masque_circulaire</span>
+</span><span id="L-137"><a href="#L-137"><span class="linenos">137</span></a>
+</span><span id="L-138"><a href="#L-138"><span class="linenos">138</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span>
 </span></pre></div>
 
 
@@ -137,57 +231,150 @@
 
     </div>
     <a class="headerlink" href="#TFD2D"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="TFD2D-7"><a href="#TFD2D-7"><span class="linenos"> 7</span></a><span class="k">class</span><span class="w"> </span><span class="nc">TFD2D</span><span class="p">:</span>
-</span><span id="TFD2D-8"><a href="#TFD2D-8"><span class="linenos"> 8</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="TFD2D-9"><a href="#TFD2D-9"><span class="linenos"> 9</span></a><span class="sd">    Classe pour calculer la TFD 2D d&#39;une image et visualiser le spectre.</span>
-</span><span id="TFD2D-10"><a href="#TFD2D-10"><span class="linenos">10</span></a><span class="sd">    Exemple d&#39;instanciation :</span>
-</span><span id="TFD2D-11"><a href="#TFD2D-11"><span class="linenos">11</span></a><span class="sd">    testTFD2D = TFD2D(&#39;COVID-1024.png&#39;)</span>
-</span><span id="TFD2D-12"><a href="#TFD2D-12"><span class="linenos">12</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="TFD2D-13"><a href="#TFD2D-13"><span class="linenos">13</span></a>
-</span><span id="TFD2D-14"><a href="#TFD2D-14"><span class="linenos">14</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">imagePath</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-</span><span id="TFD2D-15"><a href="#TFD2D-15"><span class="linenos">15</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="TFD2D-16"><a href="#TFD2D-16"><span class="linenos">16</span></a><span class="sd">        Initialise les paramètres pour la FFT 2D.</span>
-</span><span id="TFD2D-17"><a href="#TFD2D-17"><span class="linenos">17</span></a><span class="sd">        :param imagePath: Chemin de l&#39;image d&#39;entrée.</span>
-</span><span id="TFD2D-18"><a href="#TFD2D-18"><span class="linenos">18</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="TFD2D-19"><a href="#TFD2D-19"><span class="linenos">19</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_imagePath</span> <span class="o">=</span> <span class="n">imagePath</span>
-</span><span id="TFD2D-20"><a href="#TFD2D-20"><span class="linenos">20</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_spectre</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span id="TFD2D-21"><a href="#TFD2D-21"><span class="linenos">21</span></a>
-</span><span id="TFD2D-22"><a href="#TFD2D-22"><span class="linenos">22</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">calculerTFDSpectre</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="TFD2D-23"><a href="#TFD2D-23"><span class="linenos">23</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="TFD2D-24"><a href="#TFD2D-24"><span class="linenos">24</span></a><span class="sd">        Permet de calculer la TFD 2D de l&#39;image spécifiée et de retourner le spectre.</span>
-</span><span id="TFD2D-25"><a href="#TFD2D-25"><span class="linenos">25</span></a><span class="sd">        Pour la magnitude du spectre, on utilise une échelle logarithmique pour une meilleure visualisation.</span>
-</span><span id="TFD2D-26"><a href="#TFD2D-26"><span class="linenos">26</span></a><span class="sd">        La formule est : Spectre = 20 * log(|TFD| + 1) pour éviter les problèmes de log(0).</span>
-</span><span id="TFD2D-27"><a href="#TFD2D-27"><span class="linenos">27</span></a><span class="sd">        :return: Matrice du spectre de la TFD 2D (Numpy 2D array).</span>
-</span><span id="TFD2D-28"><a href="#TFD2D-28"><span class="linenos">28</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="TFD2D-29"><a href="#TFD2D-29"><span class="linenos">29</span></a>        <span class="c1"># on applique un filtrage gaussien à l&#39;image pour réduire le bruit avant de calculer la TFD</span>
-</span><span id="TFD2D-30"><a href="#TFD2D-30"><span class="linenos">30</span></a>        <span class="n">matrice</span> <span class="o">=</span> <span class="n">FiltrageGaussien</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_imagePath</span><span class="p">)</span>
-</span><span id="TFD2D-31"><a href="#TFD2D-31"><span class="linenos">31</span></a>        <span class="n">matriceFiltree</span> <span class="o">=</span> <span class="n">matrice</span><span class="o">.</span><span class="n">filtrage</span><span class="p">()</span>  <span class="c1"># la matrice filtrée est une matrice 2D de type numpy.ndarray, représentant l&#39;image filtrée en niveaux de gris (hauteur x largeur)</span>
-</span><span id="TFD2D-32"><a href="#TFD2D-32"><span class="linenos">32</span></a>
-</span><span id="TFD2D-33"><a href="#TFD2D-33"><span class="linenos">33</span></a>        <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft2</span><span class="p">(</span><span class="n">matriceFiltree</span><span class="p">)</span>  <span class="c1"># on applique la TFD 2D à la matrice filtrée</span>
-</span><span id="TFD2D-34"><a href="#TFD2D-34"><span class="linenos">34</span></a>        <span class="n">fshift</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftshift</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>  <span class="c1"># on déplace la fréquence zéro (les basses fréquences) au centre du spectre</span>
-</span><span id="TFD2D-35"><a href="#TFD2D-35"><span class="linenos">35</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_spectre</span> <span class="o">=</span> <span class="mi">20</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">fshift</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># on calcule la magnitude (le spectre) et on utilise l&#39;échelle logarithmique pour la visualisation</span>
-</span><span id="TFD2D-36"><a href="#TFD2D-36"><span class="linenos">36</span></a>
-</span><span id="TFD2D-37"><a href="#TFD2D-37"><span class="linenos">37</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spectre</span>
-</span><span id="TFD2D-38"><a href="#TFD2D-38"><span class="linenos">38</span></a>
-</span><span id="TFD2D-39"><a href="#TFD2D-39"><span class="linenos">39</span></a>    <span class="c1"># pas utile directement mais je voulais voir si ça ressemblait bien à une TFD et pas autre chose ahaha</span>
-</span><span id="TFD2D-40"><a href="#TFD2D-40"><span class="linenos">40</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">afficher_spectre</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="TFD2D-41"><a href="#TFD2D-41"><span class="linenos">41</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="TFD2D-42"><a href="#TFD2D-42"><span class="linenos">42</span></a><span class="sd">        Affiche le spectre calculé.</span>
-</span><span id="TFD2D-43"><a href="#TFD2D-43"><span class="linenos">43</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="TFD2D-44"><a href="#TFD2D-44"><span class="linenos">44</span></a>        <span class="c1"># paramètres pour l&#39;affichage du spectre</span>
-</span><span id="TFD2D-45"><a href="#TFD2D-45"><span class="linenos">45</span></a>        <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
-</span><span id="TFD2D-46"><a href="#TFD2D-46"><span class="linenos">46</span></a>        <span class="n">axes</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_spectre</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;gray&quot;</span><span class="p">)</span>
-</span><span id="TFD2D-47"><a href="#TFD2D-47"><span class="linenos">47</span></a>        <span class="n">axes</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Spectre FFT 2D (Echelle Log)&quot;</span><span class="p">)</span>
-</span><span id="TFD2D-48"><a href="#TFD2D-48"><span class="linenos">48</span></a>        <span class="n">axes</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
-</span><span id="TFD2D-49"><a href="#TFD2D-49"><span class="linenos">49</span></a>
-</span><span id="TFD2D-50"><a href="#TFD2D-50"><span class="linenos">50</span></a>        <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>  <span class="c1"># ajuste automatiquement la disposition</span>
-</span><span id="TFD2D-51"><a href="#TFD2D-51"><span class="linenos">51</span></a>        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>  <span class="c1"># affiche</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="TFD2D-8"><a href="#TFD2D-8"><span class="linenos">  8</span></a><span class="k">class</span><span class="w"> </span><span class="nc">TFD2D</span><span class="p">:</span>
+</span><span id="TFD2D-9"><a href="#TFD2D-9"><span class="linenos">  9</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="TFD2D-10"><a href="#TFD2D-10"><span class="linenos"> 10</span></a><span class="sd">    Classe pour calculer la TFD 2D d&#39;une image et visualiser le spectre.</span>
+</span><span id="TFD2D-11"><a href="#TFD2D-11"><span class="linenos"> 11</span></a><span class="sd">    L&#39;image d&#39;entrée doit être une matrice Numpy 2D normalisée entre 0 et 1 (niveaux de gris).</span>
+</span><span id="TFD2D-12"><a href="#TFD2D-12"><span class="linenos"> 12</span></a><span class="sd">    Exemple d&#39;utilisation :</span>
+</span><span id="TFD2D-13"><a href="#TFD2D-13"><span class="linenos"> 13</span></a><span class="sd">    imageConvertie = ImageConvertie(&#39;COVID-1024.png&#39;).convertirEnNumpyArray()</span>
+</span><span id="TFD2D-14"><a href="#TFD2D-14"><span class="linenos"> 14</span></a><span class="sd">    testTFD2D = TFD2D(imageConvertie)</span>
+</span><span id="TFD2D-15"><a href="#TFD2D-15"><span class="linenos"> 15</span></a><span class="sd">    spectre = testTFD2D.calculerTFDSpectre()</span>
+</span><span id="TFD2D-16"><a href="#TFD2D-16"><span class="linenos"> 16</span></a><span class="sd">    testTFD2D.afficher_spectre()</span>
+</span><span id="TFD2D-17"><a href="#TFD2D-17"><span class="linenos"> 17</span></a><span class="sd">    image_reconstruite = testTFD2D.calculerTFDInverse()</span>
+</span><span id="TFD2D-18"><a href="#TFD2D-18"><span class="linenos"> 18</span></a><span class="sd">    testTFD2D.afficher_image_reconstruite(image_reconstruite)</span>
+</span><span id="TFD2D-19"><a href="#TFD2D-19"><span class="linenos"> 19</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="TFD2D-20"><a href="#TFD2D-20"><span class="linenos"> 20</span></a>
+</span><span id="TFD2D-21"><a href="#TFD2D-21"><span class="linenos"> 21</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">imageNpArray</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+</span><span id="TFD2D-22"><a href="#TFD2D-22"><span class="linenos"> 22</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="TFD2D-23"><a href="#TFD2D-23"><span class="linenos"> 23</span></a><span class="sd">        Initialise les paramètres pour la FFT 2D.</span>
+</span><span id="TFD2D-24"><a href="#TFD2D-24"><span class="linenos"> 24</span></a><span class="sd">        :param imageNpArray: Matrice Numpy de l&#39;image.</span>
+</span><span id="TFD2D-25"><a href="#TFD2D-25"><span class="linenos"> 25</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="TFD2D-26"><a href="#TFD2D-26"><span class="linenos"> 26</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_imageNpArray</span> <span class="o">=</span> <span class="n">imageNpArray</span>
+</span><span id="TFD2D-27"><a href="#TFD2D-27"><span class="linenos"> 27</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_spectre</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span id="TFD2D-28"><a href="#TFD2D-28"><span class="linenos"> 28</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span id="TFD2D-29"><a href="#TFD2D-29"><span class="linenos"> 29</span></a>
+</span><span id="TFD2D-30"><a href="#TFD2D-30"><span class="linenos"> 30</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">calculerTFDSpectre</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="TFD2D-31"><a href="#TFD2D-31"><span class="linenos"> 31</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="TFD2D-32"><a href="#TFD2D-32"><span class="linenos"> 32</span></a><span class="sd">        Permet de calculer la TFD 2D de l&#39;image spécifiée et de retourner le spectre.</span>
+</span><span id="TFD2D-33"><a href="#TFD2D-33"><span class="linenos"> 33</span></a><span class="sd">        Pour la magnitude du spectre, on utilise une échelle logarithmique pour une meilleure visualisation.</span>
+</span><span id="TFD2D-34"><a href="#TFD2D-34"><span class="linenos"> 34</span></a><span class="sd">        La formule est : Spectre = 20 * log(|TFD| + 1) pour éviter les problèmes de log(0).</span>
+</span><span id="TFD2D-35"><a href="#TFD2D-35"><span class="linenos"> 35</span></a><span class="sd">        :return: Matrice du spectre de la TFD 2D (Numpy 2D array).</span>
+</span><span id="TFD2D-36"><a href="#TFD2D-36"><span class="linenos"> 36</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="TFD2D-37"><a href="#TFD2D-37"><span class="linenos"> 37</span></a>        <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_imageNpArray</span><span class="p">)</span>  <span class="c1"># on applique la TFD 2D à la matrice filtrée</span>
+</span><span id="TFD2D-38"><a href="#TFD2D-38"><span class="linenos"> 38</span></a>        <span class="n">fshift</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftshift</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>  <span class="c1"># on déplace la fréquence zéro (les basses fréquences) au centre du spectre</span>
+</span><span id="TFD2D-39"><a href="#TFD2D-39"><span class="linenos"> 39</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span> <span class="o">=</span> <span class="n">fshift</span>  <span class="c1"># on stocke la TFD complexe pour pouvoir faire la TFD inverse plus tard</span>
+</span><span id="TFD2D-40"><a href="#TFD2D-40"><span class="linenos"> 40</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_spectre</span> <span class="o">=</span> <span class="mi">20</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">fshift</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># on calcule la magnitude (le spectre) et on utilise l&#39;échelle logarithmique pour la visualisation</span>
+</span><span id="TFD2D-41"><a href="#TFD2D-41"><span class="linenos"> 41</span></a>
+</span><span id="TFD2D-42"><a href="#TFD2D-42"><span class="linenos"> 42</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spectre</span>
+</span><span id="TFD2D-43"><a href="#TFD2D-43"><span class="linenos"> 43</span></a>
+</span><span id="TFD2D-44"><a href="#TFD2D-44"><span class="linenos"> 44</span></a>    <span class="c1"># pas utile directement mais je voulais voir si ça ressemblait bien à une TFD et pas autre chose ahaha</span>
+</span><span id="TFD2D-45"><a href="#TFD2D-45"><span class="linenos"> 45</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">afficher_spectre</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="TFD2D-46"><a href="#TFD2D-46"><span class="linenos"> 46</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="TFD2D-47"><a href="#TFD2D-47"><span class="linenos"> 47</span></a><span class="sd">        Affiche le spectre calculé.</span>
+</span><span id="TFD2D-48"><a href="#TFD2D-48"><span class="linenos"> 48</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="TFD2D-49"><a href="#TFD2D-49"><span class="linenos"> 49</span></a>        <span class="c1"># paramètres pour l&#39;affichage du spectre</span>
+</span><span id="TFD2D-50"><a href="#TFD2D-50"><span class="linenos"> 50</span></a>        <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+</span><span id="TFD2D-51"><a href="#TFD2D-51"><span class="linenos"> 51</span></a>        <span class="n">axes</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_spectre</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;gray&quot;</span><span class="p">)</span>
+</span><span id="TFD2D-52"><a href="#TFD2D-52"><span class="linenos"> 52</span></a>        <span class="n">axes</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Spectre TFD2D (Echelle Log)&quot;</span><span class="p">)</span>
+</span><span id="TFD2D-53"><a href="#TFD2D-53"><span class="linenos"> 53</span></a>        <span class="n">axes</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+</span><span id="TFD2D-54"><a href="#TFD2D-54"><span class="linenos"> 54</span></a>
+</span><span id="TFD2D-55"><a href="#TFD2D-55"><span class="linenos"> 55</span></a>        <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>  <span class="c1"># ajuste automatiquement la disposition</span>
+</span><span id="TFD2D-56"><a href="#TFD2D-56"><span class="linenos"> 56</span></a>        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>  <span class="c1"># affiche</span>
+</span><span id="TFD2D-57"><a href="#TFD2D-57"><span class="linenos"> 57</span></a>
+</span><span id="TFD2D-58"><a href="#TFD2D-58"><span class="linenos"> 58</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">calculerTFDInverse</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="TFD2D-59"><a href="#TFD2D-59"><span class="linenos"> 59</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="TFD2D-60"><a href="#TFD2D-60"><span class="linenos"> 60</span></a><span class="sd">        Permet de calculer la TFD inverse à partir de la TFD complexe stockée précédemment.</span>
+</span><span id="TFD2D-61"><a href="#TFD2D-61"><span class="linenos"> 61</span></a><span class="sd">        :return: Matrice de l&#39;image reconstruite à partir de la TFD inverse (Numpy 2D array).</span>
+</span><span id="TFD2D-62"><a href="#TFD2D-62"><span class="linenos"> 62</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="TFD2D-63"><a href="#TFD2D-63"><span class="linenos"> 63</span></a>        <span class="n">f_ishift</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifftshift</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span><span class="p">)</span>  <span class="c1"># on inverse le décalage pour remettre les basses fréquences à leur position d&#39;origine</span>
+</span><span id="TFD2D-64"><a href="#TFD2D-64"><span class="linenos"> 64</span></a>        <span class="n">img_complexe</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifft2</span><span class="p">(</span><span class="n">f_ishift</span><span class="p">)</span>  <span class="c1"># on applique la TFD inverse pour reconstruire l&#39;image à partir de la TFD complexe</span>
+</span><span id="TFD2D-65"><a href="#TFD2D-65"><span class="linenos"> 65</span></a>        <span class="n">img_reconstruite</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">img_complexe</span><span class="p">)</span>  <span class="c1"># on prend la partie réelle de l&#39;image reconstruite</span>
+</span><span id="TFD2D-66"><a href="#TFD2D-66"><span class="linenos"> 66</span></a>
+</span><span id="TFD2D-67"><a href="#TFD2D-67"><span class="linenos"> 67</span></a>        <span class="k">return</span> <span class="n">img_reconstruite</span>
+</span><span id="TFD2D-68"><a href="#TFD2D-68"><span class="linenos"> 68</span></a>
+</span><span id="TFD2D-69"><a href="#TFD2D-69"><span class="linenos"> 69</span></a>    <span class="c1"># pareil pas utile directement mais je voulais voir si l&#39;image reconstruite ressemblait bien à l&#39;image d&#39;origine</span>
+</span><span id="TFD2D-70"><a href="#TFD2D-70"><span class="linenos"> 70</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">afficher_image_reconstruite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image_reconstruite</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+</span><span id="TFD2D-71"><a href="#TFD2D-71"><span class="linenos"> 71</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="TFD2D-72"><a href="#TFD2D-72"><span class="linenos"> 72</span></a><span class="sd">        Affiche l&#39;image reconstruite après la TFD Inverse.</span>
+</span><span id="TFD2D-73"><a href="#TFD2D-73"><span class="linenos"> 73</span></a><span class="sd">        :param image_reconstruite: Matrice Numpy 2D retournée par calculerTFDInverse().</span>
+</span><span id="TFD2D-74"><a href="#TFD2D-74"><span class="linenos"> 74</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="TFD2D-75"><a href="#TFD2D-75"><span class="linenos"> 75</span></a>        <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+</span><span id="TFD2D-76"><a href="#TFD2D-76"><span class="linenos"> 76</span></a>
+</span><span id="TFD2D-77"><a href="#TFD2D-77"><span class="linenos"> 77</span></a>        <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_imageNpArray</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;gray&quot;</span><span class="p">)</span>
+</span><span id="TFD2D-78"><a href="#TFD2D-78"><span class="linenos"> 78</span></a>        <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Image d&#39;Origine&quot;</span><span class="p">)</span>
+</span><span id="TFD2D-79"><a href="#TFD2D-79"><span class="linenos"> 79</span></a>        <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+</span><span id="TFD2D-80"><a href="#TFD2D-80"><span class="linenos"> 80</span></a>
+</span><span id="TFD2D-81"><a href="#TFD2D-81"><span class="linenos"> 81</span></a>        <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image_reconstruite</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;gray&quot;</span><span class="p">)</span>
+</span><span id="TFD2D-82"><a href="#TFD2D-82"><span class="linenos"> 82</span></a>        <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Image Reconstruite (TFDI)&quot;</span><span class="p">)</span>
+</span><span id="TFD2D-83"><a href="#TFD2D-83"><span class="linenos"> 83</span></a>        <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+</span><span id="TFD2D-84"><a href="#TFD2D-84"><span class="linenos"> 84</span></a>
+</span><span id="TFD2D-85"><a href="#TFD2D-85"><span class="linenos"> 85</span></a>        <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</span><span id="TFD2D-86"><a href="#TFD2D-86"><span class="linenos"> 86</span></a>        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</span><span id="TFD2D-87"><a href="#TFD2D-87"><span class="linenos"> 87</span></a>
+</span><span id="TFD2D-88"><a href="#TFD2D-88"><span class="linenos"> 88</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">filtragePasseBas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rayon_coupure</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+</span><span id="TFD2D-89"><a href="#TFD2D-89"><span class="linenos"> 89</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="TFD2D-90"><a href="#TFD2D-90"><span class="linenos"> 90</span></a><span class="sd">        Applique un filtre passe-bas dit &#39;idéal&#39; en ne gardant que les fréquences</span>
+</span><span id="TFD2D-91"><a href="#TFD2D-91"><span class="linenos"> 91</span></a><span class="sd">        situées dans un cercle central de rayon &#39;rayon_coupure&#39;.</span>
+</span><span id="TFD2D-92"><a href="#TFD2D-92"><span class="linenos"> 92</span></a><span class="sd">        :param rayon_coupure: Rayon du cercle en pixels (plus il est petit, plus le flou est fort).</span>
+</span><span id="TFD2D-93"><a href="#TFD2D-93"><span class="linenos"> 93</span></a><span class="sd">        :return: Matrice de l&#39;image filtrée.</span>
+</span><span id="TFD2D-94"><a href="#TFD2D-94"><span class="linenos"> 94</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="TFD2D-95"><a href="#TFD2D-95"><span class="linenos"> 95</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="TFD2D-96"><a href="#TFD2D-96"><span class="linenos"> 96</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Le spectre doit être calculé avec calculerTFDSpectre().&quot;</span><span class="p">)</span>
+</span><span id="TFD2D-97"><a href="#TFD2D-97"><span class="linenos"> 97</span></a>
+</span><span id="TFD2D-98"><a href="#TFD2D-98"><span class="linenos"> 98</span></a>        <span class="n">hauteur</span><span class="p">,</span> <span class="n">largeur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span><span class="o">.</span><span class="n">shape</span>  <span class="c1"># on récupère les dimensions de la TFD pour créer le masque</span>
+</span><span id="TFD2D-99"><a href="#TFD2D-99"><span class="linenos"> 99</span></a>        <span class="n">centre_y</span><span class="p">,</span> <span class="n">centre_x</span> <span class="o">=</span> <span class="p">(</span>
+</span><span id="TFD2D-100"><a href="#TFD2D-100"><span class="linenos">100</span></a>            <span class="n">hauteur</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
+</span><span id="TFD2D-101"><a href="#TFD2D-101"><span class="linenos">101</span></a>            <span class="n">largeur</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
+</span><span id="TFD2D-102"><a href="#TFD2D-102"><span class="linenos">102</span></a>        <span class="p">)</span>  <span class="c1"># on calcule les coordonnées du centre du spectre (où se trouvent les basses fréquences) pour centrer notre cercle de filtrage autour de ce point</span>
+</span><span id="TFD2D-103"><a href="#TFD2D-103"><span class="linenos">103</span></a>
+</span><span id="TFD2D-104"><a href="#TFD2D-104"><span class="linenos">104</span></a>        <span class="n">y</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ogrid</span><span class="p">[</span>
+</span><span id="TFD2D-105"><a href="#TFD2D-105"><span class="linenos">105</span></a>            <span class="p">:</span><span class="n">hauteur</span><span class="p">,</span> <span class="p">:</span><span class="n">largeur</span>
+</span><span id="TFD2D-106"><a href="#TFD2D-106"><span class="linenos">106</span></a>        <span class="p">]</span>  <span class="c1"># on crée des grilles de coordonnées pour chaque pixel du spectre, ce qui nous permettra de calculer la distance de chaque pixel au centre du spectre et de déterminer s&#39;il est à l&#39;intérieur ou à l&#39;extérieur du cercle de filtrage</span>
+</span><span id="TFD2D-107"><a href="#TFD2D-107"><span class="linenos">107</span></a>
+</span><span id="TFD2D-108"><a href="#TFD2D-108"><span class="linenos">108</span></a>        <span class="c1"># équation d&#39;un cercle : (x - x0)^2 + (y - y0)^2 &lt;= R^2</span>
+</span><span id="TFD2D-109"><a href="#TFD2D-109"><span class="linenos">109</span></a>        <span class="n">masque_circulaire</span> <span class="o">=</span> <span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="n">centre_x</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">centre_y</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">&lt;=</span> <span class="n">rayon_coupure</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span>
+</span><span id="TFD2D-110"><a href="#TFD2D-110"><span class="linenos">110</span></a>            <span class="nb">float</span>
+</span><span id="TFD2D-111"><a href="#TFD2D-111"><span class="linenos">111</span></a>        <span class="p">)</span>  <span class="c1"># on crée un masque binaire où les pixels à l&#39;intérieur du cercle de rayon &#39;rayon_coupure&#39; sont égaux à 1 (conservés) et les pixels à l&#39;extérieur sont égaux à 0 (filtrés)</span>
+</span><span id="TFD2D-112"><a href="#TFD2D-112"><span class="linenos">112</span></a>
+</span><span id="TFD2D-113"><a href="#TFD2D-113"><span class="linenos">113</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span> <span class="o">=</span> <span class="p">(</span>
+</span><span id="TFD2D-114"><a href="#TFD2D-114"><span class="linenos">114</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span> <span class="o">*</span> <span class="n">masque_circulaire</span>
+</span><span id="TFD2D-115"><a href="#TFD2D-115"><span class="linenos">115</span></a>        <span class="p">)</span>  <span class="c1"># on applique le masque de filtrage à la TFD complexe en multipliant élément par élément, ce qui conserve les fréquences à l&#39;intérieur du cercle et supprime les fréquences à l&#39;extérieur</span>
+</span><span id="TFD2D-116"><a href="#TFD2D-116"><span class="linenos">116</span></a>
+</span><span id="TFD2D-117"><a href="#TFD2D-117"><span class="linenos">117</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span>
+</span><span id="TFD2D-118"><a href="#TFD2D-118"><span class="linenos">118</span></a>
+</span><span id="TFD2D-119"><a href="#TFD2D-119"><span class="linenos">119</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">filtragePasseHaut</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rayon_coupure</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+</span><span id="TFD2D-120"><a href="#TFD2D-120"><span class="linenos">120</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="TFD2D-121"><a href="#TFD2D-121"><span class="linenos">121</span></a><span class="sd">        Applique un filtre passe-haut en ne gardant que les fréquences situées à l&#39;extérieur d&#39;un cercle de rayon &#39;rayon_coupure&#39;.</span>
+</span><span id="TFD2D-122"><a href="#TFD2D-122"><span class="linenos">122</span></a><span class="sd">        :param rayon_coupure: Rayon du cercle en pixels (plus il est grand, plus le filtrage est fort).</span>
+</span><span id="TFD2D-123"><a href="#TFD2D-123"><span class="linenos">123</span></a><span class="sd">        :return: Matrice de l&#39;image filtrée.</span>
+</span><span id="TFD2D-124"><a href="#TFD2D-124"><span class="linenos">124</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="TFD2D-125"><a href="#TFD2D-125"><span class="linenos">125</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="TFD2D-126"><a href="#TFD2D-126"><span class="linenos">126</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Le spectre doit être calculé avec calculerTFDSpectre().&quot;</span><span class="p">)</span>
+</span><span id="TFD2D-127"><a href="#TFD2D-127"><span class="linenos">127</span></a>
+</span><span id="TFD2D-128"><a href="#TFD2D-128"><span class="linenos">128</span></a>        <span class="n">hauteur</span><span class="p">,</span> <span class="n">largeur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span><span class="o">.</span><span class="n">shape</span>
+</span><span id="TFD2D-129"><a href="#TFD2D-129"><span class="linenos">129</span></a>        <span class="n">centre_y</span><span class="p">,</span> <span class="n">centre_x</span> <span class="o">=</span> <span class="n">hauteur</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">largeur</span> <span class="o">//</span> <span class="mi">2</span>
+</span><span id="TFD2D-130"><a href="#TFD2D-130"><span class="linenos">130</span></a>
+</span><span id="TFD2D-131"><a href="#TFD2D-131"><span class="linenos">131</span></a>        <span class="n">y</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ogrid</span><span class="p">[:</span><span class="n">hauteur</span><span class="p">,</span> <span class="p">:</span><span class="n">largeur</span><span class="p">]</span>
+</span><span id="TFD2D-132"><a href="#TFD2D-132"><span class="linenos">132</span></a>
+</span><span id="TFD2D-133"><a href="#TFD2D-133"><span class="linenos">133</span></a>        <span class="n">masque_circulaire</span> <span class="o">=</span> <span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="n">centre_x</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">centre_y</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">&gt;=</span> <span class="n">rayon_coupure</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span>
+</span><span id="TFD2D-134"><a href="#TFD2D-134"><span class="linenos">134</span></a>            <span class="nb">float</span>
+</span><span id="TFD2D-135"><a href="#TFD2D-135"><span class="linenos">135</span></a>        <span class="p">)</span>  <span class="c1"># on inverse la condition pour créer un masque qui conserve les fréquences à l&#39;extérieur du cercle et supprime les fréquences à l&#39;intérieur</span>
+</span><span id="TFD2D-136"><a href="#TFD2D-136"><span class="linenos">136</span></a>
+</span><span id="TFD2D-137"><a href="#TFD2D-137"><span class="linenos">137</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span> <span class="o">*</span> <span class="n">masque_circulaire</span>
+</span><span id="TFD2D-138"><a href="#TFD2D-138"><span class="linenos">138</span></a>
+</span><span id="TFD2D-139"><a href="#TFD2D-139"><span class="linenos">139</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span>
 </span></pre></div>
 
 
             <div class="docstring"><p>Classe pour calculer la TFD 2D d'une image et visualiser le spectre.
-Exemple d'instanciation :
-testTFD2D = TFD2D('COVID-1024.png')</p>
+L'image d'entrée doit être une matrice Numpy 2D normalisée entre 0 et 1 (niveaux de gris).
+Exemple d'utilisation :
+imageConvertie = ImageConvertie('COVID-1024.png').convertirEnNumpyArray()
+testTFD2D = TFD2D(imageConvertie)
+spectre = testTFD2D.calculerTFDSpectre()
+testTFD2D.afficher_spectre()
+image_reconstruite = testTFD2D.calculerTFDInverse()
+testTFD2D.afficher_image_reconstruite(image_reconstruite)</p>
 </div>
 
 
@@ -195,19 +382,20 @@ testTFD2D = TFD2D('COVID-1024.png')</p>
                                         <input id="TFD2D.__init__-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr function">
             
-        <span class="name">TFD2D</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">imagePath</span><span class="p">:</span> <span class="nb">str</span></span>)</span>
+        <span class="name">TFD2D</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">imageNpArray</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span></span>)</span>
 
                 <label class="view-source-button" for="TFD2D.__init__-view-source"><span>View Source</span></label>
 
     </div>
     <a class="headerlink" href="#TFD2D.__init__"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="TFD2D.__init__-14"><a href="#TFD2D.__init__-14"><span class="linenos">14</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">imagePath</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-</span><span id="TFD2D.__init__-15"><a href="#TFD2D.__init__-15"><span class="linenos">15</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="TFD2D.__init__-16"><a href="#TFD2D.__init__-16"><span class="linenos">16</span></a><span class="sd">        Initialise les paramètres pour la FFT 2D.</span>
-</span><span id="TFD2D.__init__-17"><a href="#TFD2D.__init__-17"><span class="linenos">17</span></a><span class="sd">        :param imagePath: Chemin de l&#39;image d&#39;entrée.</span>
-</span><span id="TFD2D.__init__-18"><a href="#TFD2D.__init__-18"><span class="linenos">18</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="TFD2D.__init__-19"><a href="#TFD2D.__init__-19"><span class="linenos">19</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_imagePath</span> <span class="o">=</span> <span class="n">imagePath</span>
-</span><span id="TFD2D.__init__-20"><a href="#TFD2D.__init__-20"><span class="linenos">20</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_spectre</span> <span class="o">=</span> <span class="kc">None</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="TFD2D.__init__-21"><a href="#TFD2D.__init__-21"><span class="linenos">21</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">imageNpArray</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+</span><span id="TFD2D.__init__-22"><a href="#TFD2D.__init__-22"><span class="linenos">22</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="TFD2D.__init__-23"><a href="#TFD2D.__init__-23"><span class="linenos">23</span></a><span class="sd">        Initialise les paramètres pour la FFT 2D.</span>
+</span><span id="TFD2D.__init__-24"><a href="#TFD2D.__init__-24"><span class="linenos">24</span></a><span class="sd">        :param imageNpArray: Matrice Numpy de l&#39;image.</span>
+</span><span id="TFD2D.__init__-25"><a href="#TFD2D.__init__-25"><span class="linenos">25</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="TFD2D.__init__-26"><a href="#TFD2D.__init__-26"><span class="linenos">26</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_imageNpArray</span> <span class="o">=</span> <span class="n">imageNpArray</span>
+</span><span id="TFD2D.__init__-27"><a href="#TFD2D.__init__-27"><span class="linenos">27</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_spectre</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span id="TFD2D.__init__-28"><a href="#TFD2D.__init__-28"><span class="linenos">28</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span> <span class="o">=</span> <span class="kc">None</span>
 </span></pre></div>
 
 
@@ -216,7 +404,7 @@ testTFD2D = TFD2D('COVID-1024.png')</p>
 <h6 id="parameters">Parameters</h6>
 
 <ul>
-<li><strong>imagePath</strong>:  Chemin de l'image d'entrée.</li>
+<li><strong>imageNpArray</strong>:  Matrice Numpy de l'image.</li>
 </ul>
 </div>
 
@@ -233,22 +421,19 @@ testTFD2D = TFD2D('COVID-1024.png')</p>
 
     </div>
     <a class="headerlink" href="#TFD2D.calculerTFDSpectre"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="TFD2D.calculerTFDSpectre-22"><a href="#TFD2D.calculerTFDSpectre-22"><span class="linenos">22</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">calculerTFDSpectre</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="TFD2D.calculerTFDSpectre-23"><a href="#TFD2D.calculerTFDSpectre-23"><span class="linenos">23</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="TFD2D.calculerTFDSpectre-24"><a href="#TFD2D.calculerTFDSpectre-24"><span class="linenos">24</span></a><span class="sd">        Permet de calculer la TFD 2D de l&#39;image spécifiée et de retourner le spectre.</span>
-</span><span id="TFD2D.calculerTFDSpectre-25"><a href="#TFD2D.calculerTFDSpectre-25"><span class="linenos">25</span></a><span class="sd">        Pour la magnitude du spectre, on utilise une échelle logarithmique pour une meilleure visualisation.</span>
-</span><span id="TFD2D.calculerTFDSpectre-26"><a href="#TFD2D.calculerTFDSpectre-26"><span class="linenos">26</span></a><span class="sd">        La formule est : Spectre = 20 * log(|TFD| + 1) pour éviter les problèmes de log(0).</span>
-</span><span id="TFD2D.calculerTFDSpectre-27"><a href="#TFD2D.calculerTFDSpectre-27"><span class="linenos">27</span></a><span class="sd">        :return: Matrice du spectre de la TFD 2D (Numpy 2D array).</span>
-</span><span id="TFD2D.calculerTFDSpectre-28"><a href="#TFD2D.calculerTFDSpectre-28"><span class="linenos">28</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="TFD2D.calculerTFDSpectre-29"><a href="#TFD2D.calculerTFDSpectre-29"><span class="linenos">29</span></a>        <span class="c1"># on applique un filtrage gaussien à l&#39;image pour réduire le bruit avant de calculer la TFD</span>
-</span><span id="TFD2D.calculerTFDSpectre-30"><a href="#TFD2D.calculerTFDSpectre-30"><span class="linenos">30</span></a>        <span class="n">matrice</span> <span class="o">=</span> <span class="n">FiltrageGaussien</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_imagePath</span><span class="p">)</span>
-</span><span id="TFD2D.calculerTFDSpectre-31"><a href="#TFD2D.calculerTFDSpectre-31"><span class="linenos">31</span></a>        <span class="n">matriceFiltree</span> <span class="o">=</span> <span class="n">matrice</span><span class="o">.</span><span class="n">filtrage</span><span class="p">()</span>  <span class="c1"># la matrice filtrée est une matrice 2D de type numpy.ndarray, représentant l&#39;image filtrée en niveaux de gris (hauteur x largeur)</span>
-</span><span id="TFD2D.calculerTFDSpectre-32"><a href="#TFD2D.calculerTFDSpectre-32"><span class="linenos">32</span></a>
-</span><span id="TFD2D.calculerTFDSpectre-33"><a href="#TFD2D.calculerTFDSpectre-33"><span class="linenos">33</span></a>        <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft2</span><span class="p">(</span><span class="n">matriceFiltree</span><span class="p">)</span>  <span class="c1"># on applique la TFD 2D à la matrice filtrée</span>
-</span><span id="TFD2D.calculerTFDSpectre-34"><a href="#TFD2D.calculerTFDSpectre-34"><span class="linenos">34</span></a>        <span class="n">fshift</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftshift</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>  <span class="c1"># on déplace la fréquence zéro (les basses fréquences) au centre du spectre</span>
-</span><span id="TFD2D.calculerTFDSpectre-35"><a href="#TFD2D.calculerTFDSpectre-35"><span class="linenos">35</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_spectre</span> <span class="o">=</span> <span class="mi">20</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">fshift</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># on calcule la magnitude (le spectre) et on utilise l&#39;échelle logarithmique pour la visualisation</span>
-</span><span id="TFD2D.calculerTFDSpectre-36"><a href="#TFD2D.calculerTFDSpectre-36"><span class="linenos">36</span></a>
-</span><span id="TFD2D.calculerTFDSpectre-37"><a href="#TFD2D.calculerTFDSpectre-37"><span class="linenos">37</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spectre</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="TFD2D.calculerTFDSpectre-30"><a href="#TFD2D.calculerTFDSpectre-30"><span class="linenos">30</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">calculerTFDSpectre</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="TFD2D.calculerTFDSpectre-31"><a href="#TFD2D.calculerTFDSpectre-31"><span class="linenos">31</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="TFD2D.calculerTFDSpectre-32"><a href="#TFD2D.calculerTFDSpectre-32"><span class="linenos">32</span></a><span class="sd">        Permet de calculer la TFD 2D de l&#39;image spécifiée et de retourner le spectre.</span>
+</span><span id="TFD2D.calculerTFDSpectre-33"><a href="#TFD2D.calculerTFDSpectre-33"><span class="linenos">33</span></a><span class="sd">        Pour la magnitude du spectre, on utilise une échelle logarithmique pour une meilleure visualisation.</span>
+</span><span id="TFD2D.calculerTFDSpectre-34"><a href="#TFD2D.calculerTFDSpectre-34"><span class="linenos">34</span></a><span class="sd">        La formule est : Spectre = 20 * log(|TFD| + 1) pour éviter les problèmes de log(0).</span>
+</span><span id="TFD2D.calculerTFDSpectre-35"><a href="#TFD2D.calculerTFDSpectre-35"><span class="linenos">35</span></a><span class="sd">        :return: Matrice du spectre de la TFD 2D (Numpy 2D array).</span>
+</span><span id="TFD2D.calculerTFDSpectre-36"><a href="#TFD2D.calculerTFDSpectre-36"><span class="linenos">36</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="TFD2D.calculerTFDSpectre-37"><a href="#TFD2D.calculerTFDSpectre-37"><span class="linenos">37</span></a>        <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_imageNpArray</span><span class="p">)</span>  <span class="c1"># on applique la TFD 2D à la matrice filtrée</span>
+</span><span id="TFD2D.calculerTFDSpectre-38"><a href="#TFD2D.calculerTFDSpectre-38"><span class="linenos">38</span></a>        <span class="n">fshift</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftshift</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>  <span class="c1"># on déplace la fréquence zéro (les basses fréquences) au centre du spectre</span>
+</span><span id="TFD2D.calculerTFDSpectre-39"><a href="#TFD2D.calculerTFDSpectre-39"><span class="linenos">39</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span> <span class="o">=</span> <span class="n">fshift</span>  <span class="c1"># on stocke la TFD complexe pour pouvoir faire la TFD inverse plus tard</span>
+</span><span id="TFD2D.calculerTFDSpectre-40"><a href="#TFD2D.calculerTFDSpectre-40"><span class="linenos">40</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_spectre</span> <span class="o">=</span> <span class="mi">20</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">fshift</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># on calcule la magnitude (le spectre) et on utilise l&#39;échelle logarithmique pour la visualisation</span>
+</span><span id="TFD2D.calculerTFDSpectre-41"><a href="#TFD2D.calculerTFDSpectre-41"><span class="linenos">41</span></a>
+</span><span id="TFD2D.calculerTFDSpectre-42"><a href="#TFD2D.calculerTFDSpectre-42"><span class="linenos">42</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spectre</span>
 </span></pre></div>
 
 
@@ -276,22 +461,213 @@ La formule est : Spectre = 20 * log(|TFD| + 1) pour éviter les problèmes de lo
 
     </div>
     <a class="headerlink" href="#TFD2D.afficher_spectre"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="TFD2D.afficher_spectre-40"><a href="#TFD2D.afficher_spectre-40"><span class="linenos">40</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">afficher_spectre</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="TFD2D.afficher_spectre-41"><a href="#TFD2D.afficher_spectre-41"><span class="linenos">41</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="TFD2D.afficher_spectre-42"><a href="#TFD2D.afficher_spectre-42"><span class="linenos">42</span></a><span class="sd">        Affiche le spectre calculé.</span>
-</span><span id="TFD2D.afficher_spectre-43"><a href="#TFD2D.afficher_spectre-43"><span class="linenos">43</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="TFD2D.afficher_spectre-44"><a href="#TFD2D.afficher_spectre-44"><span class="linenos">44</span></a>        <span class="c1"># paramètres pour l&#39;affichage du spectre</span>
-</span><span id="TFD2D.afficher_spectre-45"><a href="#TFD2D.afficher_spectre-45"><span class="linenos">45</span></a>        <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
-</span><span id="TFD2D.afficher_spectre-46"><a href="#TFD2D.afficher_spectre-46"><span class="linenos">46</span></a>        <span class="n">axes</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_spectre</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;gray&quot;</span><span class="p">)</span>
-</span><span id="TFD2D.afficher_spectre-47"><a href="#TFD2D.afficher_spectre-47"><span class="linenos">47</span></a>        <span class="n">axes</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Spectre FFT 2D (Echelle Log)&quot;</span><span class="p">)</span>
-</span><span id="TFD2D.afficher_spectre-48"><a href="#TFD2D.afficher_spectre-48"><span class="linenos">48</span></a>        <span class="n">axes</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
-</span><span id="TFD2D.afficher_spectre-49"><a href="#TFD2D.afficher_spectre-49"><span class="linenos">49</span></a>
-</span><span id="TFD2D.afficher_spectre-50"><a href="#TFD2D.afficher_spectre-50"><span class="linenos">50</span></a>        <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>  <span class="c1"># ajuste automatiquement la disposition</span>
-</span><span id="TFD2D.afficher_spectre-51"><a href="#TFD2D.afficher_spectre-51"><span class="linenos">51</span></a>        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>  <span class="c1"># affiche</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="TFD2D.afficher_spectre-45"><a href="#TFD2D.afficher_spectre-45"><span class="linenos">45</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">afficher_spectre</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="TFD2D.afficher_spectre-46"><a href="#TFD2D.afficher_spectre-46"><span class="linenos">46</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="TFD2D.afficher_spectre-47"><a href="#TFD2D.afficher_spectre-47"><span class="linenos">47</span></a><span class="sd">        Affiche le spectre calculé.</span>
+</span><span id="TFD2D.afficher_spectre-48"><a href="#TFD2D.afficher_spectre-48"><span class="linenos">48</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="TFD2D.afficher_spectre-49"><a href="#TFD2D.afficher_spectre-49"><span class="linenos">49</span></a>        <span class="c1"># paramètres pour l&#39;affichage du spectre</span>
+</span><span id="TFD2D.afficher_spectre-50"><a href="#TFD2D.afficher_spectre-50"><span class="linenos">50</span></a>        <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+</span><span id="TFD2D.afficher_spectre-51"><a href="#TFD2D.afficher_spectre-51"><span class="linenos">51</span></a>        <span class="n">axes</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_spectre</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;gray&quot;</span><span class="p">)</span>
+</span><span id="TFD2D.afficher_spectre-52"><a href="#TFD2D.afficher_spectre-52"><span class="linenos">52</span></a>        <span class="n">axes</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Spectre TFD2D (Echelle Log)&quot;</span><span class="p">)</span>
+</span><span id="TFD2D.afficher_spectre-53"><a href="#TFD2D.afficher_spectre-53"><span class="linenos">53</span></a>        <span class="n">axes</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+</span><span id="TFD2D.afficher_spectre-54"><a href="#TFD2D.afficher_spectre-54"><span class="linenos">54</span></a>
+</span><span id="TFD2D.afficher_spectre-55"><a href="#TFD2D.afficher_spectre-55"><span class="linenos">55</span></a>        <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>  <span class="c1"># ajuste automatiquement la disposition</span>
+</span><span id="TFD2D.afficher_spectre-56"><a href="#TFD2D.afficher_spectre-56"><span class="linenos">56</span></a>        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>  <span class="c1"># affiche</span>
 </span></pre></div>
 
 
             <div class="docstring"><p>Affiche le spectre calculé.</p>
+</div>
+
+
+                            </div>
+                            <div id="TFD2D.calculerTFDInverse" class="classattr">
+                                        <input id="TFD2D.calculerTFDInverse-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">calculerTFDInverse</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">):</span></span>
+
+                <label class="view-source-button" for="TFD2D.calculerTFDInverse-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#TFD2D.calculerTFDInverse"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="TFD2D.calculerTFDInverse-58"><a href="#TFD2D.calculerTFDInverse-58"><span class="linenos">58</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">calculerTFDInverse</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="TFD2D.calculerTFDInverse-59"><a href="#TFD2D.calculerTFDInverse-59"><span class="linenos">59</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="TFD2D.calculerTFDInverse-60"><a href="#TFD2D.calculerTFDInverse-60"><span class="linenos">60</span></a><span class="sd">        Permet de calculer la TFD inverse à partir de la TFD complexe stockée précédemment.</span>
+</span><span id="TFD2D.calculerTFDInverse-61"><a href="#TFD2D.calculerTFDInverse-61"><span class="linenos">61</span></a><span class="sd">        :return: Matrice de l&#39;image reconstruite à partir de la TFD inverse (Numpy 2D array).</span>
+</span><span id="TFD2D.calculerTFDInverse-62"><a href="#TFD2D.calculerTFDInverse-62"><span class="linenos">62</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="TFD2D.calculerTFDInverse-63"><a href="#TFD2D.calculerTFDInverse-63"><span class="linenos">63</span></a>        <span class="n">f_ishift</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifftshift</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span><span class="p">)</span>  <span class="c1"># on inverse le décalage pour remettre les basses fréquences à leur position d&#39;origine</span>
+</span><span id="TFD2D.calculerTFDInverse-64"><a href="#TFD2D.calculerTFDInverse-64"><span class="linenos">64</span></a>        <span class="n">img_complexe</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifft2</span><span class="p">(</span><span class="n">f_ishift</span><span class="p">)</span>  <span class="c1"># on applique la TFD inverse pour reconstruire l&#39;image à partir de la TFD complexe</span>
+</span><span id="TFD2D.calculerTFDInverse-65"><a href="#TFD2D.calculerTFDInverse-65"><span class="linenos">65</span></a>        <span class="n">img_reconstruite</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">img_complexe</span><span class="p">)</span>  <span class="c1"># on prend la partie réelle de l&#39;image reconstruite</span>
+</span><span id="TFD2D.calculerTFDInverse-66"><a href="#TFD2D.calculerTFDInverse-66"><span class="linenos">66</span></a>
+</span><span id="TFD2D.calculerTFDInverse-67"><a href="#TFD2D.calculerTFDInverse-67"><span class="linenos">67</span></a>        <span class="k">return</span> <span class="n">img_reconstruite</span>
+</span></pre></div>
+
+
+            <div class="docstring"><p>Permet de calculer la TFD inverse à partir de la TFD complexe stockée précédemment.</p>
+
+<h6 id="returns">Returns</h6>
+
+<blockquote>
+  <p>Matrice de l'image reconstruite à partir de la TFD inverse (Numpy 2D array).</p>
+</blockquote>
+</div>
+
+
+                            </div>
+                            <div id="TFD2D.afficher_image_reconstruite" class="classattr">
+                                        <input id="TFD2D.afficher_image_reconstruite-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">afficher_image_reconstruite</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">image_reconstruite</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span></span><span class="return-annotation">):</span></span>
+
+                <label class="view-source-button" for="TFD2D.afficher_image_reconstruite-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#TFD2D.afficher_image_reconstruite"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="TFD2D.afficher_image_reconstruite-70"><a href="#TFD2D.afficher_image_reconstruite-70"><span class="linenos">70</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">afficher_image_reconstruite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image_reconstruite</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+</span><span id="TFD2D.afficher_image_reconstruite-71"><a href="#TFD2D.afficher_image_reconstruite-71"><span class="linenos">71</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="TFD2D.afficher_image_reconstruite-72"><a href="#TFD2D.afficher_image_reconstruite-72"><span class="linenos">72</span></a><span class="sd">        Affiche l&#39;image reconstruite après la TFD Inverse.</span>
+</span><span id="TFD2D.afficher_image_reconstruite-73"><a href="#TFD2D.afficher_image_reconstruite-73"><span class="linenos">73</span></a><span class="sd">        :param image_reconstruite: Matrice Numpy 2D retournée par calculerTFDInverse().</span>
+</span><span id="TFD2D.afficher_image_reconstruite-74"><a href="#TFD2D.afficher_image_reconstruite-74"><span class="linenos">74</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="TFD2D.afficher_image_reconstruite-75"><a href="#TFD2D.afficher_image_reconstruite-75"><span class="linenos">75</span></a>        <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+</span><span id="TFD2D.afficher_image_reconstruite-76"><a href="#TFD2D.afficher_image_reconstruite-76"><span class="linenos">76</span></a>
+</span><span id="TFD2D.afficher_image_reconstruite-77"><a href="#TFD2D.afficher_image_reconstruite-77"><span class="linenos">77</span></a>        <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_imageNpArray</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;gray&quot;</span><span class="p">)</span>
+</span><span id="TFD2D.afficher_image_reconstruite-78"><a href="#TFD2D.afficher_image_reconstruite-78"><span class="linenos">78</span></a>        <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Image d&#39;Origine&quot;</span><span class="p">)</span>
+</span><span id="TFD2D.afficher_image_reconstruite-79"><a href="#TFD2D.afficher_image_reconstruite-79"><span class="linenos">79</span></a>        <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+</span><span id="TFD2D.afficher_image_reconstruite-80"><a href="#TFD2D.afficher_image_reconstruite-80"><span class="linenos">80</span></a>
+</span><span id="TFD2D.afficher_image_reconstruite-81"><a href="#TFD2D.afficher_image_reconstruite-81"><span class="linenos">81</span></a>        <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image_reconstruite</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;gray&quot;</span><span class="p">)</span>
+</span><span id="TFD2D.afficher_image_reconstruite-82"><a href="#TFD2D.afficher_image_reconstruite-82"><span class="linenos">82</span></a>        <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Image Reconstruite (TFDI)&quot;</span><span class="p">)</span>
+</span><span id="TFD2D.afficher_image_reconstruite-83"><a href="#TFD2D.afficher_image_reconstruite-83"><span class="linenos">83</span></a>        <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+</span><span id="TFD2D.afficher_image_reconstruite-84"><a href="#TFD2D.afficher_image_reconstruite-84"><span class="linenos">84</span></a>
+</span><span id="TFD2D.afficher_image_reconstruite-85"><a href="#TFD2D.afficher_image_reconstruite-85"><span class="linenos">85</span></a>        <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</span><span id="TFD2D.afficher_image_reconstruite-86"><a href="#TFD2D.afficher_image_reconstruite-86"><span class="linenos">86</span></a>        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</span></pre></div>
+
+
+            <div class="docstring"><p>Affiche l'image reconstruite après la TFD Inverse.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>image_reconstruite</strong>:  Matrice Numpy 2D retournée par calculerTFDInverse().</li>
+</ul>
+</div>
+
+
+                            </div>
+                            <div id="TFD2D.filtragePasseBas" class="classattr">
+                                        <input id="TFD2D.filtragePasseBas-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">filtragePasseBas</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">rayon_coupure</span><span class="p">:</span> <span class="nb">int</span></span><span class="return-annotation">):</span></span>
+
+                <label class="view-source-button" for="TFD2D.filtragePasseBas-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#TFD2D.filtragePasseBas"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="TFD2D.filtragePasseBas-88"><a href="#TFD2D.filtragePasseBas-88"><span class="linenos"> 88</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">filtragePasseBas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rayon_coupure</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+</span><span id="TFD2D.filtragePasseBas-89"><a href="#TFD2D.filtragePasseBas-89"><span class="linenos"> 89</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="TFD2D.filtragePasseBas-90"><a href="#TFD2D.filtragePasseBas-90"><span class="linenos"> 90</span></a><span class="sd">        Applique un filtre passe-bas dit &#39;idéal&#39; en ne gardant que les fréquences</span>
+</span><span id="TFD2D.filtragePasseBas-91"><a href="#TFD2D.filtragePasseBas-91"><span class="linenos"> 91</span></a><span class="sd">        situées dans un cercle central de rayon &#39;rayon_coupure&#39;.</span>
+</span><span id="TFD2D.filtragePasseBas-92"><a href="#TFD2D.filtragePasseBas-92"><span class="linenos"> 92</span></a><span class="sd">        :param rayon_coupure: Rayon du cercle en pixels (plus il est petit, plus le flou est fort).</span>
+</span><span id="TFD2D.filtragePasseBas-93"><a href="#TFD2D.filtragePasseBas-93"><span class="linenos"> 93</span></a><span class="sd">        :return: Matrice de l&#39;image filtrée.</span>
+</span><span id="TFD2D.filtragePasseBas-94"><a href="#TFD2D.filtragePasseBas-94"><span class="linenos"> 94</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="TFD2D.filtragePasseBas-95"><a href="#TFD2D.filtragePasseBas-95"><span class="linenos"> 95</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="TFD2D.filtragePasseBas-96"><a href="#TFD2D.filtragePasseBas-96"><span class="linenos"> 96</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Le spectre doit être calculé avec calculerTFDSpectre().&quot;</span><span class="p">)</span>
+</span><span id="TFD2D.filtragePasseBas-97"><a href="#TFD2D.filtragePasseBas-97"><span class="linenos"> 97</span></a>
+</span><span id="TFD2D.filtragePasseBas-98"><a href="#TFD2D.filtragePasseBas-98"><span class="linenos"> 98</span></a>        <span class="n">hauteur</span><span class="p">,</span> <span class="n">largeur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span><span class="o">.</span><span class="n">shape</span>  <span class="c1"># on récupère les dimensions de la TFD pour créer le masque</span>
+</span><span id="TFD2D.filtragePasseBas-99"><a href="#TFD2D.filtragePasseBas-99"><span class="linenos"> 99</span></a>        <span class="n">centre_y</span><span class="p">,</span> <span class="n">centre_x</span> <span class="o">=</span> <span class="p">(</span>
+</span><span id="TFD2D.filtragePasseBas-100"><a href="#TFD2D.filtragePasseBas-100"><span class="linenos">100</span></a>            <span class="n">hauteur</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
+</span><span id="TFD2D.filtragePasseBas-101"><a href="#TFD2D.filtragePasseBas-101"><span class="linenos">101</span></a>            <span class="n">largeur</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
+</span><span id="TFD2D.filtragePasseBas-102"><a href="#TFD2D.filtragePasseBas-102"><span class="linenos">102</span></a>        <span class="p">)</span>  <span class="c1"># on calcule les coordonnées du centre du spectre (où se trouvent les basses fréquences) pour centrer notre cercle de filtrage autour de ce point</span>
+</span><span id="TFD2D.filtragePasseBas-103"><a href="#TFD2D.filtragePasseBas-103"><span class="linenos">103</span></a>
+</span><span id="TFD2D.filtragePasseBas-104"><a href="#TFD2D.filtragePasseBas-104"><span class="linenos">104</span></a>        <span class="n">y</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ogrid</span><span class="p">[</span>
+</span><span id="TFD2D.filtragePasseBas-105"><a href="#TFD2D.filtragePasseBas-105"><span class="linenos">105</span></a>            <span class="p">:</span><span class="n">hauteur</span><span class="p">,</span> <span class="p">:</span><span class="n">largeur</span>
+</span><span id="TFD2D.filtragePasseBas-106"><a href="#TFD2D.filtragePasseBas-106"><span class="linenos">106</span></a>        <span class="p">]</span>  <span class="c1"># on crée des grilles de coordonnées pour chaque pixel du spectre, ce qui nous permettra de calculer la distance de chaque pixel au centre du spectre et de déterminer s&#39;il est à l&#39;intérieur ou à l&#39;extérieur du cercle de filtrage</span>
+</span><span id="TFD2D.filtragePasseBas-107"><a href="#TFD2D.filtragePasseBas-107"><span class="linenos">107</span></a>
+</span><span id="TFD2D.filtragePasseBas-108"><a href="#TFD2D.filtragePasseBas-108"><span class="linenos">108</span></a>        <span class="c1"># équation d&#39;un cercle : (x - x0)^2 + (y - y0)^2 &lt;= R^2</span>
+</span><span id="TFD2D.filtragePasseBas-109"><a href="#TFD2D.filtragePasseBas-109"><span class="linenos">109</span></a>        <span class="n">masque_circulaire</span> <span class="o">=</span> <span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="n">centre_x</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">centre_y</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">&lt;=</span> <span class="n">rayon_coupure</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span>
+</span><span id="TFD2D.filtragePasseBas-110"><a href="#TFD2D.filtragePasseBas-110"><span class="linenos">110</span></a>            <span class="nb">float</span>
+</span><span id="TFD2D.filtragePasseBas-111"><a href="#TFD2D.filtragePasseBas-111"><span class="linenos">111</span></a>        <span class="p">)</span>  <span class="c1"># on crée un masque binaire où les pixels à l&#39;intérieur du cercle de rayon &#39;rayon_coupure&#39; sont égaux à 1 (conservés) et les pixels à l&#39;extérieur sont égaux à 0 (filtrés)</span>
+</span><span id="TFD2D.filtragePasseBas-112"><a href="#TFD2D.filtragePasseBas-112"><span class="linenos">112</span></a>
+</span><span id="TFD2D.filtragePasseBas-113"><a href="#TFD2D.filtragePasseBas-113"><span class="linenos">113</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span> <span class="o">=</span> <span class="p">(</span>
+</span><span id="TFD2D.filtragePasseBas-114"><a href="#TFD2D.filtragePasseBas-114"><span class="linenos">114</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span> <span class="o">*</span> <span class="n">masque_circulaire</span>
+</span><span id="TFD2D.filtragePasseBas-115"><a href="#TFD2D.filtragePasseBas-115"><span class="linenos">115</span></a>        <span class="p">)</span>  <span class="c1"># on applique le masque de filtrage à la TFD complexe en multipliant élément par élément, ce qui conserve les fréquences à l&#39;intérieur du cercle et supprime les fréquences à l&#39;extérieur</span>
+</span><span id="TFD2D.filtragePasseBas-116"><a href="#TFD2D.filtragePasseBas-116"><span class="linenos">116</span></a>
+</span><span id="TFD2D.filtragePasseBas-117"><a href="#TFD2D.filtragePasseBas-117"><span class="linenos">117</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span>
+</span></pre></div>
+
+
+            <div class="docstring"><p>Applique un filtre passe-bas dit 'idéal' en ne gardant que les fréquences
+situées dans un cercle central de rayon 'rayon_coupure'.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>rayon_coupure</strong>:  Rayon du cercle en pixels (plus il est petit, plus le flou est fort).</li>
+</ul>
+
+<h6 id="returns">Returns</h6>
+
+<blockquote>
+  <p>Matrice de l'image filtrée.</p>
+</blockquote>
+</div>
+
+
+                            </div>
+                            <div id="TFD2D.filtragePasseHaut" class="classattr">
+                                        <input id="TFD2D.filtragePasseHaut-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">filtragePasseHaut</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">rayon_coupure</span><span class="p">:</span> <span class="nb">int</span></span><span class="return-annotation">):</span></span>
+
+                <label class="view-source-button" for="TFD2D.filtragePasseHaut-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#TFD2D.filtragePasseHaut"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="TFD2D.filtragePasseHaut-119"><a href="#TFD2D.filtragePasseHaut-119"><span class="linenos">119</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">filtragePasseHaut</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rayon_coupure</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+</span><span id="TFD2D.filtragePasseHaut-120"><a href="#TFD2D.filtragePasseHaut-120"><span class="linenos">120</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="TFD2D.filtragePasseHaut-121"><a href="#TFD2D.filtragePasseHaut-121"><span class="linenos">121</span></a><span class="sd">        Applique un filtre passe-haut en ne gardant que les fréquences situées à l&#39;extérieur d&#39;un cercle de rayon &#39;rayon_coupure&#39;.</span>
+</span><span id="TFD2D.filtragePasseHaut-122"><a href="#TFD2D.filtragePasseHaut-122"><span class="linenos">122</span></a><span class="sd">        :param rayon_coupure: Rayon du cercle en pixels (plus il est grand, plus le filtrage est fort).</span>
+</span><span id="TFD2D.filtragePasseHaut-123"><a href="#TFD2D.filtragePasseHaut-123"><span class="linenos">123</span></a><span class="sd">        :return: Matrice de l&#39;image filtrée.</span>
+</span><span id="TFD2D.filtragePasseHaut-124"><a href="#TFD2D.filtragePasseHaut-124"><span class="linenos">124</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="TFD2D.filtragePasseHaut-125"><a href="#TFD2D.filtragePasseHaut-125"><span class="linenos">125</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="TFD2D.filtragePasseHaut-126"><a href="#TFD2D.filtragePasseHaut-126"><span class="linenos">126</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Le spectre doit être calculé avec calculerTFDSpectre().&quot;</span><span class="p">)</span>
+</span><span id="TFD2D.filtragePasseHaut-127"><a href="#TFD2D.filtragePasseHaut-127"><span class="linenos">127</span></a>
+</span><span id="TFD2D.filtragePasseHaut-128"><a href="#TFD2D.filtragePasseHaut-128"><span class="linenos">128</span></a>        <span class="n">hauteur</span><span class="p">,</span> <span class="n">largeur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span><span class="o">.</span><span class="n">shape</span>
+</span><span id="TFD2D.filtragePasseHaut-129"><a href="#TFD2D.filtragePasseHaut-129"><span class="linenos">129</span></a>        <span class="n">centre_y</span><span class="p">,</span> <span class="n">centre_x</span> <span class="o">=</span> <span class="n">hauteur</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">largeur</span> <span class="o">//</span> <span class="mi">2</span>
+</span><span id="TFD2D.filtragePasseHaut-130"><a href="#TFD2D.filtragePasseHaut-130"><span class="linenos">130</span></a>
+</span><span id="TFD2D.filtragePasseHaut-131"><a href="#TFD2D.filtragePasseHaut-131"><span class="linenos">131</span></a>        <span class="n">y</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ogrid</span><span class="p">[:</span><span class="n">hauteur</span><span class="p">,</span> <span class="p">:</span><span class="n">largeur</span><span class="p">]</span>
+</span><span id="TFD2D.filtragePasseHaut-132"><a href="#TFD2D.filtragePasseHaut-132"><span class="linenos">132</span></a>
+</span><span id="TFD2D.filtragePasseHaut-133"><a href="#TFD2D.filtragePasseHaut-133"><span class="linenos">133</span></a>        <span class="n">masque_circulaire</span> <span class="o">=</span> <span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="n">centre_x</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">centre_y</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">&gt;=</span> <span class="n">rayon_coupure</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span>
+</span><span id="TFD2D.filtragePasseHaut-134"><a href="#TFD2D.filtragePasseHaut-134"><span class="linenos">134</span></a>            <span class="nb">float</span>
+</span><span id="TFD2D.filtragePasseHaut-135"><a href="#TFD2D.filtragePasseHaut-135"><span class="linenos">135</span></a>        <span class="p">)</span>  <span class="c1"># on inverse la condition pour créer un masque qui conserve les fréquences à l&#39;extérieur du cercle et supprime les fréquences à l&#39;intérieur</span>
+</span><span id="TFD2D.filtragePasseHaut-136"><a href="#TFD2D.filtragePasseHaut-136"><span class="linenos">136</span></a>
+</span><span id="TFD2D.filtragePasseHaut-137"><a href="#TFD2D.filtragePasseHaut-137"><span class="linenos">137</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span> <span class="o">*</span> <span class="n">masque_circulaire</span>
+</span><span id="TFD2D.filtragePasseHaut-138"><a href="#TFD2D.filtragePasseHaut-138"><span class="linenos">138</span></a>
+</span><span id="TFD2D.filtragePasseHaut-139"><a href="#TFD2D.filtragePasseHaut-139"><span class="linenos">139</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fshift_complexe</span>
+</span></pre></div>
+
+
+            <div class="docstring"><p>Applique un filtre passe-haut en ne gardant que les fréquences situées à l'extérieur d'un cercle de rayon 'rayon_coupure'.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>rayon_coupure</strong>:  Rayon du cercle en pixels (plus il est grand, plus le filtrage est fort).</li>
+</ul>
+
+<h6 id="returns">Returns</h6>
+
+<blockquote>
+  <p>Matrice de l'image filtrée.</p>
+</blockquote>
 </div>
 
 

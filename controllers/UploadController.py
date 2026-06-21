@@ -18,6 +18,12 @@ from models.ImageConvertie import ImageConvertie
 
 
 class UploadController:
+    """
+    Contrôleur pour la gestion de l'upload d'images médicales.
+    Interagit avec la MainView et le MainController pour ouvrir l'explorateur de fichiers, afficher l'image sélectionnée et stocker sa matrice numpy normalisée pour les traitements ultérieurs.
+    Gère également la mémorisation du pixmap d'origine et du chemin du dernier fichier chargé.
+    """
+
     def __init__(self, main_controller: MainController):
         self.main_controller = main_controller
 

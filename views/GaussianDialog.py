@@ -2,6 +2,7 @@
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QDoubleSpinBox, QFormLayout
 from PyQt6.QtCore import Qt
 
+
 class GaussianDialog(QDialog):
     def __init__(self, parent=None, default_sigma=1.0):
         super().__init__(parent)

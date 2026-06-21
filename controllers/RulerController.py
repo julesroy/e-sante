@@ -10,6 +10,11 @@ if TYPE_CHECKING:
 
 
 class RulerController:
+    """
+    Contrôleur pour la gestion des outils de mesure (Règle, Angle, Comparateur de hauteur, ROI Cercle, ROI Carré, Pipette) sur l'image affichée dans la MainView.
+    Interagit avec la MainView et le MainController pour activer/désactiver les modes de mesure, gérer les interactions avec l'image et afficher les résultats.
+    """
+
     def __init__(self, main_controller: MainController):
         self.main_controller = main_controller
         self.image_before_pipette = None
@@ -226,8 +231,6 @@ class RulerController:
 
         self.view.image_display.update()
 
-
-
     def deactivate_pipette(self):
         """Désactive proprement la pipette sans restaurer l'image."""
         self.image_before_pipette = None
@@ -252,6 +255,7 @@ class RulerController:
 
             import numpy as np
             import cv2
+
             labels = model.watershed_labels
             unique_labels = np.unique(labels)
             unique_labels = unique_labels[unique_labels != 0]
@@ -286,7 +290,7 @@ class RulerController:
                 )
             html_lines.append("</table></body></html>")
             text = "".join(html_lines)
-            
+
             # Afficher dans la zone de même largeur
             self.view.display_watershed_areas(text)
 

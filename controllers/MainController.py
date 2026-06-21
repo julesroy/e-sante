@@ -27,8 +27,13 @@ from controllers.AnnotationController import AnnotationController
 # ===== IMPORTS DE LA CONNEXION A LA BDD =====
 from database.connection import is_online, check_connection
 
+
 class MainController:
-    # --------------------- Initialisation ------------------------
+    """
+    Contrôleur principal de l'application. Coordonne les interactions entre la MainView, le modèle de données et les sous-contrôleurs.
+    Gère l'état global de l'application, y compris l'image courante, le patient sélectionné et les paramètres par défaut pour les filtres et traitements.
+    """
+
     def __init__(self, model, view: MainView):
         self.model = model
         self.view: MainView = view
@@ -49,7 +54,7 @@ class MainController:
 
         self._connect_signals()
         self._check_db_mode()
-    
+
     # --------------------- Connexion des signaux ------------------------
     def _connect_signals(self):
         self.view.top_toolbar.upload_clicked.connect(self.upload_ctrl.handle_upload)
@@ -77,34 +82,50 @@ class MainController:
         self.view.left_toolbar.clear_annotations_clicked.connect(self.annotation_ctrl.handle_clear_annotations)
         self.view.left_toolbar.save_to_patient_clicked.connect(self.image_ctrl.handle_save_to_patient_record)
         self.view.top_toolbar.help_clicked.connect(self.handle_open_help)
-    
+
     @property
-    def _current_array(self): return self.model.current_array
+    def _current_array(self):
+        return self.model.current_array
+
     @_current_array.setter
-    def _current_array(self, value): self.model.current_array = value
+    def _current_array(self, value):
+        self.model.current_array = value
 
     @property
-    def _original_pixmap(self): return self.model.original_pixmap
+    def _original_pixmap(self):
+        return self.model.original_pixmap
+
     @_original_pixmap.setter
-    def _original_pixmap(self, value): self.model.original_pixmap = value
+    def _original_pixmap(self, value):
+        self.model.original_pixmap = value
 
     @property
-    def _contrast_base_array(self): return self.model.contrast_base_array
+    def _contrast_base_array(self):
+        return self.model.contrast_base_array
+
     @_contrast_base_array.setter
-    def _contrast_base_array(self, value): self.model.contrast_base_array = value
+    def _contrast_base_array(self, value):
+        self.model.contrast_base_array = value
 
     @property
-    def _current_patient_id(self): return self.model.current_patient_id
+    def _current_patient_id(self):
+        return self.model.current_patient_id
+
     @_current_patient_id.setter
-    def _current_patient_id(self, value): self.model.current_patient_id = value
+    def _current_patient_id(self, value):
+        self.model.current_patient_id = value
 
     @property
-    def _last_file_path(self): return self.model.last_file_path
+    def _last_file_path(self):
+        return self.model.last_file_path
+
     @_last_file_path.setter
-    def _last_file_path(self, value): self.model.last_file_path = value
+    def _last_file_path(self, value):
+        self.model.last_file_path = value
 
     def apply_contrast_realtime(self, facteur_contraste):
         self.analysis_ctrl.apply_contrast_realtime(facteur_contraste)
+
     # -------------------------------------------------------------
 
     # ------------------- BDD Online/Offline ----------------------
@@ -149,6 +170,7 @@ class MainController:
         elif len(img_uint8.shape) == 3 and img_uint8.shape[2] == 3:
             h, w, c = img_uint8.shape
             import cv2
+
             img_rgb = cv2.cvtColor(img_uint8, cv2.COLOR_BGR2RGB)
             bytes_per_line = 3 * w
             qimage = QImage(bytes(img_rgb.data), w, h, bytes_per_line, QImage.Format.Format_RGB888).copy()
@@ -165,7 +187,8 @@ class MainController:
         self.view.update_image_render()
 
     def handle_reset_image(self, keep_button=None):
-        if self._original_pixmap is None: return
+        if self._original_pixmap is None:
+            return
         print("Réaffichage de l'image d'origine...")
         self.view.current_pixmap = self._original_pixmap.copy()
         if self.model.original_array is not None:
@@ -184,23 +207,24 @@ class MainController:
         self.view.top_toolbar.btn_histo.setChecked(False)
         if hasattr(self.view, "histo_widget"):
             self.view.histo_widget.hide()
-        
+
         self.view.left_toolbar.uncheck_all_processing_buttons(except_btn=keep_button)
         self.ruler_ctrl.deactivate_pipette()
-        
+
         # Clear forms overlay ROI shapes
         if hasattr(self.view.image_display, "forms_overlay"):
             self.view.image_display.forms_overlay.clear_all()
-            
+
         # Clear annotations overlay
         if hasattr(self.view.image_display, "annotations_overlay"):
             self.view.image_display.annotations_overlay.clear_all()
-            
+
         self.view.update_image_render()
 
     def handle_open_help(self):
         import webbrowser
         import os
+
         help_path = resource_path(os.path.join("manuel", "manuel.html"))
         if os.path.exists(help_path):
             webbrowser.open(f"file://{help_path}")

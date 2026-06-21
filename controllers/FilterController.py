@@ -20,6 +20,12 @@ from views.GaussianDialog import GaussianDialog
 
 
 class FilterController:
+    """
+    Contrôleur pour la gestion des filtres d'image (Gaussien, Sobel, Passe-Bas, Passe-Haut).
+    Interagit avec la MainView et le MainController pour appliquer les filtres sur l'image courante (_current_array) et afficher les résultats.
+    Gère également les paramètres par défaut pour chaque filtre afin de les réutiliser lors des prochaines exécutions.
+    """
+
     def __init__(self, main_controller: MainController):
         self.main_controller = main_controller
         self.last_gaussian_sigma = 1.0
@@ -90,10 +96,7 @@ class FilterController:
 
             if checked:
                 self.main_controller.handle_reset_image(keep_button=self.view.left_toolbar.btn_sobel)
-                # on applique le filtre
-                filtreGauss = FiltrageGaussien(2, self._current_array)
-                image_gaussienne = filtreGauss.filtrage()
-                filtre = FiltrageSobel(image_gaussienne)
+                filtre = FiltrageSobel(self._current_array)
                 result_array = filtre.filtrage()  # uint8 [0,255]
 
                 self._display_numpy_array(result_array)

@@ -116,7 +116,6 @@
     /* Content headings */
     h1 { font-size: 22px; font-weight: 600; color: #e8e8e8; margin-bottom: 6px; }
     h2 { font-size: 17px; font-weight: 600; color: #d8d8d8; margin: 32px 0 12px; padding-bottom: 6px; border-bottom: 1px solid #222; }
-    h3 { font-size: 14px; font-weight: 600; color: #c8c8c8; margin: 22px 0 8px; text-transform: uppercase; letter-spacing: .06em; }
     p  { font-size: 14px; line-height: 1.7; color: #a8a8a8; margin-bottom: 14px; }
 
     /* Sidebar resize */
@@ -246,6 +245,19 @@
             </div>
           </section>
 
+          <section class="content-section mt-10" id="avant-de-commencer">
+            <div class="flex items-center gap-3 mb-5">
+              <h1>Avant de commencer</h1>
+            </div>
+            <p>Avant d'appliquer les algorithmes à une image, essayez d'éliminer les zones de textes / annotations non souhaitées afin d'améliorer la qualité des résultats. Cela est possible grâce à l'explorateur de photos (Windows) ou Aperçu (macOS), mais aussi avec l'outil Stylo présenté dans la partie Annotations.</p>
+            <p>Exemple :</p>
+            <div class="flex items-center gap-4 mt-3">
+              <img src="images/avant-nettoyage.png" alt="Image avec annotations" class="w-[300px] border border-border rounded">
+              <p>après élimination des annotations =></p>
+              <img src="images/apres-nettoyage.png" alt="Image nettoyée" class="w-[300px] border border-border rounded">
+            </div>
+          </section>
+
           <!-- BARRE SUPÉRIEURE -->
           <section class="content-section mt-10" id="barre-outils">
             <div class="flex items-center gap-3 mb-5">
@@ -262,19 +274,34 @@
               </thead>
               <tbody>
                 <tr>
-                  <td><code>📁 Import</code></td>
+                  <td><strong>Import</strong></td>
                   <td><strong>Ouvrir un cliché</strong></td>
-                  <td>Ouvre l'explorateur natif pour charger un fichier local. Formats acceptés : <code>.png</code>, <code>.jpg</code>, <code>.jpeg</code>, et <code>.dcm</code> (DICOM). Le format DICOM est automatiquement normalisé.</td>
+                  <td>Ouvre l'explorateur natif pour charger un fichier local. Formats acceptés : <code>.png</code> et <code>.dcm</code> (DICOM). Les formats sont automatiquement normalisés.</td>
                 </tr>
                 <tr>
-                  <td><code>🔍 Loupe</code></td>
-                  <td><strong>Loupe de précision</strong></td>
+                  <td><strong>Exporter</strong></td>
+                  <td><strong>Enregistrer l'image traitée</strong></td>
+                  <td>Ouvre l'explorateur de fichiers pour enregistrer l'image en cours de traitement.</td>
+                </tr>
+                <tr>
+                  <td><strong>Loupe</strong></td>
+                  <td><strong>Agrandir une partie de l'image</strong></td>
                   <td>Active une loupe interactive au survol. Lors de l'activation, une boîte de dialogue demande à l'utilisateur de spécifier un facteur d'agrandissement dynamique (de <strong>x2.0</strong> à <strong>x8.0</strong>).</td>
                 </tr>
                 <tr>
-                  <td><code>↕ Slider Comp</code></td>
-                  <td><strong>Slider de comparaison</strong></td>
+                  <td><strong>Slider</strong></td>
+                  <td><strong>Comparer l'image d'origine et l'image traitée</strong></td>
                   <td>Sépare l'image en deux via une ligne verticale mobile. La partie à gauche affiche l'image originale non filtrée, tandis que la partie à droite présente l'image modifiée après traitement. Le séparateur peut être déplacé à la souris.</td>
+                </tr>
+                <tr>
+                  <td><strong>TFD 2D (Spectre)</strong></td>
+                  <td><strong>Affiche la transformée de Fourier discrète 2D</strong></td>
+                  <td>Calcule la Transformée de Fourier Discrète 2D de l'image. Affiche son spectre de magnitude en échelle logarithmique <code>20 * log(|TFD| + 1)</code> centré sur l'origine.</td>
+                </tr>
+                <tr>
+                  <td><strong>Histogramme</strong></td>
+                  <td><strong>Affiche l'histogramme de l'image</strong></td>
+                  <td>Calcule et affiche l'histogramme des niveaux de gris de l'image. L'axe horizontal représente les intensités (0 à 255), tandis que l'axe vertical indique le nombre de pixels pour chaque niveau de gris.</td>
                 </tr>
               </tbody>
             </table>
@@ -287,7 +314,8 @@
             </div>
             <p>Le panneau latéral gauche contient plusieurs modules de filtrage pour améliorer la lisibilité des radiographies :</p>
 
-            <h3>Module : Filtres</h3>
+            <br>
+            <h3 class="flex items-center gap-3 mb-5 underline">Filtres :</h3>
             <p>Ce volet regroupe les opérations de filtrage spatial et fréquentiel :</p>
             <table class="mb-6">
               <thead>
@@ -301,7 +329,7 @@
                 <tr>
                   <td><strong>Image d'origine</strong></td>
                   <td>Réinitialise l'affichage. Annule tous les filtres actifs pour restituer la matrice d'image initiale.</td>
-                  <td>— (Application instantanée)</td>
+                  <td>Application instantanée</td>
                 </tr>
                 <tr>
                   <td><strong>Filtre Gaussien</strong></td>
@@ -310,13 +338,8 @@
                 </tr>
                 <tr>
                   <td><strong>Sobel (Contours)</strong></td>
-                  <td>Détection de contours en calculant la magnitude des gradients horizontaux et verticaux. Filtre au préalable l'image avec un flou gaussien (<code>σ = 2</code>) pour éliminer le bruit. Normalise les gradients à 99%.</td>
+                  <td>Détection de contours en calculant la magnitude des gradients horizontaux et verticaux. Normalise les gradients à 99%.</td>
                   <td>Automatique (Application directe)</td>
-                </tr>
-                <tr>
-                  <td><strong>TFD 2D (Spectre)</strong></td>
-                  <td>Calcule la Transformée de Fourier Discrète 2D de l'image. Affiche son spectre de magnitude en échelle logarithmique <code>20 * log(|TFD| + 1)</code> centré sur l'origine.</td>
-                  <td>Automatique (Activable en haut)</td>
                 </tr>
                 <tr>
                   <td><strong>Filtre Passe-Bas</strong></td>
@@ -331,7 +354,7 @@
               </tbody>
             </table>
 
-            <h3>Module : Contraste &amp; Segmentation</h3>
+            <h3 class="flex items-center gap-3 mb-5 underline">Contraste &amp; Segmentation :</h3>
             <p>Indispensable pour faire ressortir les variations de densité tissulaire ou délimiter les structures anatomiques :</p>
             <table class="mb-6">
               <thead>
@@ -359,13 +382,13 @@
                 </tr>
                 <tr>
                   <td><strong>Segmentation Watershed</strong></td>
-                  <td>Sépare les régions connectées (ex: poumons) par algorithme géomorphologique de ligne de partage des eaux.</td>
+                  <td>Sépare les régions connectées (ex: tumeurs) par algorithme géomorphologique de ligne de partage des eaux.</td>
                   <td>Popup <code>Paramètres Watershed</code> (Sigma, Seuil, Noyau, Dist)</td>
                 </tr>
               </tbody>
             </table>
 
-            <h3>Impact détaillé des paramètres de réglage (Popups)</h3>
+            <h3 class="flex items-center gap-3 mb-5 underline">Impact détaillé des paramètres de réglage (Popups) :</h3>
             <p>Voici l'explication physique et clinique des paramètres réglables via les fenêtres de dialogue :</p>
 
             <div class="space-y-4">
@@ -398,40 +421,27 @@
               <!-- CLAHE -->
               <div class="border border-border p-4 bg-surface rounded">
                 <div class="flex items-center gap-2 mb-2">
-                  <span class="badge badge-yellow">CLAHE</span>
+                  <span class="badge badge-blue">CLAHE</span>
                   <strong class="text-text">Limitation contraste (Clip Limit) &amp; Taille de grille locale</strong>
                 </div>
                 <p class="text-xs text-muted mb-0">
                   Ajuste l'égalisation adaptative de l'histogramme par blocs.
                   <br>• <strong class="text-text">Limitation contraste (Clip Limit, 0.1 à 40.0) :</strong> Borne l'amplification. Une <strong>limitation forte</strong> fait ressortir des contrastes tissulaires infimes (ex: tissus mous vs air) mais peut fortement amplifier le bruit de fond. Une <strong>limitation faible</strong> produit un rendu plus doux et homogène.
-                  <br>• <strong class="text-text">Taille de grille (Tile Grid, 2 à 128) :</strong> Divise l'image en $n \times n$ tuiles. Une <strong>grille fine (ex: 32x32, 64x64)</strong> améliore les détails très locaux mais peut générer des démarcations de blocs. Une <strong>grille plus large (ex: 8x8)</strong> homogénéise le contraste sur de grandes zones.
-                </p>
-              </div>
-
-              <!-- Seuillage -->
-              <div class="border border-border p-4 bg-surface rounded">
-                <div class="flex items-center gap-2 mb-2">
-                  <span class="badge badge-yellow">Seuillage</span>
-                  <strong class="text-text">Seuil (Value)</strong>
-                </div>
-                <p class="text-xs text-muted mb-0">
-                  Binarise l'image pour séparer le fond des objets cliniques.
-                  <br>• <strong class="text-text">Seuil = 0 :</strong> Active l'algorithme d'<strong>Otsu automatique</strong>, qui calcule dynamiquement le seuil optimal pour séparer l'histogramme de manière bimodale.
-                  <br>• <strong class="text-text">Seuil > 0 :</strong> Applique le seuil fixe choisi. Un <strong>seuil trop bas</strong> fusionne l'arrière-plan avec les objets d'intérêt (surestimation de la taille). Un <strong>seuil trop élevé</strong> omet des régions d'intérêt ou fragmente les formes (sous-estimation).
+                  <br>• <strong class="text-text">Taille de grille (Tile Grid, 2 à 128) :</strong> Divise l'image en n * n tuiles. Une <strong>grille fine (ex: 32x32, 64x64)</strong> améliore les détails très locaux mais peut générer des démarcations de blocs. Une <strong>grille plus large (ex: 8x8)</strong> homogénéise le contraste sur de grandes zones.
                 </p>
               </div>
 
               <!-- Watershed -->
               <div class="border border-border p-4 bg-surface rounded">
                 <div class="flex items-center gap-2 mb-2">
-                  <span class="badge badge-red">Segmentation Watershed</span>
-                  <strong class="text-text">Sigma, Seuillage, Noyau morpho. &amp; Distance minimale</strong>
+                  <span class="badge badge-blue">Segmentation Watershed</span>
+                  <strong class="text-text">Sigma, Seuillage, Noyau &amp; Distance minimale</strong>
                 </div>
                 <p class="text-xs text-muted mb-0">
                   Permet de séparer les structures anatomiques connectées ou superposées.
                   <br>• <strong class="text-text">Sigma Gaussien :</strong> Prédébruite le gradient de relief. Un sigma élevé évite d'avoir une multitude de petites régions segmentées (sur-segmentation) mais atténue les bords.
                   <br>• <strong class="text-text">Seuil (Otsu ou manuel) :</strong> Définit le masque d'inondation global (les régions hors masque ne seront pas segmentées).
-                  <br>• <strong class="text-text">Taille noyau morpho. :</strong> Dimension de l'élément structurant. Un noyau plus grand élimine les petites imperfections ou les isolements indésirables avant inondation.
+                  <br>• <strong class="text-text">Taille noyau :</strong> Dimension de l'élément structurant. Un noyau plus grand élimine les petites imperfections ou les isolements indésirables avant inondation.
                   <br>• <strong class="text-text">Min distance marqueurs :</strong> Distance minimale entre les germes de départ (sources d'inondation). Une <strong>distance trop faible</strong> divise les structures d'un seul bloc (sur-segmentation). Une <strong>distance trop grande</strong> peut fusionner deux objets distincts (ex: deux vertèbres ou deux poumons) en un unique label.
                 </p>
               </div>
@@ -444,13 +454,6 @@
               <h1>Outils de Mesure interactifs</h1>
             </div>
             <p>Ces outils permettent de dessiner des repères et de calculer des mesures cliniques directement à l'écran par simple clic de souris :</p>
-            
-            <div class="my-4 p-4 text-xs font-mono text-center leading-7"
-                 style="background:#141414; border:1px solid #222; color:#555;">
-              <span style="color:#2ecc71;">[ Point A ]</span> ─── (Distance physique calibrée sur 45 cm de large) ─── <span style="color:#2ecc71;">[ Point B ]</span>
-              <br>
-              <span style="color:#3b9eff;">Distance affichée au centre : X.XX cm</span>
-            </div>
 
             <table class="mb-6">
               <thead>
@@ -464,17 +467,37 @@
                 <tr>
                   <td><strong>Règle de distance</strong></td>
                   <td>2 points (A, B)</td>
-                  <td>Calcule la distance euclidienne entre les deux points. Elle projette les coordonnées sur l'image d'origine pour rester insensible au zoom de la fenêtre, puis applique un calibrage physique (largeur de cliché de référence = 45 cm).</td>
+                  <td>Calcule la distance euclidienne entre les deux points. Elle projette les coordonnées sur l'image d'origine pour rester insensible au zoom de la fenêtre, puis applique un calibrage physique.</td>
                 </tr>
                 <tr>
                   <td><strong>Rapporteur d'angle</strong></td>
                   <td>4 points (A-B, C-D)</td>
-                  <td>Forme deux droites séparées (droite AB et droite CD). Calcule l'angle aigu $\theta$ via le produit scalaire normalisé de leurs vecteurs directeurs. Affiche le résultat en degrés à l'intersection ou au barycentre.</td>
+                  <td>Forme deux droites séparées (droite AB et droite CD). Calcule l'angle aigu theta via le produit scalaire normalisé de leurs vecteurs directeurs. Affiche le résultat en degrés à l'intersection ou au barycentre.</td>
                 </tr>
                 <tr>
                   <td><strong>Comparateur hauteur</strong></td>
                   <td>2 points (A, B)</td>
-                  <td>Utile pour mesurer un décalage vertical (ex. bascule de bassin). Trace deux plans horizontaux passant par A et B, puis calcule et affiche l'écart vertical $\Delta y$ en centimètres.</td>
+                  <td>Utile pour mesurer un décalage vertical (ex. bascule de bassin). Trace deux plans horizontaux passant par A et B, puis calcule et affiche l'écart vertical Delta y en centimètres.</td>
+                </tr>
+                <tr>
+                  <td><strong>Calcul air Watershed</strong></td>
+                  <td>Automatique</td>
+                  <td>Après application de l'algorithme de segmentation Watershed à l'image pour identifier les régions distinctes, affiche l'aire en px^2 de chaque région (avec sa couleur). Utile pour analyser la structure interne d'une anomalie ou d'une zone d'intérêt.</td>
+                </tr>
+                <tr>
+                  <td><strong>ROI Cercle</strong></td>
+                  <td>1 point (centre) + 1 point (rayon)</td>
+                  <td>Permet de définir une région d'intérêt circulaire sur l'image. Calcule et affiche l'aire en px^2 de la région délimitée. Affiche également le niveau de gris moyen de la région.</td>
+                </tr>
+                <tr>
+                  <td><strong>ROI Rectangle</strong></td>
+                  <td>2 points (diagonale)</td>
+                  <td>Permet de définir une région d'intérêt rectangulaire sur l'image. Calcule et affiche l'aire en px^2 de la région délimitée. Affiche également le niveau de gris moyen de la région.</td>
+                </tr>
+                <tr>
+                  <td><strong>Pipette niveau de gris</strong></td>
+                  <td>1 point (au survol)</td>
+                  <td>Permet de mesurer le niveau de gris d'un pixel spécifique sur l'image. Affiche la valeur du niveau de gris à l'endroit où le point est cliqué.</td>
                 </tr>
               </tbody>
             </table>
@@ -497,12 +520,12 @@
               </thead>
               <tbody>
                 <tr>
-                  <td><code>✏️ Stylo</code></td>
+                  <td><code>Stylo</code></td>
                   <td><strong>Tracé libre à main levée</strong></td>
                   <td>Permet de dessiner des traits sur l'image en maintenant le clic gauche enfoncé. Utile pour entourer une anomalie, souligner une zone pathologique ou tracer des schémas explicatifs. Le tracé s'adapte dynamiquement à la résolution de l'image.</td>
                 </tr>
                 <tr>
-                  <td><code>🔤 Texte</code></td>
+                  <td><code>Texte</code></td>
                   <td><strong>Ajout de texte dynamique</strong></td>
                   <td>Cliquez sur l'image pour ouvrir une invite de saisie de texte. Le texte apparaît centré sur le point cliqué.
                   <br>• <strong>Déplacement :</strong> En mode texte, survolez un texte existant (le curseur se change en flèches multidirectionnelles) pour le déplacer par glisser-déposer.
@@ -510,17 +533,17 @@
                   <br>• <strong>Suppression :</strong> Appuyez sur la touche <kbd class="px-1 bg-surface border border-border rounded text-[11px]">Suppr</kbd> ou <kbd class="px-1 bg-surface border border-border rounded text-[11px]">Retour arrière</kbd> pour effacer le texte sélectionné.</td>
                 </tr>
                 <tr>
-                  <td><code>🎨 Couleur</code></td>
+                  <td><code>Couleur</code></td>
                   <td><strong>Nuancier d'annotation</strong></td>
                   <td>Ouvre le sélecteur de couleurs standard du système (<code>QColorDialog</code>). Permet de définir la couleur des nouveaux tracés libres et des nouvelles annotations de texte. La couleur actuelle s'affiche en fond du bouton.</td>
                 </tr>
                 <tr>
-                  <td><code>🗑️ Effacer</code></td>
+                  <td><code>Effacer</code></td>
                   <td><strong>Suppression globale</strong></td>
                   <td>Supprime instantanément tous les tracés au stylo et les zones de texte présents sur l'image pour réinitialiser le plan d'annotation.</td>
                 </tr>
                 <tr>
-                  <td><code>💾 Exporter</code></td>
+                  <td><code>Exporter</code></td>
                   <td><strong>Sauvegarde des tracés</strong></td>
                   <td>Permet d'exporter l'image contenant l'ensemble de ses annotations superposées sous forme de cliché fusionné. Peut être sauvegardé localement (PNG/JPEG) ou rattaché directement à la fiche du patient actif dans la base de données PostgreSQL.</td>
                 </tr>
@@ -528,7 +551,7 @@
             </table>
 
             <div class="callout callout-info mt-2 mb-6">
-              <strong>Astuce ergonomique</strong> — Les annotations textuelles s'affichent sur un fond noir semi-transparent de façon à garantir une lisibilité optimale, quel que soit le niveau de gris de la radiographie sous-jacente.
+              <strong>NB</strong> — Les annotations textuelles s'affichent sur un fond noir semi-transparent de façon à garantir une lisibilité optimale.
             </div>
           </section>
 
@@ -540,14 +563,14 @@
             <p>PixelMed propose un gestionnaire de dossiers médicaux intégré connecté à une base de données PostgreSQL, disponible dans l'onglet <strong>Dossiers</strong> du menu gauche :</p>
 
             <div class="callout callout-tip mb-6">
-              <strong>Architecture résiliente</strong> — L'application intègre une détection automatique de connexion réseau au démarrage :
+              <strong>L'application intègre une détection automatique de connexion réseau au démarrage :
               <ul class="list-disc list-inside mt-1">
                 <li><strong class="text-green-400" style="color: #52d68a;">Mode En Ligne (Online) :</strong> Synchronise la liste des patients, permet d'ajouter/supprimer des fiches patients et d'associer des clichés de radiographie directement en base de données.</li>
                 <li><strong class="text-yellow-400" style="color: #f0c94a;">Mode Hors Ligne (Offline) :</strong> Si le serveur PostgreSQL est inaccessible, l'application bloque silencieusement les actions d'écriture en BDD et avertit l'utilisateur. Les fonctions de filtrage d'image locale restent pleinement opérationnelles.</li>
               </ul>
             </div>
 
-            <h3>Fonctionnalités du gestionnaire :</h3>
+            <h3 class="flex items-center gap-3 mb-5 underline">Fonctionnalités du gestionnaire :</h3>
             <ul class="list-disc list-inside mb-4 pl-4 text-sm">
               <li><strong>Barre de recherche :</strong> Recherche instantanée à la saisie parmi les fiches patients stockées.</li>
               <li><strong>Création d'un Patient :</strong> Formulaire comprenant le Nom, Prénom, Date de naissance (AAAA-MM-JJ), le Sexe (M/F) et un numéro d'identifiant hospitalier unique.</li>
@@ -557,11 +580,14 @@
             </ul>
           </section>
 
+          <h1 class="pt-10">Pour les développeurs</h1>
+          <p>Cette section est destinée aux développeurs souhaitant contribuer au projet PixelMed ou personnaliser son fonctionnement.</p>
+
           <!-- INSTALLATION -->
           <section class="content-section mt-10" id="installation">
             <h2>Installation pour développeurs</h2>
             <p>Suivez les étapes ci-dessous pour installer l'environnement de développement de PixelMed.</p>
-            <h3>Prérequis</h3>
+            <h3 >Prérequis</h3>
             <table class="mb-6">
               <thead><tr><th>Composant</th><th>Version requise</th><th>Usage</th></tr></thead>
               <tbody>
@@ -811,7 +837,7 @@ DB_PASSWORD=votre_mot_de_passe</code></pre>
         id: 'barre-outils',
         title: 'Barre supérieure (Actions Globales)',
         category: "Guide d'utilisation",
-        content: "Importation d'image, Loupe de précision avec facteur d'agrandissement dynamique x2.0 à x8.0, Slider de comparaison Avant/Après.",
+        content: "Importation d'image, Sauvegarde de l'image, Loupe de précision avec facteur d'agrandissement dynamique x2.0 à x8.0, Slider de comparaison Avant/Après.",
         tags: "ouvrir fichier zoom loupe slider comparaison séparateur"
       },
       {
@@ -825,14 +851,14 @@ DB_PASSWORD=votre_mot_de_passe</code></pre>
         id: 'mesures',
         title: 'Outils de Mesure interactifs',
         category: "Guide d'utilisation",
-        content: "Dessin de repères cliniques : Règle de distance (cm, calibrage 45cm), Rapporteur d'angle (degrés), Comparateur de hauteur (Δy).",
+        content: "Dessin de repères cliniques : Règle de distance (px, calibrage 45cm), Rapporteur d'angle (degrés), Comparateur de hauteur (Δy). Calcul automatique de l'aire des régions segmentées (px²) et ROI circulaire/rectangulaire avec niveau de gris moyen.",
         tags: "distance angle hauteur pelvis bassin calibrage clic points"
       },
       {
         id: 'annotations',
         title: 'Annotations',
         category: "Guide d'utilisation",
-        content: "Module d'annotations : Dessin libre au Stylo, texte dynamique (déplacement, sélection), choix de la Couleur active, bouton Effacer, Sauvegarde et Export du cliché annoté.",
+        content: "Module d'annotations : Dessin libre au Stylo, texte dynamique (déplacement, sélection), choix de la couleur active, bouton Effacer, Sauvegarde et Export du cliché annoté.",
         tags: "stylo texte couleur effacer sauvegarder exporter pinceau dessin suppr backspace"
       },
       {

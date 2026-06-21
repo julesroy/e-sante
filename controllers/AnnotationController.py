@@ -8,7 +8,13 @@ if TYPE_CHECKING:
     from views.MainView import MainView
     from controllers.MainController import MainController
 
+
 class AnnotationController:
+    """
+    Contrôleur pour la gestion des annotations (Stylo et Texte) sur l'image affichée dans la MainView.
+    Interagit avec la MainView et le MainController pour activer/désactiver les modes d'annotation, gérer la couleur des annotations et effacer les annotations.
+    """
+
     def __init__(self, main_controller: MainController):
         self.main_controller = main_controller
 
@@ -42,12 +48,12 @@ class AnnotationController:
             # Désactiver les outils de mesure (RulerController)
             if hasattr(self.main_controller, "ruler_ctrl"):
                 self.main_controller.ruler_ctrl.deactivate_all_modes()
-            
+
             # Désactiver l'autre outil d'annotation (Texte)
             if getattr(self.view, "text_anno_active", False):
                 self.view.left_toolbar.btn_text.setChecked(False)
                 self.view.text_anno_active = False
-            
+
             if hasattr(self.view.image_display, "annotations_overlay"):
                 self.view.image_display.annotations_overlay.clear()
             self.view.image_display.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -69,12 +75,12 @@ class AnnotationController:
             # Désactiver les outils de mesure (RulerController)
             if hasattr(self.main_controller, "ruler_ctrl"):
                 self.main_controller.ruler_ctrl.deactivate_all_modes()
-            
+
             # Désactiver l'autre outil d'annotation (Stylo)
             if getattr(self.view, "pen_active", False):
                 self.view.left_toolbar.btn_pen.setChecked(False)
                 self.view.pen_active = False
-            
+
             if hasattr(self.view.image_display, "annotations_overlay"):
                 self.view.image_display.annotations_overlay.clear()
             self.view.image_display.setCursor(Qt.CursorShape.CrossCursor)
@@ -87,17 +93,16 @@ class AnnotationController:
     def handle_color_dialog(self):
         """Ouvre une boîte de dialogue pour choisir la couleur des annotations."""
         from PyQt6.QtWidgets import QColorDialog
+
         if not hasattr(self.view.image_display, "annotations_overlay"):
             return
-            
+
         current_color = self.view.image_display.annotations_overlay.current_color
         color = QColorDialog.getColor(current_color, self.view, "Couleur d'annotation")
         if color.isValid():
             self.view.image_display.annotations_overlay.current_color = color
             # Mettre à jour visuellement le bouton avec la couleur sélectionnée
-            self.view.left_toolbar.btn_color.setStyleSheet(
-                f"background-color: {color.name()}; border: 2px solid white; border-radius: 4px; color: white;"
-            )
+            self.view.left_toolbar.btn_color.setStyleSheet(f"background-color: {color.name()}; border: 2px solid white; border-radius: 4px; color: white;")
 
     def handle_clear_annotations(self):
         """Efface toutes les annotations."""

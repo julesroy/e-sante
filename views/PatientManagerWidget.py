@@ -1,14 +1,13 @@
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton, 
-                             QLineEdit, QListWidget, QListWidgetItem, QDialog, 
-                             QLabel, QFormLayout, QComboBox, QMessageBox)
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLineEdit, QListWidget, QListWidgetItem, QDialog, QLabel, QFormLayout, QComboBox, QMessageBox
 from PyQt6.QtCore import Qt
+
 
 class PatientManagerWidget(QWidget):
     def __init__(self, main_view, parent=None):
         super().__init__(parent)
         self.main_view = main_view
         self.controller = None  # Lié dynamiquement dans le MainController
-        
+
         self.init_ui()
 
     def init_ui(self):
@@ -35,7 +34,7 @@ class PatientManagerWidget(QWidget):
         self.btn_add_patient.clicked.connect(self.open_create_patient_dialog)
         self.btn_del_patient = QPushButton("Supprimer")
         self.btn_del_patient.clicked.connect(self.delete_selected_patient)
-        
+
         btn_patient_layout.addWidget(self.btn_add_patient)
         btn_patient_layout.addWidget(self.btn_del_patient)
         layout.addLayout(btn_patient_layout)
@@ -53,7 +52,7 @@ class PatientManagerWidget(QWidget):
         self.btn_upload_img.clicked.connect(self.upload_and_save_image)
         self.btn_del_img = QPushButton("Supprimer")
         self.btn_del_img.clicked.connect(self.delete_selected_image)
-        
+
         btn_image_layout.addWidget(self.btn_upload_img)
         btn_image_layout.addWidget(self.btn_del_img)
         layout.addLayout(btn_image_layout)
@@ -61,17 +60,17 @@ class PatientManagerWidget(QWidget):
         # Ajouter un stretch pour compacter tous les éléments vers le haut de la fenêtre
         layout.addStretch(1)
 
-    # ----------------------------------------------------------------     
+    # ----------------------------------------------------------------
     # LOGIQUE PATIENTS
-    # ----------------------------------------------------------------     
+    # ----------------------------------------------------------------
     # PatientManagerWidget.py — méthode refresh_results()
     def refresh_results(self, patients_list):
         self.patient_list.clear()
         self.image_list.clear()
         for p in patients_list:
             item = QListWidgetItem(f"{p[1].upper()} {p[2]} ({p[5]})")
-            item.setData(Qt.ItemDataRole.UserRole, p[0])       # ID
-            item.setData(Qt.ItemDataRole.UserRole + 1, p)      # ← stocker le tuple COMPLET
+            item.setData(Qt.ItemDataRole.UserRole, p[0])  # ID
+            item.setData(Qt.ItemDataRole.UserRole + 1, p)  # ← stocker le tuple COMPLET
             self.patient_list.addItem(item)
 
     def on_search_changed(self, text):
@@ -82,7 +81,7 @@ class PatientManagerWidget(QWidget):
     def on_patient_selected(self):
         selected_items = self.patient_list.selectedItems()
         if not selected_items:
-            if self.main_view.controller: #Si le controller renvoie None, permet d'eviter le crash
+            if self.main_view.controller:  # Si le controller renvoie None, permet d'eviter le crash
                 self.main_view.controller._current_patient_id = None
             self.image_list.clear()
             # Masquer le volet si plus rien n'est sélectionné
@@ -92,14 +91,14 @@ class PatientManagerWidget(QWidget):
         item = selected_items[0]
         patient_id = item.data(Qt.ItemDataRole.UserRole)
         patient_tuple = item.data(Qt.ItemDataRole.UserRole + 1)  # ← récupère le tuple en mémoire
-        
+
         self.main_view.controller._current_patient_id = patient_id
-        
+
         if self.main_view.controller:
 
             # 2. On transmet le tuple trouvé au panneau d'affichage à droite de la barre d'outils
             self.main_view.patient_info_panel.display_patient(patient_tuple)
-            
+
             # 3. On charge les images normalement
             images = self.main_view.controller.image_ctrl.handle_charger_images_patient(patient_id)
             self.refresh_images(images)
@@ -108,7 +107,7 @@ class PatientManagerWidget(QWidget):
         """Ouvre la boîte de dialogue pour créer un patient (Style déporté dans le QSS)."""
         dialog = QDialog(self)
         dialog.setWindowTitle("Créer un Patient")
-        
+
         # On donne un nom d'objet pour le cibler spécifiquement dans le fichier .qss
         dialog.setObjectName("PatientDialog")
 
@@ -120,7 +119,7 @@ class PatientManagerWidget(QWidget):
         prenom_input = QLineEdit()
         ddn_input = QLineEdit()
         ddn_input.setPlaceholderText("AAAA-MM-JJ")
-        
+
         sexe_input = QComboBox()
         sexe_input.addItems(["M", "F"])
         num_input = QLineEdit()
@@ -138,8 +137,7 @@ class PatientManagerWidget(QWidget):
             if nom_input.text().strip() and prenom_input.text().strip():
                 if self.main_view.controller:
                     p_id = self.main_view.controller.patient_ctrl.handle_nouveau_patient(
-                        nom_input.text(), prenom_input.text(),
-                        ddn_input.text() or None, sexe_input.currentText(), num_input.text() or None
+                        nom_input.text(), prenom_input.text(), ddn_input.text() or None, sexe_input.currentText(), num_input.text() or None
                     )
                     if p_id:
                         self.refresh_results(self.main_view.controller.patient_ctrl.handle_charger_patients())
@@ -147,26 +145,25 @@ class PatientManagerWidget(QWidget):
 
         btn_save.clicked.connect(save)
         dialog.exec()
-        
+
     def delete_selected_patient(self):
         selected_items = self.patient_list.selectedItems()
         if not selected_items:
             return
-        
+
         item = selected_items[0]
         patient_id = item.data(Qt.ItemDataRole.UserRole)
-        
-        reply = QMessageBox.question(self, "Suppression", "Supprimer ce patient et TOUTES ses images en BDD ?",
-                                     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-        
+
+        reply = QMessageBox.question(self, "Suppression", "Supprimer ce patient et TOUTES ses images en BDD ?", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+
         if reply == QMessageBox.StandardButton.Yes and self.main_view.controller:
             if self.main_view.controller.patient_ctrl.handle_supprimer_patient(patient_id):
                 self.refresh_results(self.main_view.controller.patient_ctrl.handle_charger_patients())
                 self.main_view.patient_info_panel.display_patient(None)
 
-    # ----------------------------------------------------------------     
+    # ----------------------------------------------------------------
     # LOGIQUE IMAGES
-    # ----------------------------------------------------------------     
+    # ----------------------------------------------------------------
     def refresh_images(self, images_list):
         """Remplit la liste des images liées à un patient."""
         self.image_list.clear()
@@ -174,7 +171,7 @@ class PatientManagerWidget(QWidget):
             # Tuple: (id, nom_fichier, chemin, modalite, created_at)
             item = QListWidgetItem(f"📷 {img[1]}")
             item.setData(Qt.ItemDataRole.UserRole, img[0])  # ID unique Image
-            item.setToolTip(img[2])                         # Cache le chemin d'accès local
+            item.setToolTip(img[2])  # Cache le chemin d'accès local
             self.image_list.addItem(item)
 
     def upload_and_save_image(self):
@@ -193,11 +190,11 @@ class PatientManagerWidget(QWidget):
         selected_items = self.image_list.selectedItems()
         if not selected_items:
             return
-        
+
         item = selected_items[0]
         image_id = item.data(Qt.ItemDataRole.UserRole)
         chemin_serveur = item.toolTip()
-        
+
         if self.main_view.controller:
             if self.main_view.controller.image_ctrl.handle_supprimer_image(image_id, chemin_serveur):
                 p_id = self.main_view.controller._current_patient_id

@@ -2,6 +2,7 @@
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QDoubleSpinBox, QSpinBox, QCheckBox, QFormLayout
 from PyQt6.QtCore import Qt
 
+
 class WatershedDialog(QDialog):
     def __init__(self, parent=None, default_sigma=2.0, default_seuil_otsu=True, default_seuil=40, default_kernel=3, default_min_dist=50):
         super().__init__(parent)

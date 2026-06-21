@@ -3,15 +3,16 @@ from PyQt6.QtCore import Qt, QPoint, QRect, QRectF, QPointF
 from PyQt6.QtGui import QPainter, QPen, QColor, QFont, QFontMetrics
 from PyQt6.QtWidgets import QInputDialog
 
+
 class AnnotationsOverlay:
     def __init__(self, label_view):
         self.label_view = label_view
         self.drawings = []  # Liste de dictionnaires : {"points": [QPointF], "color": QColor, "width": int}
-        self.texts = []     # Liste de dictionnaires : {"pos": QPointF, "text": str, "color": QColor, "size": int, "selected": bool}
-        
+        self.texts = []  # Liste de dictionnaires : {"pos": QPointF, "text": str, "color": QColor, "size": int, "selected": bool}
+
         self.current_color = QColor("#ff0000")  # Rouge par défaut
         self.pen_width = 3
-        
+
         self.active_stroke = None
         self.selected_text = None
         self.interaction_mode = None  # None, "moving_text"
@@ -55,11 +56,7 @@ class AnnotationsOverlay:
 
         # --- MODE STYLO ---
         if getattr(main_view, "pen_active", False):
-            self.active_stroke = {
-                "points": [p_rel],
-                "color": QColor(self.current_color),
-                "width": self.pen_width
-            }
+            self.active_stroke = {"points": [p_rel], "color": QColor(self.current_color), "width": self.pen_width}
             return True
 
         # --- MODE TEXTE ---
@@ -67,14 +64,14 @@ class AnnotationsOverlay:
             # 1. Vérifier si on clique sur un texte existant pour le sélectionner/déplacer
             for text_obj in reversed(self.texts):
                 tsx, tsy = self.to_screen(text_obj["pos"].x(), text_obj["pos"].y(), img_rect)
-                
+
                 font = QFont("Arial", text_obj["size"])
                 font.setBold(True)
                 fm = QFontMetrics(font)
                 tw = fm.horizontalAdvance(text_obj["text"])
                 th = fm.height()
-                
-                text_rect = QRect(int(tsx - tw/2 - 4), int(tsy - th/2), tw + 8, th)
+
+                text_rect = QRect(int(tsx - tw / 2 - 4), int(tsy - th / 2), tw + 8, th)
                 if text_rect.contains(local_pos):
                     if self.selected_text:
                         self.selected_text["selected"] = False
@@ -83,19 +80,11 @@ class AnnotationsOverlay:
                     self.interaction_mode = "moving_text"
                     self.drag_offset = QPointF(rx - text_obj["pos"].x(), ry - text_obj["pos"].y())
                     return True
-            
+
             # 2. Clic dans le vide : créer une nouvelle annotation textuelle
-            text_val, ok = QInputDialog.getText(
-                self.label_view, "Ajouter une annotation", "Saisissez votre texte :"
-            )
+            text_val, ok = QInputDialog.getText(self.label_view, "Ajouter une annotation", "Saisissez votre texte :")
             if ok and text_val.strip():
-                new_text = {
-                    "pos": p_rel,
-                    "text": text_val.strip(),
-                    "color": QColor(self.current_color),
-                    "size": 12,
-                    "selected": True
-                }
+                new_text = {"pos": p_rel, "text": text_val.strip(), "color": QColor(self.current_color), "size": 12, "selected": True}
                 if self.selected_text:
                     self.selected_text["selected"] = False
                 self.selected_text = new_text
@@ -136,7 +125,7 @@ class AnnotationsOverlay:
                     fm = QFontMetrics(font)
                     tw = fm.horizontalAdvance(text_obj["text"])
                     th = fm.height()
-                    text_rect = QRect(int(tsx - tw/2 - 4), int(tsy - th/2), tw + 8, th)
+                    text_rect = QRect(int(tsx - tw / 2 - 4), int(tsy - th / 2), tw + 8, th)
                     if text_rect.contains(local_pos):
                         hovering_text = True
                         break
@@ -191,19 +180,13 @@ class AnnotationsOverlay:
         """Trace une ligne brisée."""
         if len(stroke["points"]) < 2:
             return
-        
-        pen = QPen(
-            stroke["color"],
-            stroke["width"],
-            Qt.PenStyle.SolidLine,
-            Qt.PenCapStyle.RoundCap,
-            Qt.PenJoinStyle.RoundJoin
-        )
+
+        pen = QPen(stroke["color"], stroke["width"], Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin)
         painter.setPen(pen)
 
         for i in range(len(stroke["points"]) - 1):
             p1 = stroke["points"][i]
-            p2 = stroke["points"][i+1]
+            p2 = stroke["points"][i + 1]
             x1, y1 = self.to_screen(p1.x(), p1.y(), img_rect)
             x2, y2 = self.to_screen(p2.x(), p2.y(), img_rect)
             painter.drawLine(QPointF(x1, y1), QPointF(x2, y2))
@@ -211,18 +194,18 @@ class AnnotationsOverlay:
     def draw_text_obj(self, painter: QPainter, img_rect: QRect, text_obj: dict):
         """Dessine un texte d'annotation."""
         tsx, tsy = self.to_screen(text_obj["pos"].x(), text_obj["pos"].y(), img_rect)
-        
+
         font = QFont("Arial", text_obj["size"])
         font.setBold(True)
         painter.setFont(font)
-        
+
         fm = QFontMetrics(font)
         text_str = text_obj["text"]
         tw = fm.horizontalAdvance(text_str)
         th = fm.height()
 
-        rect_bg = QRect(int(tsx - tw/2 - 4), int(tsy - th/2), tw + 8, th)
-        
+        rect_bg = QRect(int(tsx - tw / 2 - 4), int(tsy - th / 2), tw + 8, th)
+
         # Dessiner le fond pour assurer la lisibilité
         painter.fillRect(rect_bg, QColor(0, 0, 0, 160))
 

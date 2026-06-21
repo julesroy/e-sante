@@ -34,6 +34,12 @@ _MSG_OFFLINE = "Cette fonctionnalité nécessite une connexion Internet"
 
 
 class ImageController:
+    """
+    Contrôleur pour la gestion des images médicales (upload, téléchargement, suppression, export).
+    Interagit avec la MainView et le MainController pour gérer les images liées au patient courant.
+    Gère également les interactions avec la base de données et le serveur via l'API.
+    """
+
     def __init__(self, main_controller: MainController):
         self.main_controller = main_controller
 
@@ -243,18 +249,12 @@ class ImageController:
         try:
             # Vérifier qu'une image est bien chargée et affichée
             if self.main_controller._original_pixmap is None or self.view.current_pixmap is None:
-                self.error_handler.show_error(
-                    "Aucune image chargée", 
-                    "Il n'y a aucune image à exporter."
-                )
+                self.error_handler.show_error("Aucune image chargée", "Il n'y a aucune image à exporter.")
                 return
 
             pixmap_displayed = self.view.image_display.pixmap()
             if not pixmap_displayed or pixmap_displayed.isNull():
-                self.error_handler.show_error(
-                    "Aucune image affichée", 
-                    "Il n'y a pas d'image affichée à exporter."
-                )
+                self.error_handler.show_error("Aucune image affichée", "Il n'y a pas d'image affichée à exporter.")
                 return
 
             # Nom par défaut suggéré
@@ -266,10 +266,7 @@ class ImageController:
 
             # Ouvre le dialogue de sauvegarde avec PDF inclus
             file_path, _ = QFileDialog.getSaveFileName(
-                self.view,
-                "Exporter l'image avec annotations",
-                nom_defaut,
-                "Images PNG (*.png);;Images JPEG (*.jpg *.jpeg);;Documents PDF (*.pdf);;Tous les fichiers (*)"
+                self.view, "Exporter l'image avec annotations", nom_defaut, "Images PNG (*.png);;Images JPEG (*.jpg *.jpeg);;Documents PDF (*.pdf);;Tous les fichiers (*)"
             )
 
             if not file_path:
@@ -291,15 +288,15 @@ class ImageController:
             if file_path.lower().endswith(".pdf"):
                 try:
                     from PyQt6.QtGui import QPdfWriter, QPainter, QPageSize, QPageLayout
-                    
+
                     writer = QPdfWriter(file_path)
                     writer.setPageSize(QPageSize(QPageSize.PageSizeId.A4))
-                    
+
                     if cropped_pixmap.width() > cropped_pixmap.height():
                         writer.setPageOrientation(QPageLayout.Orientation.Landscape)
                     else:
                         writer.setPageOrientation(QPageLayout.Orientation.Portrait)
-                        
+
                     painter = QPainter(writer)
                     w = writer.width()
                     h = writer.height()
@@ -319,19 +316,17 @@ class ImageController:
                 print(f"[ImageController] Image exportée avec succès : {file_path}")
                 # Demander si l'utilisateur veut aussi l'ajouter au dossier patient
                 from PyQt6.QtWidgets import QMessageBox
+
                 reply = QMessageBox.question(
                     self.view,
                     "Enregistrer dans le dossier patient",
                     "L'image a été exportée localement.\nVoulez-vous également l'enregistrer dans le dossier médical de ce patient ?",
-                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
                 )
                 if reply == QMessageBox.StandardButton.Yes:
                     self.handle_save_to_patient_record(cropped_pixmap)
             else:
-                self.error_handler.show_error(
-                    "Erreur d'exportation", 
-                    "Impossible d'enregistrer l'image ou le document PDF. Vérifiez les permissions."
-                )
+                self.error_handler.show_error("Erreur d'exportation", "Impossible d'enregistrer l'image ou le document PDF. Vérifiez les permissions.")
 
         except Exception as e:
             self.error_handler.handle_exception(e)
@@ -352,27 +347,18 @@ class ImageController:
         try:
             # Vérifier qu'un patient est sélectionné
             if self._current_patient_id is None:
-                self.error_handler.show_error(
-                    "Aucun patient sélectionné", 
-                    "Veuillez sélectionner un patient avant d'enregistrer l'image dans son dossier."
-                )
+                self.error_handler.show_error("Aucun patient sélectionné", "Veuillez sélectionner un patient avant d'enregistrer l'image dans son dossier.")
                 return
 
             # Si cropped_pixmap n'est pas fourni, on le capture à la volée
             if cropped_pixmap is None:
                 if self.main_controller._original_pixmap is None or self.view.current_pixmap is None:
-                    self.error_handler.show_error(
-                        "Aucune image chargée", 
-                        "Il n'y a aucune image à enregistrer."
-                    )
+                    self.error_handler.show_error("Aucune image chargée", "Il n'y a aucune image à enregistrer.")
                     return
 
                 pixmap_displayed = self.view.image_display.pixmap()
                 if not pixmap_displayed or pixmap_displayed.isNull():
-                    self.error_handler.show_error(
-                        "Aucune image affichée", 
-                        "Il n'y a pas d'image affichée à enregistrer."
-                    )
+                    self.error_handler.show_error("Aucune image affichée", "Il n'y a pas d'image affichée à enregistrer.")
                     return
 
                 # Capture le widget d'affichage (QLabel)
@@ -395,12 +381,8 @@ class ImageController:
 
             # Boîte de dialogue simple pour saisir le nom de l'image dans le dossier
             from PyQt6.QtWidgets import QInputDialog
-            nom_fichier, ok = QInputDialog.getText(
-                self.view,
-                "Enregistrer dans le dossier",
-                "Nom de la radiographie annotée :",
-                text=nom_defaut
-            )
+
+            nom_fichier, ok = QInputDialog.getText(self.view, "Enregistrer dans le dossier", "Nom de la radiographie annotée :", text=nom_defaut)
             if not ok or not nom_fichier.strip():
                 return  # Annulé
 
@@ -411,6 +393,7 @@ class ImageController:
 
             # Sauvegarde temporaire locale du pixmap pour l'upload
             import tempfile
+
             with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
                 tmp_path = tmp.name
 
@@ -429,20 +412,12 @@ class ImageController:
                 self.error_handler.show_error("Erreur serveur", "Impossible d'envoyer l'image au serveur.")
                 return
 
-            image_id = sauvegarder_image(
-                patient_id=self._current_patient_id,
-                nom_fichier=nom_fichier,
-                chemin=chemin_serveur,
-                modalite="ANNOTATED"
-            )
+            image_id = sauvegarder_image(patient_id=self._current_patient_id, nom_fichier=nom_fichier, chemin=chemin_serveur, modalite="ANNOTATED")
 
             print(f"[ImageController] Image annotée '{nom_fichier}' enregistrée en BDD (id={image_id})")
-            
+
             # Message de succès
-            self.error_handler.show_info(
-                "Enregistrement réussi", 
-                f"L'image annotée '{nom_fichier}' a été ajoutée avec succès au dossier du patient."
-            )
+            self.error_handler.show_info("Enregistrement réussi", f"L'image annotée '{nom_fichier}' a été ajoutée avec succès au dossier du patient.")
 
             # Rafraîchir la liste des images du patient dans la vue
             p_manager = self.view.left_toolbar.patient_manager

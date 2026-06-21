@@ -25,6 +25,12 @@ from views.WatershedDialog import WatershedDialog
 
 
 class AnalysisController:
+    """
+    Contrôleur pour la gestion des traitements d'image (TFD2D, CLAHE, seuillage, Watershed, etc.)
+    Interagit avec la MainView et le MainController pour appliquer les traitements sur l'image courante (_current_array) et afficher les résultats.
+    Gère également les paramètres par défaut pour chaque traitement afin de les réutiliser lors des prochaines exécutions.
+    """
+
     def __init__(self, main_controller: MainController):
         self.main_controller = main_controller
         self.last_clahe_clip_limit = 5.0
@@ -92,6 +98,7 @@ class AnalysisController:
                 img_uint8 = (norm_spectre * 255).astype(np.uint8)
                 h, w = img_uint8.shape
                 from PyQt6.QtGui import QImage, QPixmap
+
                 qimage = QImage(bytes(img_uint8.data), w, h, w, QImage.Format.Format_Grayscale8).copy()
                 pixmap = QPixmap.fromImage(qimage)
 
@@ -149,11 +156,7 @@ class AnalysisController:
 
             if checked:
                 self.main_controller.handle_reset_image(keep_button=self.view.left_toolbar.btn_clahe)
-                dialog = ClaheDialog(
-                    self.view,
-                    default_clip_limit=self.last_clahe_clip_limit,
-                    default_grid_size=self.last_clahe_grid_size
-                )
+                dialog = ClaheDialog(self.view, default_clip_limit=self.last_clahe_clip_limit, default_grid_size=self.last_clahe_grid_size)
                 if dialog.exec():
                     clip_limit, tile_grid = dialog.get_values()
                     self.last_clahe_clip_limit = clip_limit
@@ -263,7 +266,7 @@ class AnalysisController:
         except Exception as e:
             self.error_handler.handle_exception(e)
             return
-        
+
     def handle_watershed(self, checked):
         """
         Applique la segmentation Watershed sur l'image courante.
@@ -295,12 +298,12 @@ class AnalysisController:
                     default_seuil_otsu=seuil_otsu,
                     default_seuil=seuil,
                     default_kernel=self.last_watershed_kernel,
-                    default_min_dist=self.last_watershed_min_dist
+                    default_min_dist=self.last_watershed_min_dist,
                 )
                 if dialog.exec():
                     sigma, seuil_manuel, kernel_size, min_dist = dialog.get_values()
                     self.last_watershed_sigma = sigma
-                    self.last_watershed_otsu = (seuil_manuel is None)
+                    self.last_watershed_otsu = seuil_manuel is None
                     self.last_watershed_seuil = seuil_manuel if seuil_manuel is not None else 40
                     self.last_watershed_kernel = kernel_size
                     self.last_watershed_min_dist = min_dist
@@ -315,7 +318,7 @@ class AnalysisController:
                     # 3. Masque des cavités internes
                     masque_rempli = ndimage.binary_fill_holes(masque > 0)
                     masque_rempli = ((masque_rempli * 255).astype(np.uint8) > 0) & (masque == 0)
-                    masque_rempli = (masque_rempli * 255).astype(np.uint8) 
+                    masque_rempli = (masque_rempli * 255).astype(np.uint8)
 
                     # 4. Nettoyage morphologique
                     masque_propre = MorphologieMathematique(kernel_size).ouverture(masque_rempli)

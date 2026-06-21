@@ -177,33 +177,33 @@ class HistogramWidget(QWidget):
 
         dpi = 100
         # 300x120 pixels en pouces pour matplotlib
-        fig, ax = plt.subplots(figsize=(300 / dpi, 120 / dpi), dpi=dpi, facecolor='#1a1a1a')
-        ax.set_facecolor('#1a1a1a')
+        fig, ax = plt.subplots(figsize=(300 / dpi, 120 / dpi), dpi=dpi, facecolor="#1a1a1a")
+        ax.set_facecolor("#1a1a1a")
 
         # Tracé de la courbe et de son aire
-        ax.plot(bin_centers, hist, color='#00a2ed', linewidth=1.2)
-        ax.fill_between(bin_centers, hist, color='#00a2ed', alpha=0.25)
+        ax.plot(bin_centers, hist, color="#00a2ed", linewidth=1.2)
+        ax.fill_between(bin_centers, hist, color="#00a2ed", alpha=0.25)
 
         # Gestion de l'échelle linéaire / logarithmique
         if not self.linear_scale:
-            ax.set_yscale('log')
+            ax.set_yscale("log")
             # Fixer une valeur minimale pour éviter un rendu brisé si certains bacs sont vides
             ax.set_ylim(bottom=0.8)
 
         # Grille verticale uniquement (comme sur la capture utilisateur)
-        ax.grid(True, which='both', axis='x', color='#3c3c3c', linestyle='-', linewidth=0.5, alpha=0.5)
-        ax.grid(False, axis='y')
+        ax.grid(True, which="both", axis="x", color="#3c3c3c", linestyle="-", linewidth=0.5, alpha=0.5)
+        ax.grid(False, axis="y")
 
         # Masquer les bordures inutiles
-        ax.spines['top'].set_visible(False)
-        ax.spines['right'].set_visible(False)
-        ax.spines['left'].set_visible(False)
-        ax.spines['bottom'].set_color('#3c3c3c')
-        ax.spines['bottom'].set_linewidth(0.5)
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+        ax.spines["left"].set_visible(False)
+        ax.spines["bottom"].set_color("#3c3c3c")
+        ax.spines["bottom"].set_linewidth(0.5)
 
         # Masquer les axes et graduations Y, n'afficher que des graduations X minimales
         ax.yaxis.set_visible(False)
-        ax.tick_params(colors='#888888', labelsize=8, length=0)
+        ax.tick_params(colors="#888888", labelsize=8, length=0)
         ax.set_xticklabels([])  # Pas de texte de graduations (géré par l'en-tête du widget)
 
         # Ajuster les espacements
@@ -211,7 +211,7 @@ class HistogramWidget(QWidget):
 
         # Exporter l'image au format PNG en mémoire
         buf = io.BytesIO()
-        plt.savefig(buf, format='png', facecolor=fig.get_facecolor(), edgecolor='none', bbox_inches='tight')
+        plt.savefig(buf, format="png", facecolor=fig.get_facecolor(), edgecolor="none", bbox_inches="tight")
         plt.close(fig)
         buf.seek(0)
 

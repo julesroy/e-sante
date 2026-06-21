@@ -3,13 +3,13 @@ from utils.paths import resource_path, find_env_path
 import os
 
 chemins = {
-    "Style QSS":      resource_path(os.path.join("assets", "styles", "style.qss")),
-    "Font Awesome":   resource_path(os.path.join("assets", "styles", "fonts", "fontawesome-webfont.ttf")),
-    "App icon":       resource_path(os.path.join("assets", "icons", "app_icon.png")),
-    "Ruler icon":     resource_path(os.path.join("assets", "icons", "ruler-icon.svg")),
-    "Angle icon":     resource_path(os.path.join("assets", "icons", "angle-icon.svg")),
-    "Manuel HTML":    resource_path(os.path.join("manuel", "manuel.html")),
-    "Fichier .env":   find_env_path(),
+    "Style QSS": resource_path(os.path.join("assets", "styles", "style.qss")),
+    "Font Awesome": resource_path(os.path.join("assets", "styles", "fonts", "fontawesome-webfont.ttf")),
+    "App icon": resource_path(os.path.join("assets", "icons", "app_icon.png")),
+    "Ruler icon": resource_path(os.path.join("assets", "icons", "ruler-icon.svg")),
+    "Angle icon": resource_path(os.path.join("assets", "icons", "angle-icon.svg")),
+    "Manuel HTML": resource_path(os.path.join("manuel", "manuel.html")),
+    "Fichier .env": find_env_path(),
 }
 
 print("\n=== TEST resource_path ===\n")

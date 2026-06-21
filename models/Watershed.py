@@ -35,12 +35,8 @@ class SegmentationWatershed:
 
         # 2. Extraction des maxima locaux (Les centres des poumons / Les sources d'inondation)
         # On extrait les coordonnées des pics de distance
-        coordonnees_pics = peak_local_max(
-            carte_distances, 
-            min_distance=self._min_distance, 
-            labels=masque_bool
-        )
-        
+        coordonnees_pics = peak_local_max(carte_distances, min_distance=self._min_distance, labels=masque_bool)
+
         # Création de la matrice des marqueurs unique pour l'inondation
         masque_marqueurs = np.zeros(carte_distances.shape, dtype=int)
         for idx, (y, x) in enumerate(coordonnees_pics):
@@ -49,7 +45,7 @@ class SegmentationWatershed:
         # 3. Application du Watershed (Ligne de partage des eaux)
         # On inverse la carte des distances car le watershed cherche à remplir des "vallées" (minima)
         img_relief = -carte_distances
-        
+
         labels_segmentes = watershed(img_relief, masque_marqueurs, mask=masque_bool)
 
         return labels_segmentes

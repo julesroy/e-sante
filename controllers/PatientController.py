@@ -22,6 +22,12 @@ _MSG_OFFLINE = "Cette fonctionnalité nécessite une connexion Internet"
 
 
 class PatientController:
+    """
+    Contrôleur pour la gestion des patients (CRUD).
+    Interagit avec la MainView et le MainController pour créer, charger, rechercher et supprimer des patients.
+    Gère également les interactions avec la base de données via l'API.
+    """
+
     def __init__(self, main_controller: MainController):
         self.main_controller = main_controller
 

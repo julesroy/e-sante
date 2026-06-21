@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.ndimage as ndimage
 
+
 class MorphologieMathematique:
     """
     Classe pour nettoyer les masques binaires à l'aide de la morphologie mathématique.
@@ -14,7 +15,7 @@ class MorphologieMathematique:
         """
         if taille_noyau % 2 == 0:
             raise ValueError("La taille du noyau doit être un entier impair.")
-        
+
         # Génère un noyau carré rempli de True (équivalent à un élément structurant cv2.MORPH_RECT)
         self._structure = np.ones((taille_noyau, taille_noyau), dtype=bool)
 

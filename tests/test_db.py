@@ -1,5 +1,6 @@
 # tests/test_db.py
 import sys, os
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from database.crud.patients import (
@@ -13,10 +14,12 @@ from database.crud.images import (
     get_images_patient,
 )
 
+
 def sep(titre: str):
     print(f"\n{'='*40}")
     print(f"  {titre}")
-    print('='*40)
+    print("=" * 40)
+
 
 # -------------------------------------------------------
 # INSERT patient
@@ -41,8 +44,7 @@ for p in patients:
 # -------------------------------------------------------
 sep("Recherche 'Durand'")
 resultats = rechercher_patient("Durand")
-assert resultats is not None and any(r[0] == pid for r in resultats), \
-    "❌ Le patient créé n'apparaît pas dans la recherche"
+assert resultats is not None and any(r[0] == pid for r in resultats), "❌ Le patient créé n'apparaît pas dans la recherche"
 print(f"✅ {len(resultats)} résultat(s) trouvé(s)")
 for r in resultats:
     print(f"  id={r[0]} | {r[1]} {r[2]}")
@@ -69,6 +71,6 @@ reste = get_images_patient(pid)
 assert reste == [] or reste is None, "❌ Les images n'ont pas été supprimées par CASCADE"
 print(f"✅ Patient id={pid} supprimé, images supprimées par CASCADE")
 
-print("\n" + "="*40)
+print("\n" + "=" * 40)
 print("  RÉSULTAT : TOUS LES TESTS OK ✅")
-print("="*40 + "\n")
+print("=" * 40 + "\n")

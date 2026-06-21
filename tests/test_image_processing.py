@@ -88,7 +88,7 @@ def test_watershed():
     # Crée un masque binaire factice avec un objet au centre et un objet sur le bord
     masque = np.zeros((128, 128), dtype=np.uint8)
     masque[40:80, 40:80] = 255  # Objet central
-    masque[0:20, 0:20] = 255    # Objet sur la bordure
+    masque[0:20, 0:20] = 255  # Objet sur la bordure
 
     outil = SegmentationWatershed(min_distance_marqueurs=10)
     labels = outil.segmenter(masque)
@@ -117,6 +117,7 @@ def test_area_calculation():
 
 def test_histogramme(dummy_image):
     from models.Histogramme import Histogramme
+
     histo = Histogramme(dummy_image)
     plot_data, plot_range = histo.obtenir_donnees_tracage()
 
@@ -127,6 +128,3 @@ def test_histogramme(dummy_image):
     assert histo.max_val <= 255.0
     assert isinstance(histo.mean_val, float)
     assert isinstance(histo.std_val, float)
-
-
-

@@ -39,6 +39,9 @@
                         <li>
                                 <a class="function" href="#FiltrageGaussien.filtrage">filtrage</a>
                         </li>
+                        <li>
+                                <a class="function" href="#FiltrageGaussien.afficher">afficher</a>
+                        </li>
                 </ul>
 
             </li>
@@ -65,44 +68,41 @@
 
                         <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos"> 1</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">cv2</span>
 </span><span id="L-2"><a href="#L-2"><span class="linenos"> 2</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-</span><span id="L-3"><a href="#L-3"><span class="linenos"> 3</span></a>
-</span><span id="L-4"><a href="#L-4"><span class="linenos"> 4</span></a>
-</span><span id="L-5"><a href="#L-5"><span class="linenos"> 5</span></a><span class="k">class</span><span class="w"> </span><span class="nc">FiltrageGaussien</span><span class="p">:</span>
-</span><span id="L-6"><a href="#L-6"><span class="linenos"> 6</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-7"><a href="#L-7"><span class="linenos"> 7</span></a><span class="sd">    Classe pour appliquer un filtrage gaussien à une image.</span>
-</span><span id="L-8"><a href="#L-8"><span class="linenos"> 8</span></a><span class="sd">    Exemple d&#39;instanciation :</span>
-</span><span id="L-9"><a href="#L-9"><span class="linenos"> 9</span></a><span class="sd">    test = FiltrageGaussien((9, 9), 0, &#39;COVID-1024.png&#39;, &#39;FiltrageGaussien.png&#39;)</span>
-</span><span id="L-10"><a href="#L-10"><span class="linenos">10</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="L-11"><a href="#L-11"><span class="linenos">11</span></a>
-</span><span id="L-12"><a href="#L-12"><span class="linenos">12</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernel</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">imagePath</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-</span><span id="L-13"><a href="#L-13"><span class="linenos">13</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-14"><a href="#L-14"><span class="linenos">14</span></a><span class="sd">        Initialise les paramètres pour le filtrage gaussien.</span>
-</span><span id="L-15"><a href="#L-15"><span class="linenos">15</span></a><span class="sd">        :param kernel: Tuple représentant la taille du noyau de convolution (ex: (9, 9)).</span>
-</span><span id="L-16"><a href="#L-16"><span class="linenos">16</span></a><span class="sd">        :param sigma: Écart type pour la fonction gaussienne.</span>
-</span><span id="L-17"><a href="#L-17"><span class="linenos">17</span></a><span class="sd">        :param imagePath: Chemin de l&#39;image d&#39;entrée.</span>
-</span><span id="L-18"><a href="#L-18"><span class="linenos">18</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="L-19"><a href="#L-19"><span class="linenos">19</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_kernel</span> <span class="o">=</span> <span class="n">kernel</span>
+</span><span id="L-3"><a href="#L-3"><span class="linenos"> 3</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">scipy.ndimage</span><span class="w"> </span><span class="kn">import</span> <span class="n">gaussian_filter</span>
+</span><span id="L-4"><a href="#L-4"><span class="linenos"> 4</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">.ImageConvertie</span><span class="w"> </span><span class="kn">import</span> <span class="n">ImageConvertie</span>
+</span><span id="L-5"><a href="#L-5"><span class="linenos"> 5</span></a>
+</span><span id="L-6"><a href="#L-6"><span class="linenos"> 6</span></a>
+</span><span id="L-7"><a href="#L-7"><span class="linenos"> 7</span></a><span class="k">class</span><span class="w"> </span><span class="nc">FiltrageGaussien</span><span class="p">:</span>
+</span><span id="L-8"><a href="#L-8"><span class="linenos"> 8</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-9"><a href="#L-9"><span class="linenos"> 9</span></a><span class="sd">    Classe pour appliquer un filtrage gaussien à une image.</span>
+</span><span id="L-10"><a href="#L-10"><span class="linenos">10</span></a><span class="sd">    Exemple d&#39;instanciation :</span>
+</span><span id="L-11"><a href="#L-11"><span class="linenos">11</span></a><span class="sd">    FiltrageGaussien(4, testImageConvertie)</span>
+</span><span id="L-12"><a href="#L-12"><span class="linenos">12</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-13"><a href="#L-13"><span class="linenos">13</span></a>
+</span><span id="L-14"><a href="#L-14"><span class="linenos">14</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span> <span class="n">imageNpArray</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+</span><span id="L-15"><a href="#L-15"><span class="linenos">15</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-16"><a href="#L-16"><span class="linenos">16</span></a><span class="sd">        Initialise les paramètres pour le filtrage gaussien.</span>
+</span><span id="L-17"><a href="#L-17"><span class="linenos">17</span></a><span class="sd">        :param sigma: Écart type pour la fonction gaussienne.</span>
+</span><span id="L-18"><a href="#L-18"><span class="linenos">18</span></a><span class="sd">        :param imageNpArray: Matrice Numpy de l&#39;image.</span>
+</span><span id="L-19"><a href="#L-19"><span class="linenos">19</span></a><span class="sd">        &quot;&quot;&quot;</span>
 </span><span id="L-20"><a href="#L-20"><span class="linenos">20</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_sigma</span> <span class="o">=</span> <span class="n">sigma</span>
-</span><span id="L-21"><a href="#L-21"><span class="linenos">21</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_imagePath</span> <span class="o">=</span> <span class="n">imagePath</span>
+</span><span id="L-21"><a href="#L-21"><span class="linenos">21</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_imageNpArray</span> <span class="o">=</span> <span class="n">imageNpArray</span>
 </span><span id="L-22"><a href="#L-22"><span class="linenos">22</span></a>
 </span><span id="L-23"><a href="#L-23"><span class="linenos">23</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">filtrage</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 </span><span id="L-24"><a href="#L-24"><span class="linenos">24</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-25"><a href="#L-25"><span class="linenos">25</span></a><span class="sd">        Applique le filtrage gaussien à l&#39;image spécifiée et sauvegarde le résultat.</span>
 </span><span id="L-26"><a href="#L-26"><span class="linenos">26</span></a><span class="sd">        :return: Matrice de l&#39;image filtrée en niveaux de gris (Numpy 2D array).</span>
 </span><span id="L-27"><a href="#L-27"><span class="linenos">27</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="L-28"><a href="#L-28"><span class="linenos">28</span></a>        <span class="n">image</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_imagePath</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">IMREAD_GRAYSCALE</span><span class="p">)</span>  <span class="c1"># lit l&#39;image en niveaux de gris (utile pour numpy)</span>
-</span><span id="L-29"><a href="#L-29"><span class="linenos">29</span></a>        <span class="n">imageFloueMatrice</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">GaussianBlur</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kernel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sigma</span><span class="p">)</span>  <span class="c1"># applique le filtrage gaussien</span>
-</span><span id="L-30"><a href="#L-30"><span class="linenos">30</span></a>        <span class="c1"># cv2.imwrite(self._imagePath, imageFloueMatrice) # sauvegarde l&#39;image filtrée</span>
-</span><span id="L-31"><a href="#L-31"><span class="linenos">31</span></a>
-</span><span id="L-32"><a href="#L-32"><span class="linenos">32</span></a>        <span class="k">return</span> <span class="n">imageFloueMatrice</span>
-</span><span id="L-33"><a href="#L-33"><span class="linenos">33</span></a>
-</span><span id="L-34"><a href="#L-34"><span class="linenos">34</span></a>
-</span><span id="L-35"><a href="#L-35"><span class="linenos">35</span></a><span class="c1"># matrice = FiltrageGaussien((5, 5), 0, &#39;COVID-1024.png&#39;)</span>
-</span><span id="L-36"><a href="#L-36"><span class="linenos">36</span></a><span class="c1"># matriceFiltree = matrice.filtrage()</span>
-</span><span id="L-37"><a href="#L-37"><span class="linenos">37</span></a><span class="c1"># print(matriceFiltree)</span>
-</span><span id="L-38"><a href="#L-38"><span class="linenos">38</span></a><span class="c1"># print(type(matriceFiltree)) # type de la matrice</span>
-</span><span id="L-39"><a href="#L-39"><span class="linenos">39</span></a><span class="c1"># print(matriceFiltree.ndim) # dimension de la matrice</span>
-</span><span id="L-40"><a href="#L-40"><span class="linenos">40</span></a><span class="c1"># print(matriceFiltree.shape) # dimensions de la matrice (hauteur, largeur)</span>
+</span><span id="L-28"><a href="#L-28"><span class="linenos">28</span></a>        <span class="k">return</span> <span class="n">gaussian_filter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_imageNpArray</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_sigma</span><span class="p">)</span>
+</span><span id="L-29"><a href="#L-29"><span class="linenos">29</span></a>
+</span><span id="L-30"><a href="#L-30"><span class="linenos">30</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">afficher</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">imageFiltreeMatrice</span><span class="p">):</span>
+</span><span id="L-31"><a href="#L-31"><span class="linenos">31</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-32"><a href="#L-32"><span class="linenos">32</span></a><span class="sd">        Affiche l&#39;image filtrée.</span>
+</span><span id="L-33"><a href="#L-33"><span class="linenos">33</span></a><span class="sd">        :param imageFiltreeMatrice: Matrice de l&#39;image filtrée en niveaux de gris (Numpy 2D array).</span>
+</span><span id="L-34"><a href="#L-34"><span class="linenos">34</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-35"><a href="#L-35"><span class="linenos">35</span></a>        <span class="n">cv2</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="s2">&quot;Image Filtrée Gaussienne&quot;</span><span class="p">,</span> <span class="n">imageFiltreeMatrice</span><span class="p">)</span>
+</span><span id="L-36"><a href="#L-36"><span class="linenos">36</span></a>        <span class="n">cv2</span><span class="o">.</span><span class="n">waitKey</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</span><span id="L-37"><a href="#L-37"><span class="linenos">37</span></a>        <span class="n">cv2</span><span class="o">.</span><span class="n">destroyAllWindows</span><span class="p">()</span>
 </span></pre></div>
 
 
@@ -118,40 +118,43 @@
 
     </div>
     <a class="headerlink" href="#FiltrageGaussien"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="FiltrageGaussien-6"><a href="#FiltrageGaussien-6"><span class="linenos"> 6</span></a><span class="k">class</span><span class="w"> </span><span class="nc">FiltrageGaussien</span><span class="p">:</span>
-</span><span id="FiltrageGaussien-7"><a href="#FiltrageGaussien-7"><span class="linenos"> 7</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="FiltrageGaussien-8"><a href="#FiltrageGaussien-8"><span class="linenos"> 8</span></a><span class="sd">    Classe pour appliquer un filtrage gaussien à une image.</span>
-</span><span id="FiltrageGaussien-9"><a href="#FiltrageGaussien-9"><span class="linenos"> 9</span></a><span class="sd">    Exemple d&#39;instanciation :</span>
-</span><span id="FiltrageGaussien-10"><a href="#FiltrageGaussien-10"><span class="linenos">10</span></a><span class="sd">    test = FiltrageGaussien((9, 9), 0, &#39;COVID-1024.png&#39;, &#39;FiltrageGaussien.png&#39;)</span>
-</span><span id="FiltrageGaussien-11"><a href="#FiltrageGaussien-11"><span class="linenos">11</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="FiltrageGaussien-12"><a href="#FiltrageGaussien-12"><span class="linenos">12</span></a>
-</span><span id="FiltrageGaussien-13"><a href="#FiltrageGaussien-13"><span class="linenos">13</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernel</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">imagePath</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-</span><span id="FiltrageGaussien-14"><a href="#FiltrageGaussien-14"><span class="linenos">14</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="FiltrageGaussien-15"><a href="#FiltrageGaussien-15"><span class="linenos">15</span></a><span class="sd">        Initialise les paramètres pour le filtrage gaussien.</span>
-</span><span id="FiltrageGaussien-16"><a href="#FiltrageGaussien-16"><span class="linenos">16</span></a><span class="sd">        :param kernel: Tuple représentant la taille du noyau de convolution (ex: (9, 9)).</span>
-</span><span id="FiltrageGaussien-17"><a href="#FiltrageGaussien-17"><span class="linenos">17</span></a><span class="sd">        :param sigma: Écart type pour la fonction gaussienne.</span>
-</span><span id="FiltrageGaussien-18"><a href="#FiltrageGaussien-18"><span class="linenos">18</span></a><span class="sd">        :param imagePath: Chemin de l&#39;image d&#39;entrée.</span>
-</span><span id="FiltrageGaussien-19"><a href="#FiltrageGaussien-19"><span class="linenos">19</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="FiltrageGaussien-20"><a href="#FiltrageGaussien-20"><span class="linenos">20</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_kernel</span> <span class="o">=</span> <span class="n">kernel</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="FiltrageGaussien-8"><a href="#FiltrageGaussien-8"><span class="linenos"> 8</span></a><span class="k">class</span><span class="w"> </span><span class="nc">FiltrageGaussien</span><span class="p">:</span>
+</span><span id="FiltrageGaussien-9"><a href="#FiltrageGaussien-9"><span class="linenos"> 9</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="FiltrageGaussien-10"><a href="#FiltrageGaussien-10"><span class="linenos">10</span></a><span class="sd">    Classe pour appliquer un filtrage gaussien à une image.</span>
+</span><span id="FiltrageGaussien-11"><a href="#FiltrageGaussien-11"><span class="linenos">11</span></a><span class="sd">    Exemple d&#39;instanciation :</span>
+</span><span id="FiltrageGaussien-12"><a href="#FiltrageGaussien-12"><span class="linenos">12</span></a><span class="sd">    FiltrageGaussien(4, testImageConvertie)</span>
+</span><span id="FiltrageGaussien-13"><a href="#FiltrageGaussien-13"><span class="linenos">13</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="FiltrageGaussien-14"><a href="#FiltrageGaussien-14"><span class="linenos">14</span></a>
+</span><span id="FiltrageGaussien-15"><a href="#FiltrageGaussien-15"><span class="linenos">15</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span> <span class="n">imageNpArray</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+</span><span id="FiltrageGaussien-16"><a href="#FiltrageGaussien-16"><span class="linenos">16</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="FiltrageGaussien-17"><a href="#FiltrageGaussien-17"><span class="linenos">17</span></a><span class="sd">        Initialise les paramètres pour le filtrage gaussien.</span>
+</span><span id="FiltrageGaussien-18"><a href="#FiltrageGaussien-18"><span class="linenos">18</span></a><span class="sd">        :param sigma: Écart type pour la fonction gaussienne.</span>
+</span><span id="FiltrageGaussien-19"><a href="#FiltrageGaussien-19"><span class="linenos">19</span></a><span class="sd">        :param imageNpArray: Matrice Numpy de l&#39;image.</span>
+</span><span id="FiltrageGaussien-20"><a href="#FiltrageGaussien-20"><span class="linenos">20</span></a><span class="sd">        &quot;&quot;&quot;</span>
 </span><span id="FiltrageGaussien-21"><a href="#FiltrageGaussien-21"><span class="linenos">21</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_sigma</span> <span class="o">=</span> <span class="n">sigma</span>
-</span><span id="FiltrageGaussien-22"><a href="#FiltrageGaussien-22"><span class="linenos">22</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_imagePath</span> <span class="o">=</span> <span class="n">imagePath</span>
+</span><span id="FiltrageGaussien-22"><a href="#FiltrageGaussien-22"><span class="linenos">22</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_imageNpArray</span> <span class="o">=</span> <span class="n">imageNpArray</span>
 </span><span id="FiltrageGaussien-23"><a href="#FiltrageGaussien-23"><span class="linenos">23</span></a>
 </span><span id="FiltrageGaussien-24"><a href="#FiltrageGaussien-24"><span class="linenos">24</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">filtrage</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 </span><span id="FiltrageGaussien-25"><a href="#FiltrageGaussien-25"><span class="linenos">25</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="FiltrageGaussien-26"><a href="#FiltrageGaussien-26"><span class="linenos">26</span></a><span class="sd">        Applique le filtrage gaussien à l&#39;image spécifiée et sauvegarde le résultat.</span>
 </span><span id="FiltrageGaussien-27"><a href="#FiltrageGaussien-27"><span class="linenos">27</span></a><span class="sd">        :return: Matrice de l&#39;image filtrée en niveaux de gris (Numpy 2D array).</span>
 </span><span id="FiltrageGaussien-28"><a href="#FiltrageGaussien-28"><span class="linenos">28</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="FiltrageGaussien-29"><a href="#FiltrageGaussien-29"><span class="linenos">29</span></a>        <span class="n">image</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_imagePath</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">IMREAD_GRAYSCALE</span><span class="p">)</span>  <span class="c1"># lit l&#39;image en niveaux de gris (utile pour numpy)</span>
-</span><span id="FiltrageGaussien-30"><a href="#FiltrageGaussien-30"><span class="linenos">30</span></a>        <span class="n">imageFloueMatrice</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">GaussianBlur</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kernel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sigma</span><span class="p">)</span>  <span class="c1"># applique le filtrage gaussien</span>
-</span><span id="FiltrageGaussien-31"><a href="#FiltrageGaussien-31"><span class="linenos">31</span></a>        <span class="c1"># cv2.imwrite(self._imagePath, imageFloueMatrice) # sauvegarde l&#39;image filtrée</span>
-</span><span id="FiltrageGaussien-32"><a href="#FiltrageGaussien-32"><span class="linenos">32</span></a>
-</span><span id="FiltrageGaussien-33"><a href="#FiltrageGaussien-33"><span class="linenos">33</span></a>        <span class="k">return</span> <span class="n">imageFloueMatrice</span>
+</span><span id="FiltrageGaussien-29"><a href="#FiltrageGaussien-29"><span class="linenos">29</span></a>        <span class="k">return</span> <span class="n">gaussian_filter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_imageNpArray</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_sigma</span><span class="p">)</span>
+</span><span id="FiltrageGaussien-30"><a href="#FiltrageGaussien-30"><span class="linenos">30</span></a>
+</span><span id="FiltrageGaussien-31"><a href="#FiltrageGaussien-31"><span class="linenos">31</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">afficher</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">imageFiltreeMatrice</span><span class="p">):</span>
+</span><span id="FiltrageGaussien-32"><a href="#FiltrageGaussien-32"><span class="linenos">32</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="FiltrageGaussien-33"><a href="#FiltrageGaussien-33"><span class="linenos">33</span></a><span class="sd">        Affiche l&#39;image filtrée.</span>
+</span><span id="FiltrageGaussien-34"><a href="#FiltrageGaussien-34"><span class="linenos">34</span></a><span class="sd">        :param imageFiltreeMatrice: Matrice de l&#39;image filtrée en niveaux de gris (Numpy 2D array).</span>
+</span><span id="FiltrageGaussien-35"><a href="#FiltrageGaussien-35"><span class="linenos">35</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="FiltrageGaussien-36"><a href="#FiltrageGaussien-36"><span class="linenos">36</span></a>        <span class="n">cv2</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="s2">&quot;Image Filtrée Gaussienne&quot;</span><span class="p">,</span> <span class="n">imageFiltreeMatrice</span><span class="p">)</span>
+</span><span id="FiltrageGaussien-37"><a href="#FiltrageGaussien-37"><span class="linenos">37</span></a>        <span class="n">cv2</span><span class="o">.</span><span class="n">waitKey</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</span><span id="FiltrageGaussien-38"><a href="#FiltrageGaussien-38"><span class="linenos">38</span></a>        <span class="n">cv2</span><span class="o">.</span><span class="n">destroyAllWindows</span><span class="p">()</span>
 </span></pre></div>
 
 
             <div class="docstring"><p>Classe pour appliquer un filtrage gaussien à une image.
 Exemple d'instanciation :
-test = FiltrageGaussien((9, 9), 0, 'COVID-1024.png', 'FiltrageGaussien.png')</p>
+FiltrageGaussien(4, testImageConvertie)</p>
 </div>
 
 
@@ -159,22 +162,20 @@ test = FiltrageGaussien((9, 9), 0, 'COVID-1024.png', 'FiltrageGaussien.png')</p>
                                         <input id="FiltrageGaussien.__init__-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr function">
             
-        <span class="name">FiltrageGaussien</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">kernel</span><span class="p">:</span> <span class="nb">tuple</span>, </span><span class="param"><span class="n">sigma</span><span class="p">:</span> <span class="nb">int</span>, </span><span class="param"><span class="n">imagePath</span><span class="p">:</span> <span class="nb">str</span></span>)</span>
+        <span class="name">FiltrageGaussien</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span>, </span><span class="param"><span class="n">imageNpArray</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span></span>)</span>
 
                 <label class="view-source-button" for="FiltrageGaussien.__init__-view-source"><span>View Source</span></label>
 
     </div>
     <a class="headerlink" href="#FiltrageGaussien.__init__"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="FiltrageGaussien.__init__-13"><a href="#FiltrageGaussien.__init__-13"><span class="linenos">13</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernel</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">imagePath</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-</span><span id="FiltrageGaussien.__init__-14"><a href="#FiltrageGaussien.__init__-14"><span class="linenos">14</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="FiltrageGaussien.__init__-15"><a href="#FiltrageGaussien.__init__-15"><span class="linenos">15</span></a><span class="sd">        Initialise les paramètres pour le filtrage gaussien.</span>
-</span><span id="FiltrageGaussien.__init__-16"><a href="#FiltrageGaussien.__init__-16"><span class="linenos">16</span></a><span class="sd">        :param kernel: Tuple représentant la taille du noyau de convolution (ex: (9, 9)).</span>
-</span><span id="FiltrageGaussien.__init__-17"><a href="#FiltrageGaussien.__init__-17"><span class="linenos">17</span></a><span class="sd">        :param sigma: Écart type pour la fonction gaussienne.</span>
-</span><span id="FiltrageGaussien.__init__-18"><a href="#FiltrageGaussien.__init__-18"><span class="linenos">18</span></a><span class="sd">        :param imagePath: Chemin de l&#39;image d&#39;entrée.</span>
-</span><span id="FiltrageGaussien.__init__-19"><a href="#FiltrageGaussien.__init__-19"><span class="linenos">19</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="FiltrageGaussien.__init__-20"><a href="#FiltrageGaussien.__init__-20"><span class="linenos">20</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_kernel</span> <span class="o">=</span> <span class="n">kernel</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="FiltrageGaussien.__init__-15"><a href="#FiltrageGaussien.__init__-15"><span class="linenos">15</span></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span> <span class="n">imageNpArray</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+</span><span id="FiltrageGaussien.__init__-16"><a href="#FiltrageGaussien.__init__-16"><span class="linenos">16</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="FiltrageGaussien.__init__-17"><a href="#FiltrageGaussien.__init__-17"><span class="linenos">17</span></a><span class="sd">        Initialise les paramètres pour le filtrage gaussien.</span>
+</span><span id="FiltrageGaussien.__init__-18"><a href="#FiltrageGaussien.__init__-18"><span class="linenos">18</span></a><span class="sd">        :param sigma: Écart type pour la fonction gaussienne.</span>
+</span><span id="FiltrageGaussien.__init__-19"><a href="#FiltrageGaussien.__init__-19"><span class="linenos">19</span></a><span class="sd">        :param imageNpArray: Matrice Numpy de l&#39;image.</span>
+</span><span id="FiltrageGaussien.__init__-20"><a href="#FiltrageGaussien.__init__-20"><span class="linenos">20</span></a><span class="sd">        &quot;&quot;&quot;</span>
 </span><span id="FiltrageGaussien.__init__-21"><a href="#FiltrageGaussien.__init__-21"><span class="linenos">21</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_sigma</span> <span class="o">=</span> <span class="n">sigma</span>
-</span><span id="FiltrageGaussien.__init__-22"><a href="#FiltrageGaussien.__init__-22"><span class="linenos">22</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_imagePath</span> <span class="o">=</span> <span class="n">imagePath</span>
+</span><span id="FiltrageGaussien.__init__-22"><a href="#FiltrageGaussien.__init__-22"><span class="linenos">22</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_imageNpArray</span> <span class="o">=</span> <span class="n">imageNpArray</span>
 </span></pre></div>
 
 
@@ -183,9 +184,8 @@ test = FiltrageGaussien((9, 9), 0, 'COVID-1024.png', 'FiltrageGaussien.png')</p>
 <h6 id="parameters">Parameters</h6>
 
 <ul>
-<li><strong>kernel: Tuple représentant la taille du noyau de convolution (ex</strong>:  (9, 9)).</li>
 <li><strong>sigma</strong>:  Écart type pour la fonction gaussienne.</li>
-<li><strong>imagePath</strong>:  Chemin de l'image d'entrée.</li>
+<li><strong>imageNpArray</strong>:  Matrice Numpy de l'image.</li>
 </ul>
 </div>
 
@@ -207,11 +207,7 @@ test = FiltrageGaussien((9, 9), 0, 'COVID-1024.png', 'FiltrageGaussien.png')</p>
 </span><span id="FiltrageGaussien.filtrage-26"><a href="#FiltrageGaussien.filtrage-26"><span class="linenos">26</span></a><span class="sd">        Applique le filtrage gaussien à l&#39;image spécifiée et sauvegarde le résultat.</span>
 </span><span id="FiltrageGaussien.filtrage-27"><a href="#FiltrageGaussien.filtrage-27"><span class="linenos">27</span></a><span class="sd">        :return: Matrice de l&#39;image filtrée en niveaux de gris (Numpy 2D array).</span>
 </span><span id="FiltrageGaussien.filtrage-28"><a href="#FiltrageGaussien.filtrage-28"><span class="linenos">28</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="FiltrageGaussien.filtrage-29"><a href="#FiltrageGaussien.filtrage-29"><span class="linenos">29</span></a>        <span class="n">image</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_imagePath</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">IMREAD_GRAYSCALE</span><span class="p">)</span>  <span class="c1"># lit l&#39;image en niveaux de gris (utile pour numpy)</span>
-</span><span id="FiltrageGaussien.filtrage-30"><a href="#FiltrageGaussien.filtrage-30"><span class="linenos">30</span></a>        <span class="n">imageFloueMatrice</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">GaussianBlur</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kernel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sigma</span><span class="p">)</span>  <span class="c1"># applique le filtrage gaussien</span>
-</span><span id="FiltrageGaussien.filtrage-31"><a href="#FiltrageGaussien.filtrage-31"><span class="linenos">31</span></a>        <span class="c1"># cv2.imwrite(self._imagePath, imageFloueMatrice) # sauvegarde l&#39;image filtrée</span>
-</span><span id="FiltrageGaussien.filtrage-32"><a href="#FiltrageGaussien.filtrage-32"><span class="linenos">32</span></a>
-</span><span id="FiltrageGaussien.filtrage-33"><a href="#FiltrageGaussien.filtrage-33"><span class="linenos">33</span></a>        <span class="k">return</span> <span class="n">imageFloueMatrice</span>
+</span><span id="FiltrageGaussien.filtrage-29"><a href="#FiltrageGaussien.filtrage-29"><span class="linenos">29</span></a>        <span class="k">return</span> <span class="n">gaussian_filter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_imageNpArray</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_sigma</span><span class="p">)</span>
 </span></pre></div>
 
 
@@ -222,6 +218,39 @@ test = FiltrageGaussien((9, 9), 0, 'COVID-1024.png', 'FiltrageGaussien.png')</p>
 <blockquote>
   <p>Matrice de l'image filtrée en niveaux de gris (Numpy 2D array).</p>
 </blockquote>
+</div>
+
+
+                            </div>
+                            <div id="FiltrageGaussien.afficher" class="classattr">
+                                        <input id="FiltrageGaussien.afficher-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">afficher</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">imageFiltreeMatrice</span></span><span class="return-annotation">):</span></span>
+
+                <label class="view-source-button" for="FiltrageGaussien.afficher-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#FiltrageGaussien.afficher"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="FiltrageGaussien.afficher-31"><a href="#FiltrageGaussien.afficher-31"><span class="linenos">31</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">afficher</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">imageFiltreeMatrice</span><span class="p">):</span>
+</span><span id="FiltrageGaussien.afficher-32"><a href="#FiltrageGaussien.afficher-32"><span class="linenos">32</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="FiltrageGaussien.afficher-33"><a href="#FiltrageGaussien.afficher-33"><span class="linenos">33</span></a><span class="sd">        Affiche l&#39;image filtrée.</span>
+</span><span id="FiltrageGaussien.afficher-34"><a href="#FiltrageGaussien.afficher-34"><span class="linenos">34</span></a><span class="sd">        :param imageFiltreeMatrice: Matrice de l&#39;image filtrée en niveaux de gris (Numpy 2D array).</span>
+</span><span id="FiltrageGaussien.afficher-35"><a href="#FiltrageGaussien.afficher-35"><span class="linenos">35</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="FiltrageGaussien.afficher-36"><a href="#FiltrageGaussien.afficher-36"><span class="linenos">36</span></a>        <span class="n">cv2</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="s2">&quot;Image Filtrée Gaussienne&quot;</span><span class="p">,</span> <span class="n">imageFiltreeMatrice</span><span class="p">)</span>
+</span><span id="FiltrageGaussien.afficher-37"><a href="#FiltrageGaussien.afficher-37"><span class="linenos">37</span></a>        <span class="n">cv2</span><span class="o">.</span><span class="n">waitKey</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</span><span id="FiltrageGaussien.afficher-38"><a href="#FiltrageGaussien.afficher-38"><span class="linenos">38</span></a>        <span class="n">cv2</span><span class="o">.</span><span class="n">destroyAllWindows</span><span class="p">()</span>
+</span></pre></div>
+
+
+            <div class="docstring"><p>Affiche l'image filtrée.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>imageFiltreeMatrice</strong>:  Matrice de l'image filtrée en niveaux de gris (Numpy 2D array).</li>
+</ul>
 </div>
 
 

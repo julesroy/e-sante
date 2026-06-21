@@ -1,6 +1,7 @@
 import sys
 import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import cv2
 import numpy as np
@@ -28,7 +29,7 @@ print(f"Seuil choisi : {seuil_choisi}")
 masque_rempli = ndimage.binary_fill_holes(masque > 0)
 # Les cavités internes sont les pixels dans la tête mais sombres sur l'image d'origine
 masque_poumons = ((masque_rempli * 255).astype(np.uint8) > 0) & (masque == 0)
-masque_poumons = (masque_poumons * 255).astype(np.uint8) 
+masque_poumons = (masque_poumons * 255).astype(np.uint8)
 
 # 3. Nettoyer les petits artéfacts isolés
 masque_propre = MorphologieMathematique(3).ouverture(masque_poumons)

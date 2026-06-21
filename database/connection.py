@@ -8,13 +8,14 @@ import os
 from dotenv import load_dotenv
 from utils.paths import find_env_path
 
-#Chargement des variables d'environnement (.env)
+# Chargement des variables d'environnement (.env)
 load_dotenv(find_env_path())
 
-#Mode global : "online" si connecté, "offline" sinon
-#Initialisé à "offline", mis à jour par get_connection()
+# Mode global : "online" si connecté, "offline" sinon
+# Initialisé à "offline", mis à jour par get_connection()
 DB_MODE = "offline"
-_connexion_log_ = False #Flag pour eviter le spam
+_connexion_log_ = False  # Flag pour eviter le spam
+
 
 def get_connection():
     """
@@ -26,17 +27,17 @@ def get_connection():
     global DB_MODE, _connexion_log_
 
     # TEST HORS-LIGNE — décommenter pour simuler le mode offline
-    #DB_MODE = "offline"
-    #return None
+    # DB_MODE = "offline"
+    # return None
 
     try:
         import psycopg2
 
         # Lecture des variables séparées
-        host     = os.getenv("DB_HOST")
-        port     = os.getenv("DB_PORT")
-        dbname   = os.getenv("DB_NAME")
-        user     = os.getenv("DB_USER")
+        host = os.getenv("DB_HOST")
+        port = os.getenv("DB_PORT")
+        dbname = os.getenv("DB_NAME")
+        user = os.getenv("DB_USER")
         password = os.getenv("DB_PASSWORD")
 
         # Vérifie que les variables essentielles sont présentes
@@ -45,14 +46,7 @@ def get_connection():
             DB_MODE = "offline"
             return None
 
-        conn = psycopg2.connect(
-            host=host,
-            port=port,
-            dbname=dbname,
-            user=user,
-            password=password,
-            connect_timeout=5
-        )
+        conn = psycopg2.connect(host=host, port=port, dbname=dbname, user=user, password=password, connect_timeout=5)
 
         DB_MODE = "online"
 
@@ -60,20 +54,22 @@ def get_connection():
         if not _connexion_log_:
             print("[DB] Connexion PostgreSQL réussie")
             _connexion_log_ = True
-        
+
         return conn
 
     except Exception as e:
         DB_MODE = "offline"
         print(f"[DB] Connexion impossible -> mode hors-ligne ({e})")
         return None
-    
+
+
 def is_online() -> bool:
     """
     Retourne True si la BDD est accessible, False sinon.
     À appeler dans les controllers avant toute opération BDD.
     """
     return DB_MODE == "online"
+
 
 def check_connection() -> bool:
     """

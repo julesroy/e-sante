@@ -12,7 +12,7 @@ SERVER_URL = f"http://{_HOST}:5000"
 _TIMEOUT = 10
 
 
-def upload_image(file_path: str, patient_id:int) -> str | None:
+def upload_image(file_path: str, patient_id: int) -> str | None:
     """
     Envoie un fichier local vers le serveur qui sera stocke dans le dossier d'un patient.
     Le nom du dossier est hashé.

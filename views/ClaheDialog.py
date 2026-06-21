@@ -2,6 +2,7 @@
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QDoubleSpinBox, QSpinBox, QFormLayout
 from PyQt6.QtCore import Qt
 
+
 class ClaheDialog(QDialog):
     def __init__(self, parent=None, default_clip_limit=5.0, default_grid_size=16):
         super().__init__(parent)
@@ -65,7 +66,7 @@ class ClaheDialog(QDialog):
 
         # Taille de la grille locale (Tile Grid Size)
         self.grid_label = QLabel("Taille de grille locale (n * n) :")
-        
+
         self.grid_wh_spin = QSpinBox()
         self.grid_wh_spin.setRange(2, 128)
         self.grid_wh_spin.setValue(default_grid_size)
