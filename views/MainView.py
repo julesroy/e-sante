@@ -529,6 +529,7 @@ class MainView(QMainWindow):
         self.ruler_active = False
         self.angle_active = False
         self.height_comp_active = False
+        self.pixel_to_mm_ratio = None
         self.circle_roi_active = False
         self.square_roi_active = False
         self.pipette_active = False

@@ -131,6 +131,18 @@ class RulerController:
 
         self.view.ruler_active = checked
         if checked:
+            from views.RatioCalibrationDialog import RatioCalibrationDialog
+            orig_w = self.view.current_pixmap.width() if self.view.current_pixmap else None
+            dialog = RatioCalibrationDialog(self.view, default_ratio=self.view.pixel_to_mm_ratio, image_width=orig_w)
+            if dialog.exec():
+                self.view.pixel_to_mm_ratio = dialog.get_value()
+                print(f"[RulerController] Nouveau ratio de mesure défini: {self.view.pixel_to_mm_ratio} px/mm")
+            else:
+                self.view.ruler_active = False
+                self.view.left_toolbar.btn_ruler.setChecked(False)
+                self.view.image_display.update()
+                return
+
             print("Mode Règle de mesure activé.")
             self.deactivate_all_modes_except("ruler")
             if hasattr(self.view.image_display, "ruler_overlay"):
@@ -165,6 +177,18 @@ class RulerController:
 
         self.view.height_comp_active = checked
         if checked:
+            from views.RatioCalibrationDialog import RatioCalibrationDialog
+            orig_w = self.view.current_pixmap.width() if self.view.current_pixmap else None
+            dialog = RatioCalibrationDialog(self.view, default_ratio=self.view.pixel_to_mm_ratio, image_width=orig_w)
+            if dialog.exec():
+                self.view.pixel_to_mm_ratio = dialog.get_value()
+                print(f"[RulerController] Nouveau ratio de hauteur défini: {self.view.pixel_to_mm_ratio} px/mm")
+            else:
+                self.view.height_comp_active = False
+                self.view.left_toolbar.btn_height_comp.setChecked(False)
+                self.view.image_display.update()
+                return
+
             print("Mode Comparateur de hauteur activé.")
             self.deactivate_all_modes_except("height_comp")
             if hasattr(self.view.image_display, "height_comp_overlay"):

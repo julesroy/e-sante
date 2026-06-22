@@ -74,21 +74,24 @@ class HeightCompOverlay:
                 orig_w = main_view.current_pixmap.width()
                 orig_h = main_view.current_pixmap.height()
 
-                # Même calibrage que RulerOverlay : l'image brute fait toujours 45 cm de large
-                largeur_physique_totale_cm = 45.0
-                dynamic_pixel_to_cm = largeur_physique_totale_cm / orig_w
-
                 # Différence de hauteur relative projetée sur la hauteur de l'image d'origine
                 dy_rel = abs(self.pts[0][1] - self.pts[1][1])
                 dy_orig = dy_rel * orig_h
 
-                # Distance en cm
-                distance_cm = dy_orig * dynamic_pixel_to_cm
+                pixel_to_mm_ratio = getattr(main_view, "pixel_to_mm_ratio", None)
+                if pixel_to_mm_ratio is not None:
+                    distance_mm = dy_orig / pixel_to_mm_ratio
+                else:
+                    # Même calibrage que RulerOverlay : l'image brute fait toujours 45 cm de large
+                    largeur_physique_totale_cm = 45.0
+                    dynamic_pixel_to_cm = largeur_physique_totale_cm / orig_w
+                    distance_cm = dy_orig * dynamic_pixel_to_cm
+                    distance_mm = distance_cm * 10.0
             else:
-                distance_cm = 0.0
+                distance_mm = 0.0
 
             # 6. Affichage du texte au milieu de la liaison verticale
-            text = f" Δy: {distance_cm:.2f} cm "
+            text = f" Δy: {distance_mm:.1f} mm "
             font = QFont("Arial", 10, QFont.Weight.Bold)
             painter.setFont(font)
             text_rect = painter.fontMetrics().boundingRect(text)

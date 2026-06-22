@@ -118,10 +118,6 @@ class RulerOverlay:
                 orig_w = main_view.current_pixmap.width()
                 orig_h = main_view.current_pixmap.height()
 
-                # ÉVALUATION DU COEF : On considère que l'image fait toujours 45 cm de large en vrai
-                largeur_physique_totale_cm = 45.0
-                dynamic_pixel_to_cm = largeur_physique_totale_cm / orig_w
-
                 # On projette nos pourcentages directement sur la taille du fichier d'origine
                 orig_ax, orig_ay = self.rel_a[0] * orig_w, self.rel_a[1] * orig_h
                 orig_bx, orig_by = target[0] * orig_w, target[1] * orig_h
@@ -131,10 +127,15 @@ class RulerOverlay:
                 dy = orig_by - orig_ay
                 distance_px_orig = math.sqrt(dx * dx + dy * dy)
 
-                # Conversion finale (cm)
-                distance_cm = distance_px_orig * dynamic_pixel_to_cm
-                # Conversion en mm
-                distance_mm = distance_cm * 10
+                pixel_to_mm_ratio = getattr(main_view, "pixel_to_mm_ratio", None)
+                if pixel_to_mm_ratio is not None:
+                    distance_mm = distance_px_orig / pixel_to_mm_ratio
+                else:
+                    # ÉVALUATION DU COEF PAR DÉFAUT : On considère que l'image fait toujours 45 cm de large en vrai
+                    largeur_physique_totale_cm = 45.0
+                    dynamic_pixel_to_cm = largeur_physique_totale_cm / orig_w
+                    distance_cm = distance_px_orig * dynamic_pixel_to_cm
+                    distance_mm = distance_cm * 10
             else:
                 distance_mm = 0.0
                 distance_px_orig = 0.0

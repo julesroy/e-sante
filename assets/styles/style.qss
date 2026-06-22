@@ -155,3 +155,75 @@ QPushButton#PatientInfoCloseBtn:hover {
     background-color: #d32f2f; /* Rouge médical au survol */
     color: #ffffff;
 }
+
+/* === STYLE DE LA POP-UP CALIBRATION RATIO === */
+
+/* Fenêtre de dialogue modale de calibration */
+QDialog#RatioCalibrationDialog {
+    background-color: #202020;
+    border: 1px solid #3c3c3c;
+    border-radius: 8px;
+}
+
+/* Libellés de texte dans le dialogue */
+QDialog#RatioCalibrationDialog QLabel {
+    color: #e0e0e0;
+    font-size: 12px;
+}
+
+/* SpinBox numérique pour le ratio personnalisé */
+QDialog#RatioCalibrationDialog QDoubleSpinBox {
+    background-color: #2b2b2b;
+    color: #ffffff;
+    border: 1px solid #555555;
+    border-radius: 4px;
+    padding: 5px;
+    min-width: 120px;
+}
+
+QDialog#RatioCalibrationDialog QDoubleSpinBox:focus {
+    border: 1px solid #00a2ed;
+}
+
+/* Liste déroulante des préréglages */
+QDialog#RatioCalibrationDialog QComboBox {
+    background-color: #2b2b2b;
+    color: #ffffff;
+    border: 1px solid #555555;
+    border-radius: 4px;
+    padding: 5px;
+    min-width: 180px;
+}
+
+QDialog#RatioCalibrationDialog QComboBox:focus {
+    border: 1px solid #00a2ed;
+}
+
+/* Bouton Appliquer (style standard) */
+QDialog#RatioCalibrationDialog QPushButton {
+    background-color: #00a2ed;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+QDialog#RatioCalibrationDialog QPushButton:hover {
+    background-color: #0082bc;
+}
+
+QDialog#RatioCalibrationDialog QPushButton:pressed {
+    background-color: #006896;
+}
+
+/* Bouton Annuler (style spécifique) */
+QDialog#RatioCalibrationDialog QPushButton#CancelBtn {
+    background-color: #3a3a3a;
+    color: #ffffff;
+}
+
+QDialog#RatioCalibrationDialog QPushButton#CancelBtn:hover {
+    background-color: #4a4a4a;
+}
