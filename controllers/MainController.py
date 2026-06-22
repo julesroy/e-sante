@@ -26,6 +26,7 @@ from controllers.AnnotationController import AnnotationController
 
 # ===== IMPORTS DE LA CONNEXION A LA BDD =====
 from database.connection import is_online, check_connection
+from database.db import init_db
 
 
 class MainController:
@@ -62,6 +63,7 @@ class MainController:
         self.view.left_toolbar.gaussian_clicked.connect(self.filter_ctrl.handle_gaussian)
         self.view.top_toolbar.fft_clicked.connect(self.analysis_ctrl.handle_tfd2d)
         self.view.top_toolbar.histo_clicked.connect(self.analysis_ctrl.handle_histogramme)
+        self.view.top_toolbar.reconnect_clicked.connect(self.handle_reconnect)
         self.view.left_toolbar.reset_image_clicked.connect(self.handle_reset_image)
         self.view.left_toolbar.clahe_clicked.connect(self.analysis_ctrl.handle_clahe)
         self.view.left_toolbar.contrast_slider_clicked.connect(self.analysis_ctrl.handle_contrast_slider)
@@ -152,6 +154,8 @@ class MainController:
         """
         print("[MainController] Tentative de reconnexion...")
         if check_connection():
+            # Initialise la BDD au cas où le logiciel n'était pas connecté au démarrage
+            init_db()
             self.error_handler.show_info("Reconnexion réussie", "La connexion à la BDD est rétablie.")
             manager = self.view.left_toolbar.patient_manager
             manager.refresh_results(self.patient_ctrl.handle_charger_patients())
