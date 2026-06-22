@@ -200,6 +200,8 @@ class MainController:
         self.model.watershed_labels = None
         if hasattr(self.view, "watershed_area_label"):
             self.view.watershed_area_label.hide()
+        if hasattr(self.view, "watershed_threshold_label"):
+            self.view.watershed_threshold_label.hide()
         self.view.left_toolbar.btn_area.setChecked(False)
         self.view.top_toolbar.btn_fft.setChecked(False)
         if hasattr(self.view, "fft_label"):

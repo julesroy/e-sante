@@ -19,7 +19,6 @@ from models.Seuillage import Seuillage
 from models.MorphologieMathematique import MorphologieMathematique
 from models.Watershed import SegmentationWatershed
 from models.FiltrageGaussien import FiltrageGaussien
-from views.FilterDialog import FilterDialog
 from views.ClaheDialog import ClaheDialog
 from views.WatershedDialog import WatershedDialog
 
@@ -234,39 +233,6 @@ class AnalysisController:
             self.error_handler.handle_exception(e)
             return
 
-    def handle_seuillage(self):
-        """
-        Ouvre la popup pour le seuillage et applique le masque
-        Slider a 0 -> Otsu automatique, sinon seuil manuel [1-255]
-        """
-        try:
-            if self._current_array is None:
-                self.error_handler.show_error("Erreur", "Aucune image chargee")
-                return
-
-            dialog = FilterDialog(self.view, default_val=self.last_seuillage_val, label_prefix="Seuil : ", min_val=0, max_val=255)
-            dialog.setWindowTitle("Seuillage (0 = Otsu auto)")
-
-            if dialog.exec():
-                valeur = dialog.slider.value()
-                self.last_seuillage_val = valeur
-
-                # 0 -> Otsu automatique, sinon seuil automatique
-                seuil_manuel = None if valeur == 0 else valeur
-                outil = Seuillage(seuil_manuel=seuil_manuel)
-                masque, seuil_calcule = outil.appliquer(self._current_array)
-
-                # masque est uint8 [0,255], on normalise en [0,1] pour l'affichage
-                result = (masque / 255.0).astype(np.float32)
-                self._display_numpy_array(result)
-
-                mode = f"Otsu (seuil calculé: {int(seuil_calcule)})" if seuil_manuel is None else f"Manuel: {seuil_manuel}"
-                print(f"Seuillage appliqué - {mode}")
-
-        except Exception as e:
-            self.error_handler.handle_exception(e)
-            return
-
     def handle_watershed(self, checked):
         """
         Applique la segmentation Watershed sur l'image courante.
@@ -282,6 +248,8 @@ class AnalysisController:
                 self.main_controller.model.watershed_labels = None
                 if hasattr(self.view, "watershed_area_label"):
                     self.view.watershed_area_label.hide()
+                if hasattr(self.view, "watershed_threshold_label"):
+                    self.view.watershed_threshold_label.hide()
                 self.view.left_toolbar.btn_area.setChecked(False)
                 pipette_seuil = getattr(self.main_controller, "last_pipette_threshold", None)
                 if pipette_seuil is not None:
@@ -341,6 +309,11 @@ class AnalysisController:
 
                     self._display_numpy_array(overlay)
                     self.main_controller.model.watershed_labels = labels
+
+                    is_otsu = seuil_manuel is None
+                    mode_str = "(Otsu)" if is_otsu else "(Manuel)"
+                    threshold_text = f"<html><body><p style='margin-top: 0px; margin-bottom: 0px; font-weight: bold;'>Seuil Watershed :</p><p style='margin-top: 4px; margin-bottom: 0px;'>{int(seuil_choisi)} {mode_str}</p></body></html>"
+                    self.view.display_watershed_threshold(threshold_text)
 
                     print(f"Segmentation Watershed appliquée (sigma={sigma}, seuil={seuil_choisi}, noyau={kernel_size}, dist={min_dist})")
                 else:

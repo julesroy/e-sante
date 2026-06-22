@@ -6,7 +6,7 @@ from PyQt6.QtCore import Qt, pyqtSignal
 class FilterDialog(QDialog):
     cutoff_changed = pyqtSignal(int)
 
-    def __init__(self, parent=None, default_val=30, label_prefix="Fréquence de coupure : ", min_val=1, max_val=150):
+    def __init__(self, parent=None, default_val=1, label_prefix="Fréquence de coupure (Hz) : ", min_val=1, max_val=10):
         super().__init__(parent)
         self.label_prefix = label_prefix
         self.setWindowTitle("Filtre Fréquentiel")

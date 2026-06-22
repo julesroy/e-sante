@@ -289,7 +289,7 @@ class MedicalImageLabel(QLabel):
             painter.drawEllipse(QPoint(x, y), 7, 7)
 
             # Cartouche d'affichage textuel
-            text = f"Seuil (gris) : {self.pipette_val}"
+            text = f"Niveau de gris : {self.pipette_val}"
             font = QFont("Segoe UI", 10, QFont.Weight.Bold)
             painter.setFont(font)
             fm = painter.fontMetrics()
@@ -616,6 +616,23 @@ class MainView(QMainWindow):
         """)
         self.watershed_area_label.hide()
 
+        # --- SEUIL WATERSHED (overlay en bas à droite, au-dessus de image_info_label) ---
+        self.watershed_threshold_label = QLabel(self.scroll_area)
+        self.watershed_threshold_label.setObjectName("WatershedThresholdLabel")
+        self.watershed_threshold_label.setStyleSheet("""
+            #WatershedThresholdLabel {
+                color: #e0e0e0;
+                background-color: rgba(32, 32, 32, 200);
+                border: 1px solid #3c3c3c;
+                border-radius: 4px;
+                padding: 6px 10px;
+                font-size: 11px;
+                font-family: "Segoe UI", Arial, sans-serif;
+            }
+        """)
+        self.watershed_threshold_label.hide()
+
+
         # --- SPECTRE FFT (overlay en bas à droite, au-dessus de watershed_area_label / image_info_label) ---
         self.fft_label = QLabel(self.scroll_area)
         self.fft_label.setObjectName("FftLabel")
@@ -792,12 +809,21 @@ class MainView(QMainWindow):
 
             y_current = y
 
+            # Positionner aussi self.watershed_threshold_label juste au-dessus
+            if hasattr(self, "watershed_threshold_label") and self.watershed_threshold_label.isVisible():
+                self.watershed_threshold_label.setFixedWidth(self.image_info_label.width())
+                self.watershed_threshold_label.adjustSize()
+                y_current = y_current - self.watershed_threshold_label.height() - 10
+                self.watershed_threshold_label.move(max(0, x), max(0, y_current))
+
             # Positionner aussi self.watershed_area_label juste au-dessus
             if hasattr(self, "watershed_area_label") and self.watershed_area_label.isVisible():
                 self.watershed_area_label.setFixedWidth(self.image_info_label.width())
                 self.watershed_area_label.adjustSize()
                 y_current = y_current - self.watershed_area_label.height() - 10
-                # Positionner aussi self.fft_label encore au-dessus
+                self.watershed_area_label.move(max(0, x), max(0, y_current))
+
+            # Positionner aussi self.fft_label encore au-dessus
             if hasattr(self, "fft_label") and self.fft_label.isVisible():
                 if self.fft_label.pixmap():
                     # Forcer la largeur du pixmap à correspondre à la largeur de image_info_label
@@ -835,6 +861,8 @@ class MainView(QMainWindow):
         if pixmap is None or pixmap.isNull():
             if hasattr(self, "image_info_label"):
                 self.image_info_label.hide()
+            if hasattr(self, "watershed_threshold_label"):
+                self.watershed_threshold_label.hide()
             if hasattr(self, "watershed_area_label"):
                 self.watershed_area_label.hide()
             if hasattr(self, "fft_label"):
@@ -871,12 +899,20 @@ class MainView(QMainWindow):
         self.image_info_label.show()
         self._update_image_info_position()
 
+    def display_watershed_threshold(self, text: str):
+        """Met à jour et affiche le panneau de seuil du Watershed"""
+        if hasattr(self, "watershed_threshold_label"):
+            self.watershed_threshold_label.setText(text)
+            self.watershed_threshold_label.show()
+            self._update_image_info_position()
+
     def display_watershed_areas(self, text: str):
         """Met à jour et affiche le panneau d'aires du Watershed"""
         if hasattr(self, "watershed_area_label"):
             self.watershed_area_label.setText(text)
             self.watershed_area_label.show()
             self._update_image_info_position()
+
 
     def display_fft_spectrum(self, pixmap: QPixmap):
         """Affiche le spectre FFT dans l'overlay avec la même largeur que les infos de l'image"""

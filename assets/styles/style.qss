@@ -218,7 +218,6 @@ QDialog#RatioCalibrationDialog QPushButton:pressed {
     background-color: #006896;
 }
 
-/* Bouton Annuler (style spécifique) */
 QDialog#RatioCalibrationDialog QPushButton#CancelBtn {
     background-color: #3a3a3a;
     color: #ffffff;
@@ -226,4 +225,63 @@ QDialog#RatioCalibrationDialog QPushButton#CancelBtn {
 
 QDialog#RatioCalibrationDialog QPushButton#CancelBtn:hover {
     background-color: #4a4a4a;
+}
+
+/* === STYLE DES BOÎTES DE DIALOGUE GLOBALES (QDialog, QMessageBox, QInputDialog) === */
+
+QDialog, QMessageBox, QInputDialog {
+    background-color: #2b2b2b;
+    color: #ffffff;
+}
+
+QDialog QLabel, QMessageBox QLabel, QInputDialog QLabel {
+    color: #ffffff;
+    font-size: 12px;
+}
+
+QDialog QLineEdit, QInputDialog QLineEdit, QDialog QDoubleSpinBox, QDialog QSpinBox, QDialog QComboBox {
+    background-color: #3b3b3b;
+    color: #ffffff;
+    border: 1px solid #555555;
+    border-radius: 3px;
+    padding: 5px;
+    font-size: 12px;
+}
+
+QDialog QLineEdit:focus, QInputDialog QLineEdit:focus, QDialog QDoubleSpinBox:focus, QDialog QSpinBox:focus, QDialog QComboBox:focus {
+    border: 1px solid #00a2ed;
+}
+
+QDialog QPushButton, QMessageBox QPushButton, QInputDialog QPushButton {
+    background-color: #3c3c3c;
+    color: #E0E0E0;
+    border: 1px solid #555555;
+    border-radius: 4px;
+    padding: 6px 16px;
+    font-size: 11px;
+    font-weight: bold;
+    min-width: 75px;
+}
+
+QDialog QPushButton:hover, QMessageBox QPushButton:hover, QInputDialog QPushButton:hover {
+    background-color: #4f4f4f;
+    border: 1px solid #666666;
+}
+
+/* Style de mise en valeur pour le bouton principal / acceptation */
+QDialog QPushButton:default, QMessageBox QPushButton:default, QInputDialog QPushButton:default {
+    background-color: #00a2ed;
+    color: #ffffff;
+    border: 1px solid #00a2ed;
+}
+
+QDialog QPushButton:default:hover, QMessageBox QPushButton:default:hover, QInputDialog QPushButton:default:hover {
+    background-color: #0082bc;
+    border: 1px solid #0082bc;
+}
+
+QDialog QPushButton:pressed, QMessageBox QPushButton:pressed, QInputDialog QPushButton:pressed {
+    background-color: #006896;
+    color: #ffffff;
+    border: 1px solid #006896;
 }

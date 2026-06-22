@@ -29,8 +29,8 @@ class FilterController:
     def __init__(self, main_controller: MainController):
         self.main_controller = main_controller
         self.last_gaussian_sigma = 1.0
-        self.last_passe_bas_cutoff = 30
-        self.last_passe_haut_cutoff = 30
+        self.last_passe_bas_cutoff = 10
+        self.last_passe_haut_cutoff = 1
 
     @property
     def view(self):
@@ -121,7 +121,7 @@ class FilterController:
 
             if checked:
                 self.main_controller.handle_reset_image(keep_button=self.view.left_toolbar.btn_low_pass)
-                dialog = FilterDialog(self.view, default_val=self.last_passe_bas_cutoff)
+                dialog = FilterDialog(self.view, default_val=self.last_passe_bas_cutoff, min_val=10, max_val=40)
                 dialog.setWindowTitle("Filtre Passe-Bas")
 
                 if dialog.exec():
@@ -165,7 +165,7 @@ class FilterController:
 
             if checked:
                 self.main_controller.handle_reset_image(keep_button=self.view.left_toolbar.btn_high_pass)
-                dialog = FilterDialog(self.view, default_val=self.last_passe_haut_cutoff)
+                dialog = FilterDialog(self.view, default_val=self.last_passe_haut_cutoff, min_val=1, max_val=10)
                 dialog.setWindowTitle("Filtre Passe-Haut")
 
                 if dialog.exec():
