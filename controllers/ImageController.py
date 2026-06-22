@@ -275,10 +275,20 @@ class ImageController:
             # Capture le widget d'affichage (QLabel)
             full_pixmap = self.view.image_display.grab()
 
+            # Prise en compte du ratio de pixels physiques de l'écran pour les écrans haute densité (Retina/High-DPI)
+            ratio = self.view.image_display.devicePixelRatioF()
+
             # Calcul des marges pour ne rogner que la zone de l'image
             margin_x = (self.view.image_display.width() - pixmap_displayed.width()) // 2
             margin_y = (self.view.image_display.height() - pixmap_displayed.height()) // 2
-            img_rect = QRect(margin_x, margin_y, pixmap_displayed.width(), pixmap_displayed.height())
+            
+            # Conversion des coordonnées logiques du widget en coordonnées physiques de la texture capturée
+            img_rect = QRect(
+                int(margin_x * ratio),
+                int(margin_y * ratio),
+                int(pixmap_displayed.width() * ratio),
+                int(pixmap_displayed.height() * ratio)
+            )
 
             # Rogner pour garder l'image exacte
             cropped_pixmap = full_pixmap.copy(img_rect)
@@ -364,10 +374,20 @@ class ImageController:
                 # Capture le widget d'affichage (QLabel)
                 full_pixmap = self.view.image_display.grab()
 
+                # Prise en compte du ratio de pixels physiques de l'écran pour les écrans haute densité (Retina/High-DPI)
+                ratio = self.view.image_display.devicePixelRatioF()
+
                 # Calcul des marges pour ne rogner que la zone de l'image
                 margin_x = (self.view.image_display.width() - pixmap_displayed.width()) // 2
                 margin_y = (self.view.image_display.height() - pixmap_displayed.height()) // 2
-                img_rect = QRect(margin_x, margin_y, pixmap_displayed.width(), pixmap_displayed.height())
+                
+                # Conversion des coordonnées logiques du widget en coordonnées physiques de la texture capturée
+                img_rect = QRect(
+                    int(margin_x * ratio),
+                    int(margin_y * ratio),
+                    int(pixmap_displayed.width() * ratio),
+                    int(pixmap_displayed.height() * ratio)
+                )
 
                 # Rogner pour garder l'image exacte
                 cropped_pixmap = full_pixmap.copy(img_rect)
