@@ -41,6 +41,25 @@ class FormsOverlay:
         self.cached_raw_pixels = None
         self.cached_unit = None
 
+        # Zone d'affichage des statistiques de la forme active pour le survol/tooltip
+        self.stats_rect = None
+        self.stats_tooltip_shown = False
+
+        # Tooltips d'explication des statistiques
+        self.tooltip_dicom = (
+            "<b>Statistiques physiques (Hounsfield - HU) :</b><br/>"
+            "• <b>Moy :</b> Densité moyenne des tissus en Unités Hounsfield.<br/>"
+            "• <b>Max / Min :</b> Valeurs extrêmes de densité mesurées.<br/>"
+            "• <b>SD :</b> Écart-type (mesure de l'hétérogénéité des tissus).<br/>"
+            "• <b>Aire :</b> Surface réelle calculée en mm²."
+        )
+        self.tooltip_standard = (
+            "<b>Statistiques d'intensité (Niveaux de gris) :</b><br/>"
+            "• <b>Max / Min :</b> Intensités minimale et maximale relevées.<br/>"
+            "• <b>SD :</b> Écart-type du contraste de luminosité interne.<br/>"
+            "• <b>Aire :</b> Surface estimée de la zone."
+        )
+
     def to_screen(self, rx, ry, img_rect: QRect):
         sx = img_rect.left() + rx * img_rect.width()
         sy = img_rect.top() + ry * img_rect.height()
@@ -67,12 +86,18 @@ class FormsOverlay:
         self.rel_b = None
         self.rel_temp = None
         self.interaction_mode = None
+        self.stats_rect = None
+        from PyQt6.QtWidgets import QToolTip
+        QToolTip.hideText()
 
     def clear_all(self):
         """Supprime toutes les formes et réinitialise l'état."""
         self.clear()
         self.shapes = []
         self.selected_shape = None
+        self.stats_rect = None
+        from PyQt6.QtWidgets import QToolTip
+        QToolTip.hideText()
 
     def handle_mouse_press(self, local_pos: QPoint, img_rect: QRect) -> bool:
         """Gère le clic de la souris."""
@@ -171,6 +196,9 @@ class FormsOverlay:
         if self.selected_shape:
             self.selected_shape.selected = False
             self.selected_shape = None
+            self.stats_rect = None
+            from PyQt6.QtWidgets import QToolTip
+            QToolTip.hideText()
 
         self.interaction_mode = "creating"
         self.rel_a = (rx, ry)
@@ -192,6 +220,8 @@ class FormsOverlay:
             return True
 
         elif self.interaction_mode == "moving" and self.selected_shape:
+            from PyQt6.QtWidgets import QToolTip
+            QToolTip.hideText()
             shape = self.selected_shape
             shape.cx = rx - self.drag_offset_x
             shape.cy = ry - self.drag_offset_y
@@ -200,6 +230,8 @@ class FormsOverlay:
             return True
 
         elif self.interaction_mode == "rotating" and self.selected_shape:
+            from PyQt6.QtWidgets import QToolTip
+            QToolTip.hideText()
             shape = self.selected_shape
             scx, scy = self.to_screen(shape.cx, shape.cy, img_rect)
             current_angle = math.degrees(math.atan2(sy - scy, sx - scx))
@@ -208,6 +240,8 @@ class FormsOverlay:
             return True
 
         elif self.interaction_mode == "resizing" and self.selected_shape:
+            from PyQt6.QtWidgets import QToolTip
+            QToolTip.hideText()
             shape = self.selected_shape
             scx, scy = self.to_screen(shape.cx, shape.cy, img_rect)
             rad = math.radians(shape.rotation)
@@ -236,6 +270,7 @@ class FormsOverlay:
 
         else:
             self.update_hover_cursor(sx, sy, img_rect)
+            self.check_stats_tooltip(local_pos)
 
         return False
 
@@ -294,12 +329,31 @@ class FormsOverlay:
         else:
             self.label_view.setCursor(Qt.CursorShape.CrossCursor)
 
+    def check_stats_tooltip(self, local_pos: QPoint):
+        """Affiche un tooltip d'explication si on survole le cartouche de statistiques."""
+        if hasattr(self, "stats_rect") and self.stats_rect is not None and self.stats_rect.contains(local_pos):
+            from PyQt6.QtWidgets import QToolTip
+            from PyQt6.QtGui import QCursor
+
+            _, unit = self.get_raw_pixels()
+            tooltip_text = self.tooltip_dicom if unit == "HU" else self.tooltip_standard
+            QToolTip.showText(QCursor.pos(), tooltip_text, self.label_view)
+            self.stats_tooltip_shown = True
+        else:
+            if getattr(self, "stats_tooltip_shown", False):
+                from PyQt6.QtWidgets import QToolTip
+                QToolTip.hideText()
+                self.stats_tooltip_shown = False
+
     def delete_selected(self) -> bool:
         """Supprime la forme sélectionnée de la liste."""
         if self.selected_shape is not None:
             if self.selected_shape in self.shapes:
                 self.shapes.remove(self.selected_shape)
                 self.selected_shape = None
+                self.stats_rect = None
+                from PyQt6.QtWidgets import QToolTip
+                QToolTip.hideText()
                 return True
         return False
 
@@ -342,6 +396,7 @@ class FormsOverlay:
 
     def draw_measure(self, painter: QPainter, img_rect: QRect):
         """Rendu graphique principal de l'overlay."""
+        self.stats_rect = None
         # 1. Dessiner toutes les formes persistantes
         for shape in self.shapes:
             self.draw_shape(painter, img_rect, shape)
@@ -514,8 +569,19 @@ class FormsOverlay:
         pixel_area_mm2 = dynamic_pixel_to_mm**2
         area_mm2 = num_pixels * pixel_area_mm2
 
-        unit_str = f" {unit}" if unit else ""
-        text_lines = [f"Moy: {mean_val:.2f}{unit_str}", f"Max: {max_val:.2f} / Min: {min_val:.2f}", f"SD: {sd_val:.2f}", f"Aire: {num_pixels} px² (~ {area_mm2:.2f} mm²)"]
+        if unit == "HU":
+            text_lines = [
+                f"Moy: {mean_val:.2f} HU",
+                f"Max: {max_val:.2f} / Min: {min_val:.2f} HU",
+                f"SD: {sd_val:.2f} HU",
+                f"Aire: {num_pixels} px² (~ {area_mm2:.2f} mm²)"
+            ]
+        else:
+            text_lines = [
+                f"Max: {max_val:.2f} / Min: {min_val:.2f} (Intensité)",
+                f"SD: {sd_val:.2f}",
+                f"Aire: {num_pixels} px² (~ {area_mm2:.2f} mm²)"
+            ]
 
         font = QFont("Arial", 10, QFont.Weight.Bold)
         painter.save()
@@ -558,6 +624,7 @@ class FormsOverlay:
 
         # Dessiner le cartouche
         text_rect = QRect(int(text_x), int(text_y), int(box_w), int(box_h))
+        self.stats_rect = text_rect
         painter.fillRect(text_rect, QColor(0, 0, 0, 180))
         painter.setPen(QPen(QColor("#ffaa00"), 1))
         painter.drawRect(text_rect)
