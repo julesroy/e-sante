@@ -8,4 +8,4 @@ dldicom.py
 donnees_covid/
 build/
 dist/
-
+.vscode/
