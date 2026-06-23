@@ -9,7 +9,8 @@ _HOST = os.getenv("DB_HOST", "localhost")
 SERVER_URL = f"http://{_HOST}:5000"
 
 # Timeout global pour toutes les requêtes (secondes)
-_TIMEOUT = 10
+_TIMEOUT = 60
+
 
 
 def upload_image(file_path: str, patient_id: int) -> str | None:
