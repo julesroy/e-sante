@@ -71,34 +71,13 @@ class UploadController:
         )
 
         if file_path:
-            self._original_pixmap = None
+            # Réinitialise l'état pour la nouvelle image
+            self.main_controller.reset_ui_for_new_image()
             self._last_file_path = file_path
-            self.main_controller.model.watershed_labels = None
-            if hasattr(self.view, "watershed_area_label"):
-                self.view.watershed_area_label.hide()
-            if hasattr(self.view, "watershed_threshold_label"):
-                self.view.watershed_threshold_label.hide()
-            self.view.left_toolbar.btn_area.setChecked(False)
-            self.view.top_toolbar.btn_fft.setChecked(False)
-            if hasattr(self.view, "fft_label"):
-                self.view.fft_label.hide()
-            self.view.top_toolbar.btn_histo.setChecked(False)
-            if hasattr(self.view, "histo_widget"):
-                self.view.histo_widget.hide()
-            if hasattr(self.main_controller, "ruler_ctrl"):
-                self.main_controller.ruler_ctrl.deactivate_pipette()
-
-            # Clear forms overlay ROI shapes
-            if hasattr(self.view.image_display, "forms_overlay"):
-                self.view.image_display.forms_overlay.clear_all()
-
-            # Clear annotations overlay
-            if hasattr(self.view.image_display, "annotations_overlay"):
-                self.view.image_display.annotations_overlay.clear_all()
 
             # Conversion en numpy array normalisé [0,1] pour les traitements ultérieurs
             self._current_array = ImageConvertie(file_path).convertirEnNumpyArray()
-            self.main_controller.model.original_array = self._current_array.copy() if self._current_array is not None else None
+            self.main_controller._original_array = self._current_array.copy() if self._current_array is not None else None
 
             # Pour les DICOM, afficher via numpy array plutôt que QPixmap directement
             if file_path.lower().endswith(".dcm"):

@@ -102,6 +102,14 @@ class MainController:
         self.model.original_pixmap = value
 
     @property
+    def _original_array(self):
+        return self.model.original_array
+
+    @_original_array.setter
+    def _original_array(self, value):
+        self.model.original_array = value
+
+    @property
     def _contrast_base_array(self):
         return self.model.contrast_base_array
 
@@ -224,6 +232,54 @@ class MainController:
         # Clear annotations overlay
         if hasattr(self.view.image_display, "annotations_overlay"):
             self.view.image_display.annotations_overlay.clear_all()
+
+        self.view.update_image_render()
+
+    def reset_ui_for_new_image(self):
+        """
+        Réinitialise l'état de l'interface utilisateur, des filtres et des overlays
+        lorsqu'une nouvelle image est chargée (upload, BDD, etc.) afin d'éviter
+        les interférences avec l'image précédente.
+        """
+        self._original_pixmap = None
+        self._contrast_base_array = None
+        self._original_array = None
+        self.model.watershed_labels = None
+
+        if hasattr(self.view, "watershed_area_label"):
+            self.view.watershed_area_label.hide()
+        if hasattr(self.view, "watershed_threshold_label"):
+            self.view.watershed_threshold_label.hide()
+
+        self.view.left_toolbar.btn_area.setChecked(False)
+        self.view.top_toolbar.btn_fft.setChecked(False)
+        if hasattr(self.view, "fft_label"):
+            self.view.fft_label.hide()
+        self.view.top_toolbar.btn_histo.setChecked(False)
+        if hasattr(self.view, "histo_widget"):
+            self.view.histo_widget.hide()
+
+        if hasattr(self, "ruler_ctrl"):
+            self.ruler_ctrl.deactivate_pipette()
+
+        self.view.left_toolbar.uncheck_all_processing_buttons()
+
+        # Clear forms overlay ROI shapes
+        if hasattr(self.view.image_display, "forms_overlay"):
+            self.view.image_display.forms_overlay.clear_all()
+
+        # Clear annotations overlay
+        if hasattr(self.view.image_display, "annotations_overlay"):
+            self.view.image_display.annotations_overlay.clear_all()
+
+        # RESET le slider de contraste à 1 pour repartir proprement
+        if hasattr(self.view, "contrast_slider") and self.view.contrast_slider is not None:
+            self.view.contrast_slider.setValue(1)
+
+        # Désactive les modes actifs pour éviter les états parasites
+        if hasattr(self.view, "contrast_slider_active") and self.view.contrast_slider_active:
+            self.view.toggle_contrast_slider_mode(False)
+            self.view.left_toolbar.btn_contrast_slider.setChecked(False)
 
         self.view.update_image_render()
 

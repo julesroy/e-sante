@@ -90,11 +90,13 @@ class ImageController:
             if not file_path:
                 return  # L'utilisateur a annulé
 
-            # Enregistre le chemin du fichier chargé
+            # Réinitialise l'état pour la nouvelle image
+            self.main_controller.reset_ui_for_new_image()
             self.main_controller._last_file_path = file_path
 
             # Conversion en numpy array normalisé [0,1] pour les traitements ultérieurs
             self.main_controller._current_array = ImageConvertie(file_path).convertirEnNumpyArray()
+            self.main_controller._original_array = self.main_controller._current_array.copy() if self.main_controller._current_array is not None else None
 
             # Pour les DICOM, afficher via numpy array plutôt que QPixmap directement
             if file_path.lower().endswith(".dcm"):
@@ -181,11 +183,13 @@ class ImageController:
                 self.error_handler.show_error("Erreur serveur", f"Impossible de télécharger l'image depuis le serveur.")
                 return
 
-            # Enregistre le chemin du fichier chargé
+            # Réinitialise l'état pour la nouvelle image
+            self.main_controller.reset_ui_for_new_image()
             self.main_controller._last_file_path = tmp_path
 
             # Conversion en numpy array normalisé [0,1] pour les traitements ultérieurs
             self.main_controller._current_array = ImageConvertie(tmp_path).convertirEnNumpyArray()
+            self.main_controller._original_array = self.main_controller._current_array.copy() if self.main_controller._current_array is not None else None
 
             # Pour les DICOM, afficher via numpy array plutôt que QPixmap directement
             if tmp_path.lower().endswith(".dcm"):
@@ -197,15 +201,6 @@ class ImageController:
             # Mémoriser le pixmap d'origine chargé depuis le fichier
             if getattr(self.view, "current_pixmap", None) is not None:
                 self.main_controller._original_pixmap = self.view.current_pixmap.copy()
-
-            # RESET le slider de contraste à 1 pour repartir proprement
-            if self.view.contrast_slider is not None:
-                self.view.contrast_slider.setValue(1)
-
-            # Désactive les modes actifs pour éviter les états parasites
-            if self.view.contrast_slider_active:
-                self.view.toggle_contrast_slider_mode(False)
-                self.view.left_toolbar.btn_contrast_slider.setChecked(False)
 
             print(f"[ImageController] Image ouverte depuis serveur : {chemin}")
 
